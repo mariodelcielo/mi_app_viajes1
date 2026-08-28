@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🪂 Gestión de Viajes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 12px;
+            padding-bottom: 80px;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .header h1 { font-size: 22px; color: #1a237e; }
+        .header .status { font-size: 12px; color: #666; }
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 8px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-box input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            width: 100%;
+            background: transparent;
+            padding: 6px 0;
+        }
+        .search-box .icon { font-size: 18px; color: #999; }
+        .pilotos-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .piloto-item {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.15s;
+            touch-action: manipulation;
+        }
+        .piloto-item:active { background: #e8eaf6; }
+        .piloto-item.selected { background: #e8eaf6; border-left: 4px solid #3949ab; }
+        .piloto-item .info { display: flex; flex-direction: column; gap: 2px; }
+        .piloto-item .nombre { font-weight: 600; font-size: 15px; }
+        .piloto-item .detalle { font-size: 12px; color: #666; }
+        .piloto-item .saldo { font-weight: 700; font-size: 15px; color: #1a237e; }
+        .piloto-item .saldo.negativo { color: #c62828; }
+        .selected-info {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .selected-info .nombre { font-weight: 700; font-size: 16px; }
+        .selected-info .credito { font-size: 14px; color: #333; }
+        .selected-info .deuda { font-size: 13px; color: #c62828; }
+        .selected-info .libres { font-size: 13px; color: #2e7d32; }
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .btn-group .btn-full { grid-column: 1 / -1; }
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+            text-align: center;
+            user-select: none;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-escuela { background: #e3f2fd; color: #0d47a1; }
+        .btn-escuela.active { background: #0d47a1; color: white; }
+        .btn-pista { background: #fff3e0; color: #e65100; }
+        .btn-pista.active { background: #e65100; color: white; }
+        .btn-confirmar { background: #1a237e; color: white; padding: 16px; font-size: 17px; }
+        .btn-anular { background: #ffebee; color: #c62828; }
+        .btn-carga { background: #e8f5e9; color: #1b5e20; }
+        .btn-stats { background: #f3e5f5; color: #4a148c; }
+        .btn-pasajeros {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .btn-pasajeros button {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .btn-pasajeros button:active { background: #ddd; }
+        .btn-pasajeros span { font-weight: 700; min-width: 30px; text-align: center; }
+        .historial {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-top: 12px;
+        }
+        .historial .titulo { font-size: 13px; color: #999; margin-bottom: 6px; }
+        .historial .item { font-size: 14px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #323232;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            max-width: 90%;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            text-align: center;
+        }
+        .toast.show { opacity: 1; }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 { font-size: 20px; margin-bottom: 16px; color: #1a237e; }
+        .modal label { font-size: 14px; font-weight: 600; display: block; margin: 12px 0 4px; }
+        .modal input, .modal select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .modal .btn-group-modal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal .btn-modal-confirm { background: #1a237e; color: white; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .modal .btn-modal-cancel { background: #eee; color: #333; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .modal .btn-modal-confirm:active { transform: scale(0.96); }
+        .modal .btn-modal-cancel:active { transform: scale(0.96); }
+        .modal .btn-libres {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 4px;
+            background: #e8f5e9;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .modal .btn-libres:active { background: #c8e6c9; }
+        .empty-state { text-align: center; padding: 20px; color: #999; font-size: 14px; }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-piloto { background: #e3f2fd; color: #0d47a1; }
+        .badge-alumno { background: #f3e5f5; color: #4a148c; }
+        .badge-libres { background: #e8f5e9; color: #1b5e20; }
+        .badge-deuda { background: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="header">
+        <h1>🪂 Gestión Viajes</h1>
+        <span class="status" id="statusSync">⬇️ Sincronizando...</span>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="search-box">
+        <span class="icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Buscar por N° o nombre..." autocomplete="off">
+    </div>
+
+    <!-- LISTA DE PILOTOS -->
+    <div class="pilotos-list" id="pilotosList">
+        <div class="empty-state">Cargando pilotos...</div>
+    </div>
+
+    <!-- INFO SELECCIONADO -->
+    <div class="selected-info" id="selectedInfo">
+        <span style="color:#999;font-size:14px;">👆 Selecciona un piloto</span>
+    </div>
+
+    <!-- BOTONES VIAJE -->
+    <div class="btn-group">
+        <button class="btn btn-escuela" id="btnEscuela">🏫 ESCUELA</button>
+        <button class="btn btn-pista" id="btnPista">🛫 PISTA</button>
+    </div>
+
+    <!-- PASAJEROS (INVITADOS) -->
+    <div class="btn-pasajeros">
+        <button id="btnRestar">−</button>
+        <span id="pasajerosCount">1</span>
+        <button id="btnSumar">+</button>
+        <span style="font-size:13px;color:#666;margin-left:8px;">viajes</span>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="btn-group">
+        <button class="btn btn-confirmar" id="btnConfirmar">✅ CONFIRMAR VIAJE</button>
+        <button class="btn btn-anular" id="btnAnular">↩️ ANULAR</button>
+    </div>
+
+    <!-- BOTONES SECUNDARIOS -->
+    <div class="btn-group">
+        <button class="btn btn-carga" id="btnCarga">💰 CARGAR CRÉDITO</button>
+        <button class="btn btn-stats" id="btnStats" onclick="window.open('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit','_blank')">📊 VER DATOS</button>
+    </div>
+
+    <!-- HISTORIAL RÁPIDO -->
+    <div class="historial" id="historial">
+        <div class="titulo">📋 Últimos viajes</div>
+        <div style="color:#999;font-size:13px;">Sin viajes registrados</div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL CARGA CRÉDITO -->
+<div class="modal-overlay" id="modalCarga">
+    <div class="modal">
+        <h2>💰 Cargar Crédito</h2>
+        <div id="modalPilotoInfo" style="background:#f5f7fa;padding:10px;border-radius:10px;margin-bottom:12px;font-size:14px;">
+            Selecciona un piloto primero
+        </div>
+        <label>Monto a cargar ($)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="btn-libres" onclick="setMonto(50000)">$50.000</button>
+            <button class="btn-libres" onclick="setMonto(100000)">$100.000</button>
+            <button class="btn-libres" onclick="setMonto(200000)">$200.000</button>
+        </div>
+        <input type="number" id="montoInput" placeholder="Ingresa un monto..." min="0" step="1000">
+        
+        <label style="margin-top:16px;">🎁 Viajes libres extra</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <button class="btn-libres" onclick="addLibres(1)">+1</button>
+            <button class="btn-libres" onclick="addLibres(3)">+3</button>
+            <button class="btn-libres" onclick="addLibres(5)">+5</button>
+            <button class="btn-libres" onclick="addLibres(10)">+10</button>
+        </div>
+        <input type="number" id="libresInput" placeholder="Cantidad personalizada..." min="0" step="1">
+        
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" onclick="confirmarCarga()">✅ Aplicar</button>
+            <button class="btn-modal-cancel" onclick="cerrarModal()">❌ Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN - REEMPLAZA CON TU ID DE GOOGLE SHEETS
+// ============================================================
+const SHEET_ID = 11g9YiD2-BYXLZolRSYr_FAV7aliU5TuoUbKyKHenHJo; // <--- CAMBIA ESTO
+
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+let pilotos = [];
+let lotes = [];
+let viajes = [];
+let config = {};
+let selectedPiloto = null;
+let tipoViaje = null;
+let pasajeros = 1;
+let ultimoViaje = null;
+let editando = false;
+
+// ============================================================
+// FUNCIONES DE GOOGLE SHEETS (API)
+// ============================================================
+async function fetchSheet(sheetName) {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    const resp = await fetch(url);
+    const text = await resp.text();
+    const json = JSON.parse(text.substring(47, text.length - 2));
+    const rows = json.table.rows;
+    if (!rows || rows.length === 0) return [];
+    const cols = json.table.cols.map(c => c.label);
+    return rows.map(row => {
+        const obj = {};
+        cols.forEach((col, i) => {
+            const val = row.c[i] ? row.c[i].v : null;
+            obj[col] = val;
+        });
+        return obj;
+    });
+}
+
+async function updateSheet(sheetName, data) {
+    // Para simplificar, usamos append con POST (requiere script intermedio)
+    // En esta versión usamos un enfoque más simple: guardamos en localStorage
+    // y sincronizamos manualmente con Google Sheets via copiar/pegar
+    console.log('Guardando en localStorage (modo offline)');
+    localStorage.setItem(sheetName, JSON.stringify(data));
+}
+
+// ============================================================
+// CARGA DE DATOS
+// ============================================================
+async function loadAllData() {
+    try {
+        document.getElementById('statusSync').textContent = '⬇️ Cargando...';
+        
+        // Intentar cargar desde Sheets
+        const pilotosData = await fetchSheet('Pilotos');
+        const configData = await fetchSheet('Configuracion');
+        const lotesData = await fetchSheet('Lotes');
+        const viajesData = await fetchSheet('Viajes');
+        
+        if (pilotosData.length > 0) {
+            pilotos = pilotosData.map(p => ({
+                numero: String(p.Numero || ''),
+                nombre: p.Nombre || '',
+                categoria: p.Categoria || 'piloto',
+                viajesLibres: Number(p.ViajesLibres) || 0,
+                deuda: Number(p.Deuda) || 0
+            }));
+        } else {
+            // Datos de ejemplo si no hay conexión
+            pilotos = [
+                { numero: '1', nombre: 'Juan Pérez', categoria: 'piloto', viajesLibres: 0, deuda: 0 },
+                { numero: '2', nombre: 'María Gómez', categoria: 'alumno', viajesLibres: 10, deuda: 0 },
+                { numero: '3', nombre: 'Carlos Ruiz', categoria: 'piloto', viajesLibres: 2, deuda: 0 },
+                { numero: '4', nombre: 'Ana López', categoria: 'piloto', viajesLibres: 0, deuda: 0 }
+            ];
+        }
+        
+        if (configData.length > 0) {
+            config = {};
+            configData.forEach(row => {
+                config[row.Parametro] = Number(row.Valor) || row.Valor;
+            });
+        } else {
+            config = {
+                PrecioEscuela: 10000,
+                PrecioPista: 15000,
+                Escala1_Monto: 50000,
+                Escala1_Descuento: 10,
+                Escala2_Monto: 100000,
+                Escala2_Descuento: 15,
+                ViajesLibresAlumnos: 10
+            };
+        }
+        
+        if (lotesData.length > 0) {
+            lotes = lotesData.map(l => ({
+                socio: String(l.Numero || ''),
+                loteId: l.Lote_ID || '',
+                monto: Number(l.Monto_Cargado) || 0,
+                descuento: Number(l.Porcentaje_Descuento) || 0,
+                saldo: Number(l.Saldo_Disponible) || 0,
+                fecha: l.Fecha_Carga || new Date().toISOString().split('T')[0]
+            }));
+        } else {
+            // Lotes de ejemplo
+            lotes = [
+                { socio: '1', loteId: 'L1', monto: 50000, descuento: 10, saldo: 50000, fecha: '2026-08-27' }
+            ];
+        }
+        
+        if (viajesData.length > 0) {
+            viajes = viajesData.map(v => ({
+                fecha: v.Fecha || new Date().toISOString(),
+                socio: String(v.Numero || ''),
+                nombre: v.Nombre || '',
+                tipo: v.Tipo || 'escuela',
+                pasajeros: Number(v.Pasajeros) || 1,
+                precio: Number(v.Precio_Unitario) || 0,
+                total: Number(v.Total) || 0,
+                descuento: v.Dto_Aplicado || '0%',
+                lote: v.Lote_Usado || '',
+                deuda: Number(v.Deuda_Generada) || 0,
+                gratis: v.Gratis === 'TRUE' || v.Gratis === true
+            }));
+        }
+        
+        document.getElementById('statusSync').textContent = '✅ Datos cargados';
+        renderPilotos();
+        updateHistorial();
+    } catch (e) {
+        console.error('Error cargando datos:', e);
+        document.getElementById('statusSync').textContent = '⚠️ Offline (datos locales)';
+        // Usar datos de localStorage si existen
+        const saved = localStorage.getItem('pilotos');
+        if (saved) {
+            pilotos = JSON.parse(saved);
+            renderPilotos();
+        }
+    }
+}
+
+// ============================================================
+// RENDERIZADO
+// ============================================================
+function renderPilotos(filter = '') {
+    const list = document.getElementById('pilotosList');
+    const filtered = pilotos.filter(p => {
+        const search = filter.toLowerCase().trim();
+        if (!search) return true;
+        return p.nombre.toLowerCase().includes(search) || p.numero.includes(search);
+    });
+    
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state">No se encontraron pilotos</div>';
+        return;
+    }
+    
+    list.innerHTML = filtered.map(p => {
+        const selected = selectedPiloto && selectedPiloto.numero === p.numero ? 'selected' : '';
+        const saldo = getSaldo(p.numero);
+        const deuda = p.deuda || 0;
+        const libres = p.viajesLibres || 0;
+        const categoriaBadge = p.categoria === 'alumno' ? 'badge-alumno' : 'badge-piloto';
+        
+        return `
+            <div class="piloto-item ${selected}" data-numero="${p.numero}" onclick="selectPiloto('${p.numero}')">
+                <div class="info">
+                    <span class="nombre">${p.numero} - ${p.nombre}</span>
+                    <span>
+                        <span class="badge ${categoriaBadge}">${p.categoria}</span>
+                        ${libres > 0 ? `<span class="badge badge-libres">🎁 ${libres} libres</span>` : ''}
+                        ${deuda > 0 ? `<span class="badge badge-deuda">💳 $${deuda}</span>` : ''}
+                    </span>
+                </div>
+                <span class="saldo ${saldo < 0 ? 'negativo' : ''}">$${saldo}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function getSaldo(numero) {
+    const lotesPiloto = lotes.filter(l => l.socio === numero);
+    const total = lotesPiloto.reduce((acc, l) => acc + (l.saldo || 0), 0);
+    return total;
+}
+
+function updateSelectedInfo() {
+    const info = document.getElementById('selectedInfo');
+    if (!selectedPiloto) {
+        info.innerHTML = `<span style="color:#999;font-size:14px;">👆 Selecciona un piloto</span>`;
+        return;
+    }
+    const saldo = getSaldo(selectedPiloto.numero);
+    const deuda = selectedPiloto.deuda || 0;
+    const libres = selectedPiloto.viajesLibres || 0;
+    const descuento = getDescuentoParaPiloto(selectedPiloto.numero);
+    
+    info.innerHTML = `
+        <span class="nombre">${selectedPiloto.numero} - ${selectedPiloto.nombre}</span>
+        <div style="text-align:right;">
+            <div class="credito">💰 $${saldo} ${descuento > 0 ? `(${descuento}% dto)` : ''}</div>
+            ${deuda > 0 ? `<div class="deuda">💳 Deuda: $${deuda}</div>` : ''}
+            ${libres > 0 ? `<div class="libres">🎁 ${libres} viajes libres</div>` : ''}
+        </div>
+    `;
+}
+
+function updateHistorial() {
+    const container = document.getElementById('historial');
+    const ultimos = viajes.slice(-5).reverse();
+    if (ultimos.length === 0) {
+        container.innerHTML = `
+            <div class="titulo">📋 Últimos viajes</div>
+            <div style="color:#999;font-size:13px;">Sin viajes registrados</div>
+        `;
+        return;
+    }
+    container.innerHTML = `
+        <div class="titulo">📋 Últimos viajes</div>
+        ${ultimos.map(v => `
+            <div class="item">
+                <span>${v.numero} - ${v.nombre}</span>
+                <span>${v.tipo} $${v.total} ${v.gratis ? '🎁' : ''}</span>
+            </div>
+        `).join('')}
+    `;
+}
+
+// ============================================================
+// LÓGICA DE DESCUENTOS
+// ============================================================
+function getDescuentoPorMonto(monto) {
+    const m1 = config.Escala1_Monto || 50000;
+    const d1 = config.Escala1_Descuento || 10;
+    const m2 = config.Escala2_Monto || 100000;
+    const d2 = config.Escala2_Descuento || 15;
+    
+    if (monto >= m2) return d2;
+    if (monto >= m1) return d1;
+    return 0;
+}
+
+function getDescuentoParaPiloto(numero) {
+    const lotesPiloto = lotes.filter(l => l.socio === numero && l.saldo > 0);
+    if (lotesPiloto.length === 0) return 0;
+    // Ordenar por fecha (FIFO) y tomar el primero con saldo
+    lotesPiloto.sort((a, b) => a.fecha.localeCompare(b.fecha));
+    return lotesPiloto[0].descuento || 0;
+}
+
+function getPrecioConDescuento(tipo, numero) {
+    const precioBase = tipo === 'escuela' ? (config.PrecioEscuela || 10000) : (config.PrecioPista || 15000);
+    const descuento = getDescuentoParaPiloto(numero);
+    return Math.round(precioBase * (1 - descuento / 100));
+}
+
+function getPrecioLista(tipo) {
+    return tipo === 'escuela' ? (config.PrecioEscuela || 10000) : (config.PrecioPista || 15000);
+}
+
+// ============================================================
+// SELECCIÓN Y NAVEGACIÓN
+// ============================================================
+function selectPiloto(numero) {
+    selectedPiloto = pilotos.find(p => p.numero === numero);
+    if (selectedPiloto) {
+        renderPilotos(document.getElementById('searchInput').value);
+        updateSelectedInfo();
+        // Resetear selección de tipo de viaje
+        tipoViaje = null;
+        document.getElementById('btnEscuela').classList.remove('active');
+        document.getElementById('btnPista').classList.remove('active');
+    }
+}
+
+function setTipoViaje(tipo) {
+    if (!selectedPiloto) {
+        showToast('⚠️ Primero selecciona un piloto');
+        return;
+    }
+    tipoViaje = tipo;
+    document.getElementById('btnEscuela').classList.toggle('active', tipo === 'escuela');
+    document.getElementById('btnPista').classList.toggle('active', tipo === 'pista');
+}
+
+// ============================================================
+// CONFIRMAR VIAJE (LÓGICA PRINCIPAL)
+// ============================================================
+async function confirmarViaje() {
+    if (!selectedPiloto) {
+        showToast('⚠️ Selecciona un piloto');
+        return;
+    }
+    if (!tipoViaje) {
+        showToast('⚠️ Selecciona tipo de viaje');
+        return;
+    }
+    
+    const piloto = selectedPiloto;
+    const cantidad = pasajeros;
+    const precioLista = getPrecioLista(tipoViaje);
+    const viajesGratis = piloto.viajesLibres || 0;
+    
+    // Si tiene viajes libres, usar uno
+    if (viajesGratis > 0) {
+        piloto.viajesLibres = viajesGratis - 1;
+        const viaje = {
+            fecha: new Date().toISOString(),
+            socio: piloto.numero,
+            nombre: piloto.nombre,
+            tipo: tipoViaje,
+            pasajeros: 1,
+            precio: 0,
+            total: 0,
+            descuento: '100%',
+            lote: 'GRATIS',
+            deuda: 0,
+            gratis: true
+        };
+        viajes.push(viaje);
+        ultimoViaje = viaje;
+        updateSelectedInfo();
+        renderPilotos(document.getElementById('searchInput').value);
+        updateHistorial();
+        saveData();
+        showToast(`🎁 Viaje gratis para ${piloto.nombre} (${viajesGratis-1} restantes)`);
+        return;
+    }
+    
+    // Sistema de lotes
+    let deudaGenerada = 0;
+    let totalCobrado = 0;
+    let descuentoAplicado = 0;
+    let loteUsado = '';
+    let viajesProcesados = 0;
+    
+    for (let i = 0; i < cantidad; i++) {
+        const lotesPiloto = lotes.filter(l => l.socio === piloto.numero && l.saldo > 0);
+        lotesPiloto.sort((a, b) => a.fecha.localeCompare(b.fecha));
+        
+        if (lotesPiloto.length === 0) {
+            // Sin crédito: precio lista y genera deuda
+            const precio = precioLista;
+            deudaGenerada += precio;
+            piloto.deuda = (piloto.deuda || 0) + precio;
+            totalCobrado += precio;
+            viajesProcesados++;
+            const viaje = {
+                fecha: new Date().toISOString(),
+                socio: piloto.numero,
+                nombre: piloto.nombre,
+                tipo: tipoViaje,
+                pasajeros: 1,
+                precio: precio,
+                total: precio,
+                descuento: '0%',
+                lote: 'SIN LOTE',
+                deuda: precio,
+                gratis: false
+            };
+            viajes.push(viaje);
+            ultimoViaje = viaje;
+            showToast(`💳 Viaje ${i+1}/${cantidad}: Deuda $${precio} generada`);
+            continue;
+        }
+        
+        // Tomar el primer lote con saldo
+        const lote = lotesPiloto[0];
+        const descuento = lote.descuento || 0;
+        const precioConDto = Math.round(precioLista * (1 - descuento / 100));
+        const saldoLote = lote.saldo || 0;
+        
+        let precioAplicar = precioConDto;
+        let pagoLote = 0;
+        let deudaParcial = 0;
+        
+        if (saldoLote >= precioConDto) {
+            // El lote cubre completamente el viaje
+            pagoLote = precioConDto;
+            lote.saldo = saldoLote - precioConDto;
+            totalCobrado += precioConDto;
+            descuentoAplicado = descuento;
+            loteUsado = lote.loteId;
+        } else {
+            // El lote no cubre todo
+            if (saldoLote > 0) {
+                pagoLote = saldoLote;
+                lote.saldo = 0;
+                const faltante = precioConDto - saldoLote;
+                deudaGenerada += faltante;
+                piloto.deuda = (piloto.deuda || 0) + faltante;
+                totalCobrado += precioConDto;
+                descuentoAplicado = descuento;
+                loteUsado = lote.loteId + '+';
+                showToast(`⚠️ Lote ${lote.loteId} insuficiente, deuda $${faltante}`);
+            } else {
+                // Lote vacío, pasar al siguiente
+                continue;
+            }
+        }
+        
+        viajesProcesados++;
+        const viaje = {
+            fecha: new Date().toISOString(),
+            socio: piloto.numero,
+            nombre: piloto.nombre,
+            tipo: tipoViaje,
+            pasajeros: 1,
+            precio: precioConDto,
+            total: precioConDto,
+            descuento: descuento
