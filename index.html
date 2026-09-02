@@ -3,319 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🪂 Gestión de Viajes</title>
+    <title>✈️ Panel de Vuelo</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f4e9d8">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Quicksand:wght@500;700&display=swap');
+
+        :root {
+            --parchment: #f4e9d8;
+            --parchment-dark: #e9d9bd;
+            --wood: #8b5e34;
+            --wood-dark: #6b4423;
+            --brass: #d9a441;
+            --brass-dark: #b8842e;
+            --sky: #7ec8e3;
+            --sky-dark: #4f9bc0;
+            --coral: #e17055;
+            --coral-dark: #c2543b;
+            --sage: #7fa66b;
+            --sage-dark: #5f8a4c;
+            --ink: #4a3f35;
+            --ink-soft: #8a7a68;
+            --cream: #fffaf0;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #f5f7fa;
-            padding: 12px;
-            padding-bottom: 80px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 500;
+            background: radial-gradient(circle at 20% 0%, #fdf3e0 0%, var(--parchment) 45%, var(--parchment-dark) 100%);
+            color: var(--ink);
+            padding: 14px;
+            padding-bottom: 90px;
             max-width: 480px;
             margin: 0 auto;
             min-height: 100vh;
             touch-action: manipulation;
+            position: relative;
+            overflow-x: hidden;
         }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .header h1 { font-size: 22px; color: #1a237e; }
-        .header .status { font-size: 12px; color: #666; }
+        /* nubes pintadas de fondo, decorativas */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(18px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+        body::before { width: 180px; height: 90px; background: #fff; top: 40px; left: -40px; }
+        body::after { width: 220px; height: 100px; background: #fff; bottom: 60px; right: -50px; }
+
+        .panel {
+            background: linear-gradient(170deg, var(--cream), var(--parchment));
+            border: 3px solid var(--wood);
+            border-radius: 20px;
+            box-shadow: 0 4px 0 var(--wood-dark), 0 6px 14px rgba(107,68,35,0.25);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+        .placa {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 12px;
+            color: var(--wood-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header { text-align: center; margin-bottom: 14px; }
+        .header h1 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 24px;
+            color: var(--wood-dark);
+            letter-spacing: 0.5px;
+        }
+        .header .status {
+            font-size: 12px;
+            color: var(--sage-dark);
+            margin-top: 4px;
+            font-weight: 700;
+        }
+        .header .status.offline { color: var(--brass-dark); }
+        .header .status.error { color: var(--coral-dark); }
+
+        /* ===== BUSCADOR ===== */
+        .search-wrap { position: relative; margin-bottom: 12px; }
         .search-box {
-            background: white;
-            border-radius: 12px;
-            padding: 8px 16px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            background: var(--cream);
+            border: 3px solid var(--brass);
+            border-radius: 30px;
+            box-shadow: inset 0 2px 4px rgba(107,68,35,0.15), 0 3px 0 var(--brass-dark);
+            padding: 10px 18px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .search-box .icon { font-size: 17px; }
         .search-box input {
             border: none;
             outline: none;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
             font-size: 16px;
             width: 100%;
             background: transparent;
-            padding: 6px 0;
+            color: var(--ink);
         }
-        .search-box .icon { font-size: 18px; color: #999; }
+        .search-box input::placeholder { color: var(--ink-soft); font-weight: 500; }
+
         .pilotos-list {
-            background: white;
-            border-radius: 12px;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            background: var(--cream);
+            border: 3px solid var(--brass);
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(107,68,35,0.3);
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-bottom: 12px;
-            max-height: 200px;
+            max-height: 280px;
             overflow-y: auto;
+            z-index: 50;
+            display: none;
         }
+        .pilotos-list.show { display: block; }
         .piloto-item {
             padding: 10px 14px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 2px dashed var(--parchment-dark);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            transition: background 0.15s;
-            touch-action: manipulation;
-        }
-        .piloto-item:active { background: #e8eaf6; }
-        .piloto-item.selected { background: #e8eaf6; border-left: 4px solid #3949ab; }
-        .piloto-item .info { display: flex; flex-direction: column; gap: 2px; }
-        .piloto-item .nombre { font-weight: 600; font-size: 15px; }
-        .piloto-item .detalle { font-size: 12px; color: #666; }
-        .piloto-item .saldo { font-weight: 700; font-size: 15px; color: #1a237e; }
-        .piloto-item .saldo.negativo { color: #c62828; }
-        .selected-info {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        .selected-info .nombre { font-weight: 700; font-size: 16px; }
-        .selected-info .credito { font-size: 14px; color: #333; }
-        .selected-info .deuda { font-size: 13px; color: #c62828; }
-        .selected-info .libres { font-size: 13px; color: #2e7d32; }
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 12px;
-        }
-        .btn-group .btn-full { grid-column: 1 / -1; }
-        .btn {
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s;
-            touch-action: manipulation;
-            text-align: center;
-            user-select: none;
         }
-        .btn:active { transform: scale(0.96); }
-        .btn-escuela { background: #e3f2fd; color: #0d47a1; }
-        .btn-escuela.active { background: #0d47a1; color: white; }
-        .btn-pista { background: #fff3e0; color: #e65100; }
-        .btn-pista.active { background: #e65100; color: white; }
-        .btn-confirmar { background: #1a237e; color: white; padding: 16px; font-size: 17px; }
-        .btn-anular { background: #ffebee; color: #c62828; }
-        .btn-carga { background: #e8f5e9; color: #1b5e20; }
-        .btn-stats { background: #f3e5f5; color: #4a148c; }
-        .btn-pasajeros {
-            background: white;
-            border: 2px solid #ddd;
-            padding: 10px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            font-size: 18px;
-            margin-bottom: 12px;
+        .piloto-item:active { background: var(--parchment); }
+        .piloto-item .info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+        .piloto-item .nombre { font-weight: 700; font-size: 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .piloto-item .detalle { font-size: 11px; color: var(--ink-soft); font-style: italic; }
+        .mini-tanque { width: 60px; height: 9px; background: var(--parchment-dark); border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
+        .mini-tanque .relleno { height: 100%; border-radius: 6px; transition: width 0.3s; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-right: 4px; }
+        .badge-alumno { background: #e6d9f5; color: #6b4a99; }
+        .badge-libres { background: #dcecd4; color: var(--sage-dark); }
+        .badge-deuda { background: #fbdbd2; color: var(--coral-dark); }
+        .badge-manual { background: #fbeecb; color: var(--brass-dark); }
+        .empty-state { text-align: center; padding: 20px; color: var(--ink-soft); font-size: 13px; }
+
+        /* ===== INSTRUMENTO DE CRÉDITO ===== */
+        .selected-info { text-align: center; }
+        .selected-info .placa-nombre { font-family: 'Baloo 2', sans-serif; font-size: 16px; color: var(--wood-dark); margin-bottom: 10px; }
+        .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+        .gauge-case {
+            width: 176px; padding: 10px 10px 4px;
+            background: radial-gradient(circle at 50% 20%, #fffaf0, var(--parchment-dark) 85%);
+            border: 4px solid var(--brass);
+            border-radius: 14px;
+            box-shadow: inset 0 0 10px rgba(107,68,35,0.2), 0 3px 0 var(--brass-dark);
         }
-        .btn-pasajeros button {
-            background: #f0f0f0;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 20px;
-            font-weight: 700;
+        .zona-roja { stroke: #f3a58e; stroke-width: 16; fill: none; }
+        .zona-ambar { stroke: #f7cf7a; stroke-width: 16; fill: none; }
+        .zona-verde { stroke: #a9cf95; stroke-width: 16; fill: none; }
+        .tick { stroke: var(--wood); stroke-width: 3; }
+        .aguja { stroke: var(--wood-dark); stroke-width: 5; stroke-linecap: round; }
+        .eje { fill: var(--brass); stroke: var(--wood-dark); stroke-width: 2; }
+        svg.gauge-vacio .aguja { stroke: var(--coral-dark); }
+        svg.gauge-vacio { animation: parpadeo 1.1s infinite; }
+        @keyframes parpadeo { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .gauge-labels { display: flex; justify-content: space-between; width: 156px; margin: 2px auto 0; font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+        .gauge-lectura { font-family: 'Baloo 2', sans-serif; font-size: 22px; color: var(--wood-dark); margin-top: 8px; }
+        .lamparas { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .lampara { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 12px; }
+        .lampara.roja { background: #fbdbd2; color: var(--coral-dark); }
+        .lampara.verde { background: #dcecd4; color: var(--sage-dark); }
+
+        /* ===== INTERRUPTORES ESCUELA/PISTA ===== */
+        .switches { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .switch-btn {
+            background: var(--cream);
+            border: 3px solid var(--parchment-dark);
+            border-radius: 16px;
+            box-shadow: 0 3px 0 var(--parchment-dark);
+            padding: 12px 8px;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 13px;
+            color: var(--ink-soft);
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
             cursor: pointer;
-            touch-action: manipulation;
         }
-        .btn-pasajeros button:active { background: #ddd; }
-        .btn-pasajeros span { font-weight: 700; min-width: 30px; text-align: center; }
-        .historial {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            margin-top: 12px;
+        .switch-btn.active { color: var(--wood-dark); border-color: var(--sky); box-shadow: 0 3px 0 var(--sky-dark); background: #eaf6fb; }
+        .switch-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* ===== CONTADOR ===== */
+        .contador { display: flex; align-items: center; justify-content: center; gap: 18px; }
+        .perilla {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--brass);
+            border: 3px solid var(--brass-dark);
+            box-shadow: 0 3px 0 var(--brass-dark);
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 20px; color: var(--cream);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
         }
-        .historial .titulo { font-size: 13px; color: #999; margin-bottom: 6px; }
-        .historial .item { font-size: 14px; padding: 4px 0; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #323232;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
+        .perilla:active { transform: translateY(2px); box-shadow: none; }
+        .contador span.valor { font-family: 'Baloo 2', sans-serif; font-size: 24px; color: var(--wood-dark); min-width: 34px; text-align: center; }
+        .contador .etq { font-size: 11px; color: var(--ink-soft); text-align: center; font-weight: 700; }
+
+        /* ===== BOTONERA ===== */
+        .accion-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+        .btn-accion {
+            border: none;
+            border-radius: 18px;
+            padding: 16px 8px;
+            font-family: 'Baloo 2', sans-serif;
             font-size: 14px;
+            cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: var(--cream);
+        }
+        .btn-accion:active { transform: translateY(3px); }
+        .btn-accion .icono { font-size: 24px; }
+        .btn-despegar { background: var(--sage); box-shadow: 0 4px 0 var(--sage-dark); }
+        .btn-despegar:active { box-shadow: 0 1px 0 var(--sage-dark); }
+        .btn-deshacer { background: var(--coral); box-shadow: 0 4px 0 var(--coral-dark); }
+        .btn-deshacer:active { box-shadow: 0 1px 0 var(--coral-dark); }
+        .btn-fuel { background: var(--brass); box-shadow: 0 4px 0 var(--brass-dark); }
+        .btn-fuel:active { box-shadow: 0 1px 0 var(--brass-dark); }
+        .btn-legajo { background: var(--sky); box-shadow: 0 4px 0 var(--sky-dark); }
+        .btn-legajo:active { box-shadow: 0 1px 0 var(--sky-dark); }
+        .btn-datos { background: var(--wood); box-shadow: 0 4px 0 var(--wood-dark); }
+        .btn-datos:active { box-shadow: 0 1px 0 var(--wood-dark); }
+        .full-width { grid-column: 1 / -1; }
+
+        /* ===== BITÁCORA ===== */
+        .historial .titulo { font-family: 'Baloo 2', sans-serif; font-size: 13px; color: var(--wood-dark); margin-bottom: 8px; }
+        .historial .item { font-size: 13px; padding: 6px 0; border-bottom: 2px dashed var(--parchment-dark); display: flex; justify-content: space-between; }
+
+        /* ===== ALERTA (toast) ===== */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--wood-dark);
+            color: var(--cream);
+            padding: 11px 22px;
+            border-radius: 20px;
+            font-size: 14px; font-weight: 700;
             max-width: 90%;
             z-index: 999;
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
         .toast.show { opacity: 1; }
+
+        /* ===== MODALES ===== */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(74,63,53,0.5);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
         }
         .modal-overlay.show { display: flex; }
         .modal {
-            background: white;
-            border-radius: 20px;
-            padding: 24px;
-            max-width: 400px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
+            background: var(--parchment);
+            border: 4px solid var(--wood);
+            border-radius: 24px;
+            padding: 22px;
+            max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 8px 0 var(--wood-dark);
         }
-        .modal h2 { font-size: 20px; margin-bottom: 16px; color: #1a237e; }
-        .modal label { font-size: 14px; font-weight: 600; display: block; margin: 12px 0 4px; }
-        .modal input, .modal select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
+        .modal h2 { font-family: 'Baloo 2', sans-serif; font-size: 18px; margin-bottom: 14px; color: var(--wood-dark); }
+        .modal label { font-size: 12px; font-weight: 700; color: var(--ink-soft); display: block; margin: 12px 0 4px; }
+        .modal input {
+            width: 100%; padding: 11px 14px; border: 3px solid var(--brass); border-radius: 14px;
+            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 15px;
+            background: var(--cream); color: var(--ink);
         }
-        .modal .btn-group-modal {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 16px;
-        }
-        .modal .btn-modal-confirm { background: #1a237e; color: white; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .modal .btn-modal-cancel { background: #eee; color: #333; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .modal .btn-modal-confirm:active { transform: scale(0.96); }
-        .modal .btn-modal-cancel:active { transform: scale(0.96); }
-        .modal .btn-libres {
-            display: inline-block;
-            padding: 8px 16px;
-            margin: 4px;
-            background: #e8f5e9;
-            border: 2px solid #a5d6a7;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+        .modal-hint { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; }
+        .btn-group-modal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+        .btn-modal-confirm { background: var(--sage); color: var(--cream); padding: 13px; border: none; border-radius: 16px; font-family: 'Baloo 2', sans-serif; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 var(--sage-dark); }
+        .btn-modal-cancel { background: var(--coral); color: var(--cream); padding: 13px; border: none; border-radius: 16px; font-family: 'Baloo 2', sans-serif; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 var(--coral-dark); }
+        .btn-chip {
+            display: inline-block; padding: 8px 14px; margin: 3px 3px 3px 0;
+            background: var(--cream); border: 2px solid var(--brass);
+            border-radius: 14px; font-size: 13px; font-weight: 700; color: var(--wood-dark);
             cursor: pointer;
-            touch-action: manipulation;
         }
-        .modal .btn-libres:active { background: #c8e6c9; }
-        .empty-state { text-align: center; padding: 20px; color: #999; font-size: 14px; }
-        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .badge-piloto { background: #e3f2fd; color: #0d47a1; }
-        .badge-alumno { background: #f3e5f5; color: #4a148c; }
-        .badge-libres { background: #e8f5e9; color: #1b5e20; }
-        .badge-deuda { background: #ffebee; color: #c62828; }
+        .btn-chip.quitar { border-color: var(--coral); color: var(--coral-dark); }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div class="header">
-        <h1>🪂 Gestión Viajes</h1>
-        <span class="status" id="statusSync">⬇️ Sincronizando...</span>
+        <div style="font-size:32px;">🛩️</div>
+        <h1>Panel de Vuelo</h1>
+        <div class="status" id="statusSync">⬇️ Enlazando...</div>
     </div>
 
-    <!-- BUSCADOR -->
-    <div class="search-box">
-        <span class="icon">🔍</span>
-        <input type="text" id="searchInput" placeholder="Buscar por N° o nombre..." autocomplete="off">
+    <div class="search-wrap">
+        <div class="search-box">
+            <span class="icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar piloto: N° / nombre / alias..." autocomplete="off">
+        </div>
+        <div class="pilotos-list" id="pilotosList"></div>
     </div>
 
-    <!-- LISTA DE PILOTOS -->
-    <div class="pilotos-list" id="pilotosList">
-        <div class="empty-state">Cargando pilotos...</div>
+    <div class="panel">
+        <div class="placa">⛽ Instrumento — piloto activo</div>
+        <div class="selected-info" id="selectedInfo">
+            <span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>
+        </div>
     </div>
 
-    <!-- INFO SELECCIONADO -->
-    <div class="selected-info" id="selectedInfo">
-        <span style="color:#999;font-size:14px;">👆 Selecciona un piloto</span>
+    <div class="switches">
+        <button class="switch-btn" id="btnEscuela">🏫<span>ESCUELA</span></button>
+        <button class="switch-btn" id="btnPista">🛬<span>PISTA</span></button>
     </div>
 
-    <!-- BOTONES VIAJE -->
-    <div class="btn-group">
-        <button class="btn btn-escuela" id="btnEscuela">🏫 ESCUELA</button>
-        <button class="btn btn-pista" id="btnPista">🛫 PISTA</button>
+    <div class="panel contador">
+        <button class="perilla" id="btnRestar">−</button>
+        <div>
+            <div class="etq">SUBIDAS</div>
+            <span class="valor" id="pasajerosCount">1</span>
+        </div>
+        <button class="perilla" id="btnSumar">+</button>
     </div>
 
-    <!-- PASAJEROS (INVITADOS) -->
-    <div class="btn-pasajeros">
-        <button id="btnRestar">−</button>
-        <span id="pasajerosCount">1</span>
-        <button id="btnSumar">+</button>
-        <span style="font-size:13px;color:#666;margin-left:8px;">viajes</span>
+    <div class="accion-group">
+        <button class="btn-accion btn-despegar" id="btnConfirmar"><span class="icono">🛫</span>DESPEGAR</button>
+        <button class="btn-accion btn-deshacer" id="btnAnular"><span class="icono">↩️</span>DESHACER</button>
     </div>
 
-    <!-- ACCIONES -->
-    <div class="btn-group">
-        <button class="btn btn-confirmar" id="btnConfirmar">✅ CONFIRMAR VIAJE</button>
-        <button class="btn btn-anular" id="btnAnular">↩️ ANULAR</button>
+    <div class="accion-group">
+        <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">🪙</span>CARGAR CRÉDITO</button>
+        <button class="btn-accion btn-legajo" id="btnEditar"><span class="icono">🥽</span>FICHA</button>
     </div>
 
-    <!-- BOTONES SECUNDARIOS -->
-    <div class="btn-group">
-        <button class="btn btn-carga" id="btnCarga">💰 CARGAR CRÉDITO</button>
-        <button class="btn btn-stats" id="btnStats" onclick="window.open('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit','_blank')">📊 VER DATOS</button>
+    <div class="accion-group">
+        <button class="btn-accion btn-datos full-width" id="btnStats"><span class="icono">🗺️</span>VER BITÁCORA COMPLETA</button>
     </div>
 
-    <!-- HISTORIAL RÁPIDO -->
-    <div class="historial" id="historial">
-        <div class="titulo">📋 Últimos viajes</div>
-        <div style="color:#999;font-size:13px;">Sin viajes registrados</div>
+    <div class="panel historial" id="historial">
+        <div class="titulo">📋 Últimas subidas</div>
+        <div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>
     </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- MODAL CARGA CRÉDITO -->
 <div class="modal-overlay" id="modalCarga">
     <div class="modal">
-        <h2>💰 Cargar Crédito</h2>
-        <div id="modalPilotoInfo" style="background:#f5f7fa;padding:10px;border-radius:10px;margin-bottom:12px;font-size:14px;">
-            Selecciona un piloto primero
-        </div>
+        <h2>🪙 Cargar crédito</h2>
+        <div id="modalPilotoInfo" style="background:var(--cream);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--wood-dark);"></div>
         <label>Monto a cargar ($)</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-            <button class="btn-libres" onclick="setMonto(50000)">$50.000</button>
-            <button class="btn-libres" onclick="setMonto(100000)">$100.000</button>
-            <button class="btn-libres" onclick="setMonto(200000)">$200.000</button>
+        <div>
+            <button type="button" class="btn-chip" data-monto="25000">$25.000</button>
+            <button type="button" class="btn-chip" data-monto="50000">$50.000</button>
+            <button type="button" class="btn-chip" data-monto="100000">$100.000</button>
+            <button type="button" class="btn-chip" data-monto="150000">$150.000</button>
+            <button type="button" class="btn-chip" data-monto="200000">$200.000</button>
         </div>
-        <input type="number" id="montoInput" placeholder="Ingresa un monto..." min="0" step="1000">
-        
-        <label style="margin-top:16px;">🎁 Viajes libres extra</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-            <button class="btn-libres" onclick="addLibres(1)">+1</button>
-            <button class="btn-libres" onclick="addLibres(3)">+3</button>
-            <button class="btn-libres" onclick="addLibres(5)">+5</button>
-            <button class="btn-libres" onclick="addLibres(10)">+10</button>
+        <input type="number" id="montoInput" placeholder="Otro monto..." min="0" step="1000">
+        <div class="modal-hint" id="hintDeuda"></div>
+
+        <label style="margin-top:16px;">🎁 Subidas libres extra</label>
+        <div>
+            <button type="button" class="btn-chip" data-libres="1">+1</button>
+            <button type="button" class="btn-chip" data-libres="3">+3</button>
+            <button type="button" class="btn-chip" data-libres="5">+5</button>
+            <button type="button" class="btn-chip" data-libres="10">+10</button>
         </div>
         <input type="number" id="libresInput" placeholder="Cantidad personalizada..." min="0" step="1">
-        
+
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" onclick="confirmarCarga()">✅ Aplicar</button>
-            <button class="btn-modal-cancel" onclick="cerrarModal()">❌ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnAplicarCarga">✅ Aplicar</button>
+            <button class="btn-modal-cancel" id="btnCancelarCarga">✖ Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal">
+        <h2>🥽 Ficha del piloto</h2>
+        <div id="modalEditarInfo" style="background:var(--cream);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--wood-dark);"></div>
+
+        <label>Alias / apodo</label>
+        <input type="text" id="aliasInput" placeholder="Ej: 'El Colo', 'Petiso'...">
+
+        <label style="margin-top:16px;">🎯 Beneficio (descuento) personalizado</label>
+        <div class="modal-hint">Si lo completás, este % se usa siempre para este piloto en vez del tramo por lote.</div>
+        <input type="number" id="descuentoManualInput" placeholder="Ej: 20" min="0" max="100" step="1">
+        <button type="button" class="btn-chip quitar" id="btnQuitarManual" style="margin-top:8px;">Quitar personalizado</button>
+
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarEdicion">✅ Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarEdicion">✖ Cancelar</button>
         </div>
     </div>
 </div>
 
 <script>
 // ============================================================
-// CONFIGURACIÓN - REEMPLAZA CON TU ID DE GOOGLE SHEETS
+// CONFIGURACIÓN
 // ============================================================
-const SHEET_ID = 11g9YiD2-BYXLZolRSYr_FAV7aliU5TuoUbKyKHenHJo; // <--- CAMBIA ESTO
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-USyjf2woING_IaRRKKu-ZrsFcHmiZMBWNQu0xZrYQAv9pB8I2sKNDCJMOeH9NrAU/exec';
+const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 
 // ============================================================
 // ESTADO GLOBAL
@@ -324,134 +418,196 @@ let pilotos = [];
 let lotes = [];
 let viajes = [];
 let config = {};
+let tramos = []; // [{minimo, porcentaje}], ordenado ascendente por minimo
 let selectedPiloto = null;
 let tipoViaje = null;
-let pasajeros = 1;
-let ultimoViaje = null;
-let editando = false;
+let cantidadSubidas = 1;
+let lastBatch = [];       // viajes de la última confirmación (para poder deshacer)
+let lastBatchLotesAntes = []; // snapshot de saldos de lotes antes de la confirmación (para deshacer con precisión)
+let lastBatchDeudaAntes = 0;
+let pendingSync = false;
+let pin = localStorage.getItem('pin_app') || '';
 
 // ============================================================
-// FUNCIONES DE GOOGLE SHEETS (API)
+// PIN DE ACCESO
 // ============================================================
-async function fetchSheet(sheetName) {
-    const url = https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)})}`;
-    const resp = await fetch(url);
-    const text = await resp.text();
-    const json = JSON.parse(text.substring(47, text.length - 2));
-    const rows = json.table.rows;
-    if (!rows || rows.length === 0) return [];
-    const cols = json.table.cols.map(c => c.label);
-    return rows.map(row => {
-        const obj = {};
-        cols.forEach((col, i) => {
-            const val = row.c[i] ? row.c[i].v : null;
-            obj[col] = val;
-        });
-        return obj;
-    });
+function pedirPin() {
+    const ingresado = prompt('Código de acceso de la app:');
+    if (ingresado) {
+        pin = ingresado.trim();
+        localStorage.setItem('pin_app', pin);
+    }
+    return pin;
 }
 
-async function updateSheet(sheetName, data) {
-    // Para simplificar, usamos append con POST (requiere script intermedio)
-    // En esta versión usamos un enfoque más simple: guardamos en localStorage
-    // y sincronizamos manualmente con Google Sheets via copiar/pegar
-    console.log('Guardando en localStorage (modo offline)');
-    localStorage.setItem(sheetName, JSON.stringify(data));
+// ============================================================
+// COMUNICACIÓN CON APPS SCRIPT
+// ============================================================
+async function apiGet() {
+    if (!pin) pedirPin();
+    const url = `${APPS_SCRIPT_URL}?action=getAll&pin=${encodeURIComponent(pin)}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+}
+
+async function apiSave(state) {
+    if (!pin) pedirPin();
+    const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'saveAll', pin: pin, data: JSON.stringify(state) })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data;
 }
 
 // ============================================================
 // CARGA DE DATOS
 // ============================================================
 async function loadAllData() {
+    actualizarEstadoSync('⬇️ Enlazando...', '');
     try {
-        document.getElementById('statusSync').textContent = '⬇️ Cargando...';
-        
-        // Intentar cargar desde Sheets
-        const pilotosData = await fetchSheet('Pilotos');
-        const configData = await fetchSheet('Configuracion');
-        const lotesData = await fetchSheet('Lotes');
-        const viajesData = await fetchSheet('Viajes');
-        
-        if (pilotosData.length > 0) {
-            pilotos = pilotosData.map(p => ({
-                numero: String(p.Numero || ''),
-                nombre: p.Nombre || '',
-                categoria: p.Categoria || 'piloto',
-                viajesLibres: Number(p.ViajesLibres) || 0,
-                deuda: Number(p.Deuda) || 0
-            }));
-        } else {
-            // Datos de ejemplo si no hay conexión
-            pilotos = [
-                { numero: '1', nombre: 'Juan Pérez', categoria: 'piloto', viajesLibres: 0, deuda: 0 },
-                { numero: '2', nombre: 'María Gómez', categoria: 'alumno', viajesLibres: 10, deuda: 0 },
-                { numero: '3', nombre: 'Carlos Ruiz', categoria: 'piloto', viajesLibres: 2, deuda: 0 },
-                { numero: '4', nombre: 'Ana López', categoria: 'piloto', viajesLibres: 0, deuda: 0 }
+        const data = await apiGet();
+
+        pilotos = (data.pilotos || []).map(p => ({
+            numero: String(p.Numero ?? ''),
+            nombre: p.Nombre || '',
+            alias: p.Alias || '',
+            categoria: p.Categoria || 'piloto',
+            viajesLibres: Number(p.ViajesLibres) || 0,
+            deuda: Number(p.Deuda) || 0,
+            descuentoManual: (p.Descuento_Manual === '' || p.Descuento_Manual === undefined || p.Descuento_Manual === null)
+                ? null : Number(p.Descuento_Manual)
+        }));
+
+        config = {};
+        (data.config || []).forEach(row => {
+            config[row.Parametro] = isNaN(Number(row.Valor)) ? row.Valor : Number(row.Valor);
+        });
+        if (!config.PrecioEscuela) config.PrecioEscuela = 11000;
+        if (!config.PrecioPista) config.PrecioPista = 6500;
+
+        tramos = (data.tramos || [])
+            .map(t => ({ minimo: Number(t.Monto_Minimo) || 0, porcentaje: Number(t.Porcentaje_Descuento) || 0 }))
+            .sort((a, b) => a.minimo - b.minimo);
+        if (tramos.length === 0) {
+            tramos = [
+                { minimo: 25000, porcentaje: 5 }, { minimo: 50000, porcentaje: 10 },
+                { minimo: 100000, porcentaje: 15 }, { minimo: 150000, porcentaje: 20 },
+                { minimo: 200000, porcentaje: 30 }
             ];
         }
-        
-        if (configData.length > 0) {
-            config = {};
-            configData.forEach(row => {
-                config[row.Parametro] = Number(row.Valor) || row.Valor;
-            });
-        } else {
-            config = {
-                PrecioEscuela: 10000,
-                PrecioPista: 15000,
-                Escala1_Monto: 50000,
-                Escala1_Descuento: 10,
-                Escala2_Monto: 100000,
-                Escala2_Descuento: 15,
-                ViajesLibresAlumnos: 10
-            };
-        }
-        
-        if (lotesData.length > 0) {
-            lotes = lotesData.map(l => ({
-                socio: String(l.Numero || ''),
-                loteId: l.Lote_ID || '',
-                monto: Number(l.Monto_Cargado) || 0,
-                descuento: Number(l.Porcentaje_Descuento) || 0,
-                saldo: Number(l.Saldo_Disponible) || 0,
-                fecha: l.Fecha_Carga || new Date().toISOString().split('T')[0]
-            }));
-        } else {
-            // Lotes de ejemplo
-            lotes = [
-                { socio: '1', loteId: 'L1', monto: 50000, descuento: 10, saldo: 50000, fecha: '2026-08-27' }
-            ];
-        }
-        
-        if (viajesData.length > 0) {
-            viajes = viajesData.map(v => ({
-                fecha: v.Fecha || new Date().toISOString(),
-                socio: String(v.Numero || ''),
-                nombre: v.Nombre || '',
-                tipo: v.Tipo || 'escuela',
-                pasajeros: Number(v.Pasajeros) || 1,
-                precio: Number(v.Precio_Unitario) || 0,
-                total: Number(v.Total) || 0,
-                descuento: v.Dto_Aplicado || '0%',
-                lote: v.Lote_Usado || '',
-                deuda: Number(v.Deuda_Generada) || 0,
-                gratis: v.Gratis === 'TRUE' || v.Gratis === true
-            }));
-        }
-        
-        document.getElementById('statusSync').textContent = '✅ Datos cargados';
+
+        lotes = (data.lotes || []).map(l => ({
+            socio: String(l.Numero ?? ''),
+            loteId: l.Lote_ID || '',
+            monto: Number(l.Monto_Cargado) || 0,
+            descuento: Number(l.Porcentaje_Descuento) || 0,
+            saldo: Number(l.Saldo_Disponible) || 0,
+            fecha: l.Fecha_Carga || new Date().toISOString().split('T')[0]
+        }));
+
+        viajes = (data.viajes || []).map(v => ({
+            fecha: v.Fecha || new Date().toISOString(),
+            socio: String(v.Numero ?? ''),
+            nombre: v.Nombre || '',
+            tipo: v.Origen || 'escuela',
+            precio: Number(v.Precio_Unitario) || 0,
+            total: Number(v.Total) || 0,
+            descuento: v.Dto_Aplicado || '0%',
+            lote: v.Lote_Usado || '',
+            deuda: Number(v.Deuda_Generada) || 0,
+            gratis: v.Gratis === true || v.Gratis === 'TRUE'
+        }));
+
+        guardarEnLocal();
+        pendingSync = false;
+        actualizarEstadoSync('✅ Todo enlazado', '');
         renderPilotos();
         updateHistorial();
     } catch (e) {
         console.error('Error cargando datos:', e);
-        document.getElementById('statusSync').textContent = '⚠️ Offline (datos locales)';
-        // Usar datos de localStorage si existen
-        const saved = localStorage.getItem('pilotos');
-        if (saved) {
-            pilotos = JSON.parse(saved);
+        const local = localStorage.getItem('estado_app');
+        if (local) {
+            const s = JSON.parse(local);
+            pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || [];
+            actualizarEstadoSync('☁️ Sin señal — datos locales', 'offline');
             renderPilotos();
+            updateHistorial();
+        } else {
+            actualizarEstadoSync('⚠️ Sin datos — revisá PIN/conexión', 'error');
         }
     }
+}
+
+function guardarEnLocal() {
+    localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos }));
+}
+
+function actualizarEstadoSync(msg, clase) {
+    const el = document.getElementById('statusSync');
+    el.textContent = msg;
+    el.className = 'status ' + (clase || '');
+}
+
+async function saveData(mensajeExito) {
+    guardarEnLocal();
+    try {
+        await apiSave({ pilotos: pilotosParaGuardar(), lotes: lotesParaGuardar(), viajes: viajesParaGuardar() });
+        pendingSync = false;
+        actualizarEstadoSync('✅ ' + (mensajeExito || 'Todo enlazado'), '');
+    } catch (e) {
+        pendingSync = true;
+        actualizarEstadoSync('🔄 Pendiente de enlazar', 'offline');
+    }
+}
+
+function pilotosParaGuardar() {
+    return pilotos.map(p => ({
+        Numero: p.numero, Nombre: p.nombre, Alias: p.alias || '', Categoria: p.categoria,
+        ViajesLibres: p.viajesLibres, Deuda: p.deuda,
+        Descuento_Manual: (p.descuentoManual === null || p.descuentoManual === undefined) ? '' : p.descuentoManual
+    }));
+}
+function lotesParaGuardar() {
+    return lotes.map(l => ({
+        Numero: l.socio, Lote_ID: l.loteId, Monto_Cargado: l.monto,
+        Porcentaje_Descuento: l.descuento, Saldo_Disponible: l.saldo, Fecha_Carga: l.fecha
+    }));
+}
+function viajesParaGuardar() {
+    return viajes.map(v => ({
+        Fecha: v.fecha, Numero: v.socio, Nombre: v.nombre, Origen: v.tipo,
+        Precio_Unitario: v.precio, Total: v.total,
+        Dto_Aplicado: v.descuento, Lote_Usado: v.lote, Deuda_Generada: v.deuda,
+        Gratis: v.gratis
+    }));
+}
+
+window.addEventListener('online', () => { if (pendingSync) saveData(); });
+
+// ============================================================
+// TANQUE DE COMBUSTIBLE (saldo visual)
+// ============================================================
+function referenciaTanque(piloto) {
+    const lotesPiloto = lotes.filter(l => l.socio === piloto.numero);
+    const base = tramos.length ? tramos[0].minimo : 25000;
+    if (lotesPiloto.length === 0) return base;
+    return Math.max(base, ...lotesPiloto.map(l => l.monto || 0));
+}
+function porcentajeTanque(piloto) {
+    const ref = referenciaTanque(piloto);
+    const saldo = getSaldo(piloto.numero);
+    if (ref <= 0) return 0;
+    return Math.max(0, Math.min(100, Math.round((saldo / ref) * 100)));
+}
+function colorTanque(pct) {
+    if (pct <= 15) return '#e17055';
+    if (pct <= 32) return '#e0ab3f';
+    return '#7fa66b';
 }
 
 // ============================================================
@@ -459,63 +615,94 @@ async function loadAllData() {
 // ============================================================
 function renderPilotos(filter = '') {
     const list = document.getElementById('pilotosList');
-    const filtered = pilotos.filter(p => {
-        const search = filter.toLowerCase().trim();
-        if (!search) return true;
-        return p.nombre.toLowerCase().includes(search) || p.numero.includes(search);
-    });
-    
+    const search = filter.toLowerCase().trim();
+
+    if (!search) { list.classList.remove('show'); list.innerHTML = ''; return; }
+    list.classList.add('show');
+
+    const filtered = pilotos.filter(p =>
+        p.nombre.toLowerCase().includes(search) || p.numero.includes(search) || (p.alias || '').toLowerCase().includes(search)
+    );
+
     if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty-state">No se encontraron pilotos</div>';
+        list.innerHTML = '<div class="empty-state">Sin coincidencias 🔍</div>';
         return;
     }
-    
+
     list.innerHTML = filtered.map(p => {
-        const selected = selectedPiloto && selectedPiloto.numero === p.numero ? 'selected' : '';
-        const saldo = getSaldo(p.numero);
         const deuda = p.deuda || 0;
         const libres = p.viajesLibres || 0;
-        const categoriaBadge = p.categoria === 'alumno' ? 'badge-alumno' : 'badge-piloto';
-        
+        const tieneManual = p.descuentoManual !== null && p.descuentoManual !== undefined;
+        const pct = porcentajeTanque(p);
+        const categoriaBadge = p.categoria === 'alumno' ? 'badge-alumno' : '';
+
         return `
-            <div class="piloto-item ${selected}" data-numero="${p.numero}" onclick="selectPiloto('${p.numero}')">
+            <div class="piloto-item" data-numero="${p.numero}">
                 <div class="info">
-                    <span class="nombre">${p.numero} - ${p.nombre}</span>
+                    <span class="nombre">${p.numero} - ${p.nombre}${p.alias ? ` <span class="detalle">"${p.alias}"</span>` : ''}</span>
                     <span>
-                        <span class="badge ${categoriaBadge}">${p.categoria}</span>
-                        ${libres > 0 ? `<span class="badge badge-libres">🎁 ${libres} libres</span>` : ''}
-                        ${deuda > 0 ? `<span class="badge badge-deuda">💳 $${deuda}</span>` : ''}
+                        ${p.categoria === 'alumno' ? `<span class="badge ${categoriaBadge}">alumno</span>` : ''}
+                        ${libres > 0 ? `<span class="badge badge-libres">🎁${libres}</span>` : ''}
+                        ${deuda > 0 ? `<span class="badge badge-deuda">💳$${deuda}</span>` : ''}
+                        ${tieneManual ? `<span class="badge badge-manual">🎯${p.descuentoManual}%</span>` : ''}
                     </span>
                 </div>
-                <span class="saldo ${saldo < 0 ? 'negativo' : ''}">$${saldo}</span>
+                <div class="mini-tanque"><div class="relleno" style="width:${pct}%;background:${colorTanque(pct)};"></div></div>
             </div>
         `;
     }).join('');
+
+    list.querySelectorAll('.piloto-item').forEach(el => {
+        el.addEventListener('click', () => selectPiloto(el.dataset.numero));
+    });
 }
 
 function getSaldo(numero) {
-    const lotesPiloto = lotes.filter(l => l.socio === numero);
-    const total = lotesPiloto.reduce((acc, l) => acc + (l.saldo || 0), 0);
-    return total;
+    return lotes.filter(l => l.socio === numero).reduce((acc, l) => acc + (l.saldo || 0), 0);
+}
+
+function svgGauge(pct, vacio) {
+    const angle = -75 + (pct / 100) * 150;
+    return `
+        <svg viewBox="0 0 200 110" width="156" height="86" class="${vacio ? 'gauge-vacio' : ''}">
+            <path d="M10,100 A90,90 0 0,1 20,59" class="zona-roja"/>
+            <path d="M20,59 A90,90 0 0,1 52,24" class="zona-ambar"/>
+            <path d="M52,24 A90,90 0 0,1 190,100" class="zona-verde"/>
+            <line x1="2" y1="100" x2="16" y2="100" class="tick"/>
+            <line x1="31" y1="31" x2="41" y2="41" class="tick"/>
+            <line x1="100" y1="2" x2="100" y2="16" class="tick"/>
+            <line x1="169" y1="31" x2="159" y2="41" class="tick"/>
+            <line x1="198" y1="100" x2="184" y2="100" class="tick"/>
+            <line x1="100" y1="100" x2="100" y2="24" class="aguja" transform="rotate(${angle} 100 100)"/>
+            <circle cx="100" cy="100" r="9" class="eje"/>
+        </svg>`;
 }
 
 function updateSelectedInfo() {
     const info = document.getElementById('selectedInfo');
     if (!selectedPiloto) {
-        info.innerHTML = `<span style="color:#999;font-size:14px;">👆 Selecciona un piloto</span>`;
+        info.innerHTML = `<span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>`;
         return;
     }
     const saldo = getSaldo(selectedPiloto.numero);
     const deuda = selectedPiloto.deuda || 0;
     const libres = selectedPiloto.viajesLibres || 0;
-    const descuento = getDescuentoParaPiloto(selectedPiloto.numero);
-    
+    const descuento = getDescuentoVigente(selectedPiloto.numero);
+    const pct = porcentajeTanque(selectedPiloto);
+    const vacio = saldo <= 0;
+
     info.innerHTML = `
-        <span class="nombre">${selectedPiloto.numero} - ${selectedPiloto.nombre}</span>
-        <div style="text-align:right;">
-            <div class="credito">💰 $${saldo} ${descuento > 0 ? `(${descuento}% dto)` : ''}</div>
-            ${deuda > 0 ? `<div class="deuda">💳 Deuda: $${deuda}</div>` : ''}
-            ${libres > 0 ? `<div class="libres">🎁 ${libres} viajes libres</div>` : ''}
+        <div class="placa-nombre">${selectedPiloto.numero} - ${selectedPiloto.nombre}${selectedPiloto.alias ? ` "${selectedPiloto.alias}"` : ''}</div>
+        <div class="gauge-wrap">
+            <div class="gauge-case">
+                ${svgGauge(pct, vacio)}
+                <div class="gauge-labels"><span>E</span><span>F</span></div>
+            </div>
+            <div class="gauge-lectura">$${saldo}${descuento > 0 ? ` (-${descuento}%)` : ''}</div>
+        </div>
+        <div class="lamparas">
+            ${deuda > 0 ? `<span class="lampara roja">💳 Deuda $${deuda}</span>` : ''}
+            ${libres > 0 ? `<span class="lampara verde">🎁 ${libres} libres</span>` : ''}
         </div>
     `;
 }
@@ -524,17 +711,14 @@ function updateHistorial() {
     const container = document.getElementById('historial');
     const ultimos = viajes.slice(-5).reverse();
     if (ultimos.length === 0) {
-        container.innerHTML = `
-            <div class="titulo">📋 Últimos viajes</div>
-            <div style="color:#999;font-size:13px;">Sin viajes registrados</div>
-        `;
+        container.innerHTML = `<div class="titulo">📋 Últimas subidas</div><div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>`;
         return;
     }
     container.innerHTML = `
-        <div class="titulo">📋 Últimos viajes</div>
+        <div class="titulo">📋 Últimas subidas</div>
         ${ultimos.map(v => `
             <div class="item">
-                <span>${v.numero} - ${v.nombre}</span>
+                <span>${v.socio} - ${v.nombre}</span>
                 <span>${v.tipo} $${v.total} ${v.gratis ? '🎁' : ''}</span>
             </div>
         `).join('')}
@@ -542,35 +726,29 @@ function updateHistorial() {
 }
 
 // ============================================================
-// LÓGICA DE DESCUENTOS
+// TRAMOS DE DESCUENTO (dinámicos, desde la planilla)
 // ============================================================
 function getDescuentoPorMonto(monto) {
-    const m1 = config.Escala1_Monto || 50000;
-    const d1 = config.Escala1_Descuento || 10;
-    const m2 = config.Escala2_Monto || 100000;
-    const d2 = config.Escala2_Descuento || 15;
-    
-    if (monto >= m2) return d2;
-    if (monto >= m1) return d1;
-    return 0;
+    let descuento = 0;
+    for (const t of tramos) {
+        if (monto >= t.minimo) descuento = t.porcentaje;
+    }
+    return descuento;
 }
 
-function getDescuentoParaPiloto(numero) {
-    const lotesPiloto = lotes.filter(l => l.socio === numero && l.saldo > 0);
+// Descuento vigente de un piloto: manual si está seteado, si no el del lote más viejo con saldo
+function getDescuentoVigente(numero) {
+    const piloto = pilotos.find(p => p.numero === numero);
+    if (piloto && piloto.descuentoManual !== null && piloto.descuentoManual !== undefined) {
+        return piloto.descuentoManual;
+    }
+    const lotesPiloto = lotes.filter(l => l.socio === numero && l.saldo > 0).sort((a, b) => a.fecha.localeCompare(b.fecha));
     if (lotesPiloto.length === 0) return 0;
-    // Ordenar por fecha (FIFO) y tomar el primero con saldo
-    lotesPiloto.sort((a, b) => a.fecha.localeCompare(b.fecha));
     return lotesPiloto[0].descuento || 0;
 }
 
-function getPrecioConDescuento(tipo, numero) {
-    const precioBase = tipo === 'escuela' ? (config.PrecioEscuela || 10000) : (config.PrecioPista || 15000);
-    const descuento = getDescuentoParaPiloto(numero);
-    return Math.round(precioBase * (1 - descuento / 100));
-}
-
 function getPrecioLista(tipo) {
-    return tipo === 'escuela' ? (config.PrecioEscuela || 10000) : (config.PrecioPista || 15000);
+    return tipo === 'escuela' ? (config.PrecioEscuela || 11000) : (config.PrecioPista || 6500);
 }
 
 // ============================================================
@@ -579,9 +757,9 @@ function getPrecioLista(tipo) {
 function selectPiloto(numero) {
     selectedPiloto = pilotos.find(p => p.numero === numero);
     if (selectedPiloto) {
-        renderPilotos(document.getElementById('searchInput').value);
+        document.getElementById('searchInput').value = '';
+        renderPilotos('');
         updateSelectedInfo();
-        // Resetear selección de tipo de viaje
         tipoViaje = null;
         document.getElementById('btnEscuela').classList.remove('active');
         document.getElementById('btnPista').classList.remove('active');
@@ -589,138 +767,251 @@ function selectPiloto(numero) {
 }
 
 function setTipoViaje(tipo) {
-    if (!selectedPiloto) {
-        showToast('⚠️ Primero selecciona un piloto');
-        return;
-    }
+    if (!selectedPiloto) { showToast('⚠️ Primero buscá un piloto'); return; }
     tipoViaje = tipo;
     document.getElementById('btnEscuela').classList.toggle('active', tipo === 'escuela');
     document.getElementById('btnPista').classList.toggle('active', tipo === 'pista');
 }
 
+function cambiarCantidad(delta) {
+    cantidadSubidas = Math.max(1, Math.min(20, cantidadSubidas + delta));
+    document.getElementById('pasajerosCount').textContent = cantidadSubidas;
+}
+
 // ============================================================
-// CONFIRMAR VIAJE (LÓGICA PRINCIPAL)
+// COBRAR UNA SUBIDA (regla completa: libres -> lote más viejo -> cascada -> deuda)
 // ============================================================
-async function confirmarViaje() {
-    if (!selectedPiloto) {
-        showToast('⚠️ Selecciona un piloto');
-        return;
-    }
-    if (!tipoViaje) {
-        showToast('⚠️ Selecciona tipo de viaje');
-        return;
-    }
-    
-    const piloto = selectedPiloto;
-    const cantidad = pasajeros;
-    const precioLista = getPrecioLista(tipoViaje);
-    const viajesGratis = piloto.viajesLibres || 0;
-    
-    // Si tiene viajes libres, usar uno
-    if (viajesGratis > 0) {
-        piloto.viajesLibres = viajesGratis - 1;
+function cobrarUnaSubida(piloto, tipo) {
+    // 1. viajes libres primero
+    if ((piloto.viajesLibres || 0) > 0) {
+        piloto.viajesLibres -= 1;
         const viaje = {
-            fecha: new Date().toISOString(),
-            socio: piloto.numero,
-            nombre: piloto.nombre,
-            tipo: tipoViaje,
-            pasajeros: 1,
-            precio: 0,
-            total: 0,
-            descuento: '100%',
-            lote: 'GRATIS',
-            deuda: 0,
-            gratis: true
+            fecha: new Date().toISOString(), socio: piloto.numero, nombre: piloto.nombre,
+            tipo, precio: 0, total: 0, descuento: '100%', lote: 'GRATIS', deuda: 0, gratis: true
         };
         viajes.push(viaje);
-        ultimoViaje = viaje;
-        updateSelectedInfo();
-        renderPilotos(document.getElementById('searchInput').value);
-        updateHistorial();
-        saveData();
-        showToast(`🎁 Viaje gratis para ${piloto.nombre} (${viajesGratis-1} restantes)`);
-        return;
+        return viaje;
     }
-    
-    // Sistema de lotes
-    let deudaGenerada = 0;
-    let totalCobrado = 0;
-    let descuentoAplicado = 0;
-    let loteUsado = '';
-    let viajesProcesados = 0;
-    
-    for (let i = 0; i < cantidad; i++) {
-        const lotesPiloto = lotes.filter(l => l.socio === piloto.numero && l.saldo > 0);
-        lotesPiloto.sort((a, b) => a.fecha.localeCompare(b.fecha));
-        
-        if (lotesPiloto.length === 0) {
-            // Sin crédito: precio lista y genera deuda
-            const precio = precioLista;
-            deudaGenerada += precio;
-            piloto.deuda = (piloto.deuda || 0) + precio;
-            totalCobrado += precio;
-            viajesProcesados++;
-            const viaje = {
-                fecha: new Date().toISOString(),
+
+    const precioLista = getPrecioLista(tipo);
+    const descuento = getDescuentoVigente(piloto.numero);
+    const montoNecesario = Math.round(precioLista * (1 - descuento / 100));
+
+    // 2. cascada por lotes (más viejo primero)
+    const lotesPiloto = lotes.filter(l => l.socio === piloto.numero).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    let restante = montoNecesario;
+    const lotesUsados = [];
+    for (const lote of lotesPiloto) {
+        if (restante <= 0) break;
+        if (lote.saldo <= 0) continue;
+        const usar = Math.min(lote.saldo, restante);
+        lote.saldo -= usar;
+        restante -= usar;
+        lotesUsados.push(`${lote.loteId}:$${usar}`);
+    }
+
+    // 3. lo que sobra queda como deuda
+    if (restante > 0) {
+        piloto.deuda = (piloto.deuda || 0) + restante;
+    }
+
+    const viaje = {
+        fecha: new Date().toISOString(), socio: piloto.numero, nombre: piloto.nombre,
+        tipo, precio: montoNecesario, total: montoNecesario,
+        descuento: descuento + '%', lote: lotesUsados.length ? lotesUsados.join(', ') : 'SIN LOTE',
+        deuda: restante, gratis: false, _lotesDetalle: lotesUsados
+    };
+    viajes.push(viaje);
+    return viaje;
+}
+
+async function confirmarViaje() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto'); return; }
+    if (!tipoViaje) { showToast('⚠️ Elegí Escuela o Pista'); return; }
+
+    const piloto = selectedPiloto;
+    lastBatch = [];
+    lastBatchLotesAntes = lotes.filter(l => l.socio === piloto.numero).map(l => ({ loteId: l.loteId, saldo: l.saldo }));
+    lastBatchDeudaAntes = piloto.deuda || 0;
+
+    for (let i = 0; i < cantidadSubidas; i++) {
+        const viaje = cobrarUnaSubida(piloto, tipoViaje);
+        lastBatch.push(viaje);
+    }
+
+    updateSelectedInfo();
+    renderPilotos('');
+    updateHistorial();
+    await saveData(`${cantidadSubidas} subida(s) registradas`);
+    showToast(`🛫 ${cantidadSubidas} subida(s) registradas para ${piloto.nombre}`);
+}
+
+// ============================================================
+// DESHACER ÚLTIMA CONFIRMACIÓN (restaura lotes y deuda exactos)
+// ============================================================
+async function anularUltimoViaje() {
+    if (lastBatch.length === 0) { showToast('⚠️ No hay nada reciente para deshacer'); return; }
+
+    const piloto = pilotos.find(p => p.numero === lastBatch[0].socio);
+    if (piloto) {
+        // restaurar viajes libres consumidos
+        const libresUsados = lastBatch.filter(v => v.gratis).length;
+        piloto.viajesLibres = (piloto.viajesLibres || 0) + libresUsados;
+        // restaurar deuda y saldos de lotes al estado exacto de antes
+        piloto.deuda = lastBatchDeudaAntes;
+        lastBatchLotesAntes.forEach(snap => {
+            const lote = lotes.find(l => l.socio === piloto.numero && l.loteId === snap.loteId);
+            if (lote) lote.saldo = snap.saldo;
+        });
+    }
+
+    lastBatch.forEach(v => {
+        const idx = viajes.indexOf(v);
+        if (idx !== -1) viajes.splice(idx, 1);
+    });
+
+    showToast(`↩️ Se deshicieron ${lastBatch.length} subida(s)`);
+    lastBatch = [];
+    lastBatchLotesAntes = [];
+    updateSelectedInfo();
+    renderPilotos('');
+    updateHistorial();
+    await saveData('Deshecho guardado');
+}
+
+// ============================================================
+// CARGAR CRÉDITO (paga deuda primero, el resto arma el lote nuevo)
+// ============================================================
+function abrirModalCarga() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
+    document.getElementById('modalPilotoInfo').textContent = `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
+    document.getElementById('montoInput').value = '';
+    document.getElementById('libresInput').value = '';
+    const deuda = selectedPiloto.deuda || 0;
+    document.getElementById('hintDeuda').textContent = deuda > 0
+        ? `Este piloto debe $${deuda}. Se descuenta primero de lo que cargues, y el resto arma el nuevo lote.`
+        : '';
+    document.getElementById('modalCarga').classList.add('show');
+}
+function cerrarModal() {
+    document.getElementById('modalCarga').classList.remove('show');
+}
+
+async function confirmarCarga() {
+    if (!selectedPiloto) return;
+    const monto = Number(document.getElementById('montoInput').value) || 0;
+    const libres = Number(document.getElementById('libresInput').value) || 0;
+
+    if (monto <= 0 && libres <= 0) { showToast('⚠️ Ingresá un monto o cantidad de subidas libres'); return; }
+
+    if (monto > 0) {
+        const piloto = selectedPiloto;
+        const deudaActual = piloto.deuda || 0;
+        const pagoDeuda = Math.min(monto, deudaActual);
+        piloto.deuda = deudaActual - pagoDeuda;
+        const remanente = monto - pagoDeuda;
+
+        if (remanente > 0) {
+            const descuento = getDescuentoPorMonto(remanente);
+            lotes.push({
                 socio: piloto.numero,
-                nombre: piloto.nombre,
-                tipo: tipoViaje,
-                pasajeros: 1,
-                precio: precio,
-                total: precio,
-                descuento: '0%',
-                lote: 'SIN LOTE',
-                deuda: precio,
-                gratis: false
-            };
-            viajes.push(viaje);
-            ultimoViaje = viaje;
-            showToast(`💳 Viaje ${i+1}/${cantidad}: Deuda $${precio} generada`);
-            continue;
-        }
-        
-        // Tomar el primer lote con saldo
-        const lote = lotesPiloto[0];
-        const descuento = lote.descuento || 0;
-        const precioConDto = Math.round(precioLista * (1 - descuento / 100));
-        const saldoLote = lote.saldo || 0;
-        
-        let precioAplicar = precioConDto;
-        let pagoLote = 0;
-        let deudaParcial = 0;
-        
-        if (saldoLote >= precioConDto) {
-            // El lote cubre completamente el viaje
-            pagoLote = precioConDto;
-            lote.saldo = saldoLote - precioConDto;
-            totalCobrado += precioConDto;
-            descuentoAplicado = descuento;
-            loteUsado = lote.loteId;
-        } else {
-            // El lote no cubre todo
-            if (saldoLote > 0) {
-                pagoLote = saldoLote;
-                lote.saldo = 0;
-                const faltante = precioConDto - saldoLote;
-                deudaGenerada += faltante;
-                piloto.deuda = (piloto.deuda || 0) + faltante;
-                totalCobrado += precioConDto;
-                descuentoAplicado = descuento;
-                loteUsado = lote.loteId + '+';
-                showToast(`⚠️ Lote ${lote.loteId} insuficiente, deuda $${faltante}`);
-            } else {
-                // Lote vacío, pasar al siguiente
-                continue;
+                loteId: 'L' + Date.now(),
+                monto: remanente,
+                descuento: descuento,
+                saldo: remanente,
+                fecha: new Date().toISOString().split('T')[0]
+            });
+            if (pagoDeuda > 0) {
+                showToast(`💳 Se pagaron $${pagoDeuda} de deuda. Lote nuevo: $${remanente} (${descuento}% dto)`);
             }
+        } else {
+            showToast(`💳 Se pagaron $${pagoDeuda} de deuda`);
         }
-        
-        viajesProcesados++;
-        const viaje = {
-            fecha: new Date().toISOString(),
-            socio: piloto.numero,
-            nombre: piloto.nombre,
-            tipo: tipoViaje,
-            pasajeros: 1,
-            precio: precioConDto,
-            total: precioConDto,
-            descuento: descuento
+    }
+    if (libres > 0) {
+        selectedPiloto.viajesLibres = (selectedPiloto.viajesLibres || 0) + libres;
+    }
+
+    cerrarModal();
+    updateSelectedInfo();
+    renderPilotos('');
+    await saveData('Crédito cargado');
+    showToast(`🪙 Carga aplicada para ${selectedPiloto.nombre}`);
+}
+
+// ============================================================
+// FICHA DEL PILOTO (alias + beneficio manual)
+// ============================================================
+function abrirModalEditar() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
+    document.getElementById('modalEditarInfo').textContent = `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
+    document.getElementById('aliasInput').value = selectedPiloto.alias || '';
+    document.getElementById('descuentoManualInput').value =
+        (selectedPiloto.descuentoManual === null || selectedPiloto.descuentoManual === undefined) ? '' : selectedPiloto.descuentoManual;
+    document.getElementById('modalEditar').classList.add('show');
+}
+function cerrarModalEditar() {
+    document.getElementById('modalEditar').classList.remove('show');
+}
+async function guardarEdicionPiloto() {
+    if (!selectedPiloto) return;
+    selectedPiloto.alias = document.getElementById('aliasInput').value.trim();
+    const valorManual = document.getElementById('descuentoManualInput').value;
+    selectedPiloto.descuentoManual = valorManual === '' ? null : Math.max(0, Math.min(100, Number(valorManual)));
+
+    cerrarModalEditar();
+    updateSelectedInfo();
+    renderPilotos('');
+    await saveData('Ficha actualizada');
+    showToast(`🥽 Ficha actualizada — ${selectedPiloto.nombre}`);
+}
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// EVENTOS E INICIO
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('searchInput').addEventListener('input', e => renderPilotos(e.target.value));
+    document.getElementById('btnEscuela').addEventListener('click', () => setTipoViaje('escuela'));
+    document.getElementById('btnPista').addEventListener('click', () => setTipoViaje('pista'));
+    document.getElementById('btnRestar').addEventListener('click', () => cambiarCantidad(-1));
+    document.getElementById('btnSumar').addEventListener('click', () => cambiarCantidad(1));
+    document.getElementById('btnConfirmar').addEventListener('click', confirmarViaje);
+    document.getElementById('btnAnular').addEventListener('click', anularUltimoViaje);
+    document.getElementById('btnCarga').addEventListener('click', abrirModalCarga);
+    document.getElementById('btnStats').addEventListener('click', () => window.open(SHEET_VIEW_URL, '_blank'));
+    document.getElementById('btnAplicarCarga').addEventListener('click', confirmarCarga);
+    document.getElementById('btnCancelarCarga').addEventListener('click', cerrarModal);
+    document.getElementById('btnEditar').addEventListener('click', abrirModalEditar);
+    document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicionPiloto);
+    document.getElementById('btnCancelarEdicion').addEventListener('click', cerrarModalEditar);
+    document.getElementById('btnQuitarManual').addEventListener('click', () => {
+        document.getElementById('descuentoManualInput').value = '';
+    });
+    document.querySelectorAll('[data-monto]').forEach(b => b.addEventListener('click', () => {
+        document.getElementById('montoInput').value = b.dataset.monto;
+    }));
+    document.querySelectorAll('[data-libres]').forEach(b => b.addEventListener('click', () => {
+        const input = document.getElementById('libresInput');
+        input.value = (Number(input.value) || 0) + Number(b.dataset.libres);
+    }));
+
+    loadAllData();
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+});
+</script>
+</body>
+</html>
