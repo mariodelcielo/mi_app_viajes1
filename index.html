@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -183,9 +184,9 @@
             border: 3px solid var(--parchment-dark);
             border-radius: 16px;
             box-shadow: 0 3px 0 var(--parchment-dark);
-            padding: 14px 8px;
+            padding: 16px 8px;
             font-family: 'Baloo 2', sans-serif;
-            font-size: 26px;
+            font-size: 36px;
             color: var(--ink-soft);
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
@@ -214,15 +215,15 @@
         .btn-accion {
             border: none;
             border-radius: 18px;
-            padding: 16px 8px;
+            padding: 18px 8px;
             font-family: 'Baloo 2', sans-serif;
-            font-size: 14px;
+            font-size: 20px;
             cursor: pointer;
             display: flex; flex-direction: column; align-items: center; gap: 6px;
             color: var(--cream);
         }
         .btn-accion:active { transform: translateY(3px); }
-        .btn-accion .icono { font-size: 32px; }
+        .btn-accion .icono { font-size: 44px; }
         .btn-despegar { background: var(--sage); box-shadow: 0 4px 0 var(--sage-dark); }
         .btn-despegar:active { box-shadow: 0 1px 0 var(--sage-dark); }
         .btn-deshacer { background: var(--coral); box-shadow: 0 4px 0 var(--coral-dark); }
@@ -297,7 +298,7 @@
 
 <div id="app">
     <div class="header">
-        <img src="rescates-logo.png" alt="Rescates" id="headerIcono" style="width:44px;height:auto;display:block;margin:0 auto;">
+        <img src="rescates-logo.png" alt="Rescates" id="headerIcono" style="width:76px;height:auto;display:block;margin:0 auto;">
         <h1>RESCATES</h1>
         <div class="status" id="statusSync">⬇️ Enlazando...</div>
     </div>
@@ -339,13 +340,22 @@
     <div class="accion-group">
         <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">$</span></button>
         <button class="btn-accion btn-legajo" id="btnEditar">
-            <svg width="26" height="26" viewBox="0 0 100 100">
-                <path d="M20 55 Q20 15 50 15 Q80 15 80 55 L80 68 Q80 75 73 75 L27 75 Q20 75 20 68 Z" fill="#8b5e34" stroke="#4a3f35" stroke-width="3"/>
-                <path d="M14 58 Q50 48 86 58 L86 66 Q50 56 14 66 Z" fill="#6b4423" stroke="#4a3f35" stroke-width="2.5"/>
-                <circle cx="35" cy="60" r="11" fill="#dfe9ea" stroke="#4a3f35" stroke-width="3"/>
-                <circle cx="65" cy="60" r="11" fill="#dfe9ea" stroke="#4a3f35" stroke-width="3"/>
-                <path d="M46 60 L54 60" stroke="#4a3f35" stroke-width="3"/>
-                <path d="M24 55 Q50 44 76 55" fill="none" stroke="#4a3f35" stroke-width="2.5"/>
+            <svg width="40" height="40" viewBox="0 0 100 100">
+                <!-- casco de cuero, vista de perfil, en tonos pastel -->
+                <path d="M30,14 C52,2 82,10 88,32 C92,48 87,62 76,73 L58,93 C54,98 47,97 44,91 L37,73 C26,72 17,63 16,48 C14,32 18,22 30,14 Z"
+                      fill="#f2c9a8" stroke="#c9a084" stroke-width="3.5" stroke-linejoin="round"/>
+                <path d="M30,14 C52,2 82,10 88,32 C90,42 88,52 82,60 C75,45 60,34 42,34 C34,34 27,38 22,44 C22,34 24,22 30,14 Z"
+                      fill="#f7ddc3" opacity="0.7"/>
+                <!-- oreja -->
+                <ellipse cx="60" cy="56" rx="10" ry="13" fill="#eec6ab" stroke="#c9a084" stroke-width="2.5"/>
+                <!-- correa y hebilla -->
+                <path d="M40,74 L47,90" stroke="#c9a084" stroke-width="3" fill="none"/>
+                <rect x="42" y="83" width="12" height="9" rx="2" fill="#e3b9c9" stroke="#c9a084" stroke-width="2.5" transform="rotate(18 48 87)"/>
+                <!-- antiparras -->
+                <path d="M16,30 Q50,14 90,30" fill="none" stroke="#c9a084" stroke-width="3"/>
+                <ellipse cx="30" cy="27" rx="15" ry="11" fill="#e4dcf0" stroke="#b8a8cc" stroke-width="3.5" transform="rotate(-12 30 27)"/>
+                <ellipse cx="30" cy="27" rx="9" ry="6.5" fill="#a8d8e8" opacity="0.85" transform="rotate(-12 30 27)"/>
+                <ellipse cx="58" cy="30" rx="9" ry="7" fill="#e4dcf0" stroke="#b8a8cc" stroke-width="3" transform="rotate(-8 58 30)"/>
             </svg>
         </button>
     </div>
