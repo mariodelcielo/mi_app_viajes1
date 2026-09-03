@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>✈️ Panel de Vuelo</title>
+    <title>🚁 RESCATES</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f4e9d8">
     <style>
@@ -183,11 +183,11 @@
             border: 3px solid var(--parchment-dark);
             border-radius: 16px;
             box-shadow: 0 3px 0 var(--parchment-dark);
-            padding: 12px 8px;
+            padding: 14px 8px;
             font-family: 'Baloo 2', sans-serif;
-            font-size: 13px;
+            font-size: 26px;
             color: var(--ink-soft);
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
         }
         .switch-btn.active { color: var(--wood-dark); border-color: var(--sky); box-shadow: 0 3px 0 var(--sky-dark); background: #eaf6fb; }
@@ -206,7 +206,7 @@
             cursor: pointer;
         }
         .perilla:active { transform: translateY(2px); box-shadow: none; }
-        .contador span.valor { font-family: 'Baloo 2', sans-serif; font-size: 24px; color: var(--wood-dark); min-width: 34px; text-align: center; }
+        .contador span.valor { font-family: 'Baloo 2', sans-serif; font-size: 26px; color: var(--wood-dark); width: 34px; text-align: center; display: inline-block; }
         .contador .etq { font-size: 11px; color: var(--ink-soft); text-align: center; font-weight: 700; }
 
         /* ===== BOTONERA ===== */
@@ -222,7 +222,7 @@
             color: var(--cream);
         }
         .btn-accion:active { transform: translateY(3px); }
-        .btn-accion .icono { font-size: 24px; }
+        .btn-accion .icono { font-size: 32px; }
         .btn-despegar { background: var(--sage); box-shadow: 0 4px 0 var(--sage-dark); }
         .btn-despegar:active { box-shadow: 0 1px 0 var(--sage-dark); }
         .btn-deshacer { background: var(--coral); box-shadow: 0 4px 0 var(--coral-dark); }
@@ -297,8 +297,8 @@
 
 <div id="app">
     <div class="header">
-        <div style="font-size:32px;">🛩️</div>
-        <h1>Panel de Vuelo</h1>
+        <img src="rescates-logo.png" alt="Rescates" id="headerIcono" style="width:44px;height:auto;display:block;margin:0 auto;">
+        <h1>RESCATES</h1>
         <div class="status" id="statusSync">⬇️ Enlazando...</div>
     </div>
 
@@ -318,13 +318,13 @@
     </div>
 
     <div class="switches">
-        <button class="switch-btn" id="btnEscuela">🏫<span>ESCUELA</span></button>
-        <button class="switch-btn" id="btnPista">🛬<span>PISTA</span></button>
+        <button class="switch-btn" id="btnEscuela">E</button>
+        <button class="switch-btn" id="btnPista">P</button>
     </div>
 
     <div class="panel contador">
         <button class="perilla" id="btnRestar">−</button>
-        <div>
+        <div style="display:flex;flex-direction:column;align-items:center;">
             <div class="etq">SUBIDAS</div>
             <span class="valor" id="pasajerosCount">1</span>
         </div>
@@ -332,13 +332,22 @@
     </div>
 
     <div class="accion-group">
-        <button class="btn-accion btn-despegar" id="btnConfirmar"><span class="icono">🛫</span>DESPEGAR</button>
-        <button class="btn-accion btn-deshacer" id="btnAnular"><span class="icono">↩️</span>DESHACER</button>
+        <button class="btn-accion btn-despegar" id="btnConfirmar">Enter</button>
+        <button class="btn-accion btn-deshacer" id="btnAnular"><span class="icono">↺</span></button>
     </div>
 
     <div class="accion-group">
-        <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">🪙</span>CARGAR CRÉDITO</button>
-        <button class="btn-accion btn-legajo" id="btnEditar"><span class="icono">🥽</span>FICHA</button>
+        <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">$</span></button>
+        <button class="btn-accion btn-legajo" id="btnEditar">
+            <svg width="26" height="26" viewBox="0 0 100 100">
+                <path d="M20 55 Q20 15 50 15 Q80 15 80 55 L80 68 Q80 75 73 75 L27 75 Q20 75 20 68 Z" fill="#8b5e34" stroke="#4a3f35" stroke-width="3"/>
+                <path d="M14 58 Q50 48 86 58 L86 66 Q50 56 14 66 Z" fill="#6b4423" stroke="#4a3f35" stroke-width="2.5"/>
+                <circle cx="35" cy="60" r="11" fill="#dfe9ea" stroke="#4a3f35" stroke-width="3"/>
+                <circle cx="65" cy="60" r="11" fill="#dfe9ea" stroke="#4a3f35" stroke-width="3"/>
+                <path d="M46 60 L54 60" stroke="#4a3f35" stroke-width="3"/>
+                <path d="M24 55 Q50 44 76 55" fill="none" stroke="#4a3f35" stroke-width="2.5"/>
+            </svg>
+        </button>
     </div>
 
     <div class="accion-group">
@@ -404,6 +413,17 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="modalConfirmarViaje">
+    <div class="modal">
+        <h2>✅ Confirmar operación</h2>
+        <div id="modalConfirmarInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:6px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnConfirmarSi">✅ Confirmar</button>
+            <button class="btn-modal-cancel" id="btnConfirmarNo">✖ Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ============================================================
 // CONFIGURACIÓN
@@ -427,6 +447,20 @@ let lastBatchLotesAntes = []; // snapshot de saldos de lotes antes de la confirm
 let lastBatchDeudaAntes = 0;
 let pendingSync = false;
 let pin = localStorage.getItem('pin_app') || '';
+
+// ============================================================
+// FECHA/HORA LOCAL (evita el desfasaje de usar UTC)
+// ============================================================
+function fechaHoraLocal() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function fechaSoloLocal() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 // ============================================================
 // PIN DE ACCESO
@@ -507,11 +541,11 @@ async function loadAllData() {
             monto: Number(l.Monto_Cargado) || 0,
             descuento: Number(l.Porcentaje_Descuento) || 0,
             saldo: Number(l.Saldo_Disponible) || 0,
-            fecha: l.Fecha_Carga || new Date().toISOString().split('T')[0]
+            fecha: l.Fecha_Carga || fechaSoloLocal()
         }));
 
         viajes = (data.viajes || []).map(v => ({
-            fecha: v.Fecha || new Date().toISOString(),
+            fecha: v.Fecha || fechaHoraLocal(),
             socio: String(v.Numero ?? ''),
             nombre: v.Nombre || '',
             tipo: v.Origen || 'escuela',
@@ -774,7 +808,7 @@ function setTipoViaje(tipo) {
 }
 
 function cambiarCantidad(delta) {
-    cantidadSubidas = Math.max(1, Math.min(20, cantidadSubidas + delta));
+    cantidadSubidas = Math.max(1, Math.min(9, cantidadSubidas + delta)); // un solo dígito
     document.getElementById('pasajerosCount').textContent = cantidadSubidas;
 }
 
@@ -786,7 +820,7 @@ function cobrarUnaSubida(piloto, tipo) {
     if ((piloto.viajesLibres || 0) > 0) {
         piloto.viajesLibres -= 1;
         const viaje = {
-            fecha: new Date().toISOString(), socio: piloto.numero, nombre: piloto.nombre,
+            fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
             tipo, precio: 0, total: 0, descuento: '100%', lote: 'GRATIS', deuda: 0, gratis: true
         };
         viajes.push(viaje);
@@ -816,7 +850,7 @@ function cobrarUnaSubida(piloto, tipo) {
     }
 
     const viaje = {
-        fecha: new Date().toISOString(), socio: piloto.numero, nombre: piloto.nombre,
+        fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
         tipo, precio: montoNecesario, total: montoNecesario,
         descuento: descuento + '%', lote: lotesUsados.length ? lotesUsados.join(', ') : 'SIN LOTE',
         deuda: restante, gratis: false, _lotesDetalle: lotesUsados
@@ -825,10 +859,41 @@ function cobrarUnaSubida(piloto, tipo) {
     return viaje;
 }
 
-async function confirmarViaje() {
+function pedirConfirmacionViaje() {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto'); return; }
-    if (!tipoViaje) { showToast('⚠️ Elegí Escuela o Pista'); return; }
+    if (!tipoViaje) { showToast('⚠️ Elegí E (Escuela) o P (Pista)'); return; }
 
+    const precioLista = getPrecioLista(tipoViaje);
+    const descuento = getDescuentoVigente(selectedPiloto.numero);
+    const libres = selectedPiloto.viajesLibres || 0;
+    const tipoTexto = tipoViaje === 'escuela' ? 'Escuela' : 'Pista';
+
+    let detalle = '';
+    let restanteLibre = libres;
+    let totalEstimado = 0;
+    for (let i = 0; i < cantidadSubidas; i++) {
+        if (restanteLibre > 0) { restanteLibre--; }
+        else { totalEstimado += Math.round(precioLista * (1 - descuento / 100)); }
+    }
+    const gratisUsados = Math.min(libres, cantidadSubidas);
+
+    detalle = `<b>${selectedPiloto.numero} - ${selectedPiloto.nombre}</b><br>`;
+    detalle += `Origen: ${tipoTexto}<br>`;
+    detalle += `Subidas: ${cantidadSubidas}<br>`;
+    if (gratisUsados > 0) detalle += `🎁 ${gratisUsados} subida(s) libre(s)<br>`;
+    const pagas = cantidadSubidas - gratisUsados;
+    if (pagas > 0) detalle += `A cobrar: ${pagas} subida(s) ≈ $${totalEstimado}${descuento > 0 ? ` (-${descuento}%)` : ''}`;
+
+    document.getElementById('modalConfirmarInfo').innerHTML = detalle;
+    document.getElementById('modalConfirmarViaje').classList.add('show');
+}
+
+function cerrarModalConfirmarViaje() {
+    document.getElementById('modalConfirmarViaje').classList.remove('show');
+}
+
+async function confirmarViaje() {
+    cerrarModalConfirmarViaje();
     const piloto = selectedPiloto;
     lastBatch = [];
     lastBatchLotesAntes = lotes.filter(l => l.socio === piloto.numero).map(l => ({ loteId: l.loteId, saldo: l.saldo }));
@@ -919,7 +984,7 @@ async function confirmarCarga() {
                 monto: remanente,
                 descuento: descuento,
                 saldo: remanente,
-                fecha: new Date().toISOString().split('T')[0]
+                fecha: fechaSoloLocal()
             });
             if (pagoDeuda > 0) {
                 showToast(`💳 Se pagaron $${pagoDeuda} de deuda. Lote nuevo: $${remanente} (${descuento}% dto)`);
@@ -986,7 +1051,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnPista').addEventListener('click', () => setTipoViaje('pista'));
     document.getElementById('btnRestar').addEventListener('click', () => cambiarCantidad(-1));
     document.getElementById('btnSumar').addEventListener('click', () => cambiarCantidad(1));
-    document.getElementById('btnConfirmar').addEventListener('click', confirmarViaje);
+    document.getElementById('btnConfirmar').addEventListener('click', pedirConfirmacionViaje);
+    document.getElementById('btnConfirmarSi').addEventListener('click', confirmarViaje);
+    document.getElementById('btnConfirmarNo').addEventListener('click', cerrarModalConfirmarViaje);
     document.getElementById('btnAnular').addEventListener('click', anularUltimoViaje);
     document.getElementById('btnCarga').addEventListener('click', abrirModalCarga);
     document.getElementById('btnStats').addEventListener('click', () => window.open(SHEET_VIEW_URL, '_blank'));
