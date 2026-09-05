@@ -342,6 +342,14 @@
 
     <div class="accion-group">
         <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">$</span></button>
+        <button class="btn-accion btn-pago" id="btnPago"><span class="icono">⚡</span>PAGO RÁPIDO</button>
+    </div>
+
+    <div class="accion-group">
+        <button class="btn-accion btn-datos full-width" id="btnStats"><span class="icono">🗺️</span>VER BITÁCORA COMPLETA</button>
+    </div>
+
+    <div class="accion-group">
         <button class="btn-accion btn-legajo" id="btnEditar">
             <svg width="40" height="40" viewBox="0 0 100 100">
                 <!-- casco de cuero, vista de perfil, fiel a la referencia -->
@@ -372,14 +380,6 @@
                 <circle cx="65" cy="21" r="1.8" fill="#7a6a5a"/>
             </svg>
         </button>
-    </div>
-
-    <div class="accion-group">
-        <button class="btn-accion btn-datos full-width" id="btnStats"><span class="icono">🗺️</span>VER BITÁCORA COMPLETA</button>
-    </div>
-
-    <div class="accion-group">
-        <button class="btn-accion btn-pago" id="btnPago"><span class="icono">💵</span>PAGO INMEDIATO</button>
         <button class="btn-accion btn-deudores" id="btnDeudores"><span class="icono">📋</span>DEUDORES</button>
     </div>
 
@@ -455,7 +455,7 @@
 
 <div class="modal-overlay" id="modalPago">
     <div class="modal">
-        <h2>💵 Pago inmediato</h2>
+        <h2>⚡ Pago rápido</h2>
         <div id="modalPagoInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:6px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnPagoSi">✅ Confirmar pago</button>
@@ -1118,7 +1118,7 @@ async function confirmarPagoInmediato() {
     updateSelectedInfo();
     renderPilotos('');
     await saveData('Pago registrado');
-    showToast(`💵 Pago de $${monto} registrado — ${selectedPiloto.nombre}`);
+    showToast(`⚡ Pago de $${monto} registrado — ${selectedPiloto.nombre}`);
 }
 
 // ============================================================
