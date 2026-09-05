@@ -626,11 +626,11 @@ async function loadAllData() {
         if (local) {
             const s = JSON.parse(local);
             pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || []; pagos = s.pagos || [];
-            actualizarEstadoSync('☁️ Sin señal — datos locales', 'offline');
+            actualizarEstadoSync('☁️ Sin señal (' + e.message + ')', 'offline');
             renderPilotos();
             updateHistorial();
         } else {
-            actualizarEstadoSync('⚠️ Sin datos — revisá PIN/conexión', 'error');
+            actualizarEstadoSync('⚠️ Error: ' + e.message, 'error');
         }
     }
 }
