@@ -1,5 +1,5 @@
 const CACHE_NAME = 'gestion-viajes-v1';
-const ARCHIVOS = ['./', './index.html', './manifest.json', './rescates-logo.png'];
+const ARCHIVOS = ['./', './index.html', './manifest.json', './rescates-logo.png', './consulta.html'];
 
 self.addEventListener('install', event => {
     event.waitUntil(
