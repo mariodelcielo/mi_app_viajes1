@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -233,6 +232,10 @@
         .btn-legajo { background: var(--sky); box-shadow: 0 4px 0 var(--sky-dark); }
         .btn-legajo:active { box-shadow: 0 1px 0 var(--sky-dark); }
         .btn-datos { background: var(--wood); box-shadow: 0 4px 0 var(--wood-dark); }
+        .btn-pago { background: #6b9b6b; box-shadow: 0 4px 0 #4f7a4f; }
+        .btn-pago:active { box-shadow: 0 1px 0 #4f7a4f; }
+        .btn-deudores { background: #b8703f; box-shadow: 0 4px 0 #8f5730; }
+        .btn-deudores:active { box-shadow: 0 1px 0 #8f5730; }
         .btn-datos:active { box-shadow: 0 1px 0 var(--wood-dark); }
         .full-width { grid-column: 1 / -1; }
 
@@ -341,27 +344,43 @@
         <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">$</span></button>
         <button class="btn-accion btn-legajo" id="btnEditar">
             <svg width="40" height="40" viewBox="0 0 100 100">
-                <!-- casco de cuero, vista de perfil, en tonos pastel -->
-                <path d="M30,14 C52,2 82,10 88,32 C92,48 87,62 76,73 L58,93 C54,98 47,97 44,91 L37,73 C26,72 17,63 16,48 C14,32 18,22 30,14 Z"
-                      fill="#f2c9a8" stroke="#c9a084" stroke-width="3.5" stroke-linejoin="round"/>
-                <path d="M30,14 C52,2 82,10 88,32 C90,42 88,52 82,60 C75,45 60,34 42,34 C34,34 27,38 22,44 C22,34 24,22 30,14 Z"
-                      fill="#f7ddc3" opacity="0.7"/>
-                <!-- oreja -->
-                <ellipse cx="60" cy="56" rx="10" ry="13" fill="#eec6ab" stroke="#c9a084" stroke-width="2.5"/>
-                <!-- correa y hebilla -->
-                <path d="M40,74 L47,90" stroke="#c9a084" stroke-width="3" fill="none"/>
-                <rect x="42" y="83" width="12" height="9" rx="2" fill="#e3b9c9" stroke="#c9a084" stroke-width="2.5" transform="rotate(18 48 87)"/>
-                <!-- antiparras -->
-                <path d="M16,30 Q50,14 90,30" fill="none" stroke="#c9a084" stroke-width="3"/>
-                <ellipse cx="30" cy="27" rx="15" ry="11" fill="#e4dcf0" stroke="#b8a8cc" stroke-width="3.5" transform="rotate(-12 30 27)"/>
-                <ellipse cx="30" cy="27" rx="9" ry="6.5" fill="#a8d8e8" opacity="0.85" transform="rotate(-12 30 27)"/>
-                <ellipse cx="58" cy="30" rx="9" ry="7" fill="#e4dcf0" stroke="#b8a8cc" stroke-width="3" transform="rotate(-8 58 30)"/>
+                <!-- casco de cuero, vista de perfil, fiel a la referencia -->
+                <path d="M34,10 C58,4 86,16 90,38 C93,54 87,66 76,74 L70,86 C67,92 58,93 55,86 L50,74 C40,76 30,74 24,66 C17,57 16,44 20,32 C24,20 28,14 34,10 Z"
+                      fill="#f0c9a6" stroke="#b8916e" stroke-width="3.2" stroke-linejoin="round"/>
+                <!-- sombra interna de cuero -->
+                <path d="M34,10 C50,5 68,8 78,20 C68,18 54,22 46,32 C38,40 34,52 36,64 C28,62 22,54 20,44 C18,32 24,18 34,10 Z"
+                      fill="#f7ddc0" opacity="0.65"/>
+                <!-- solapa de la oreja + hebilla -->
+                <path d="M50,74 C44,78 40,84 42,90 C44,95 52,95 55,90 L58,80 Z" fill="#e4b78d" stroke="#b8916e" stroke-width="2.5"/>
+                <rect x="43" y="82" width="11" height="8" rx="1.5" fill="#d9a9a0" stroke="#b8916e" stroke-width="2.2" transform="rotate(20 48 86)"/>
+                <line x1="46" y1="84" x2="51" y2="88" stroke="#b8916e" stroke-width="1.5"/>
+                <!-- orejera acolchada tipo rosquilla -->
+                <ellipse cx="66" cy="58" rx="11" ry="14" fill="#e4b78d" stroke="#b8916e" stroke-width="2.5"/>
+                <ellipse cx="66" cy="58" rx="5" ry="7" fill="none" stroke="#b8916e" stroke-width="2"/>
+                <!-- costura punteada del borde -->
+                <path d="M22,34 C19,44 21,54 27,62" fill="none" stroke="#b8916e" stroke-width="1.5" stroke-dasharray="2.5 3"/>
+                <!-- correa de las antiparras -->
+                <path d="M18,26 Q52,8 84,24" fill="none" stroke="#a8896e" stroke-width="3"/>
+                <!-- lente delantero -->
+                <ellipse cx="27" cy="24" rx="14" ry="10.5" fill="#c2c7c2" stroke="#7a6a5a" stroke-width="3.3" transform="rotate(-14 27 24)"/>
+                <ellipse cx="27" cy="24" rx="8" ry="5.5" fill="#e8ddb8" opacity="0.9" transform="rotate(-14 27 24)"/>
+                <circle cx="15" cy="21" r="2" fill="#7a6a5a"/>
+                <circle cx="39" cy="20" r="2" fill="#7a6a5a"/>
+                <!-- lente trasero, parcialmente detr\u00e1s del casco -->
+                <ellipse cx="56" cy="24" rx="10" ry="8" fill="#c2c7c2" stroke="#7a6a5a" stroke-width="3" transform="rotate(-8 56 24)"/>
+                <ellipse cx="56" cy="24" rx="5.5" ry="4.3" fill="#e8ddb8" opacity="0.85" transform="rotate(-8 56 24)"/>
+                <circle cx="65" cy="21" r="1.8" fill="#7a6a5a"/>
             </svg>
         </button>
     </div>
 
     <div class="accion-group">
         <button class="btn-accion btn-datos full-width" id="btnStats"><span class="icono">🗺️</span>VER BITÁCORA COMPLETA</button>
+    </div>
+
+    <div class="accion-group">
+        <button class="btn-accion btn-pago" id="btnPago"><span class="icono">💵</span>PAGO INMEDIATO</button>
+        <button class="btn-accion btn-deudores" id="btnDeudores"><span class="icono">📋</span>DEUDORES</button>
     </div>
 
     <div class="panel historial" id="historial">
@@ -434,6 +453,27 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="modalPago">
+    <div class="modal">
+        <h2>💵 Pago inmediato</h2>
+        <div id="modalPagoInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:6px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnPagoSi">✅ Confirmar pago</button>
+            <button class="btn-modal-cancel" id="btnPagoNo">✖ Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalDeudores">
+    <div class="modal">
+        <h2>📋 Pilotos con deuda</h2>
+        <div id="listaDeudores" style="max-height:50vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarDeudores">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ============================================================
 // CONFIGURACIÓN
@@ -447,6 +487,7 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 let pilotos = [];
 let lotes = [];
 let viajes = [];
+let pagos = [];
 let config = {};
 let tramos = []; // [{minimo, porcentaje}], ordenado ascendente por minimo
 let selectedPiloto = null;
@@ -567,6 +608,13 @@ async function loadAllData() {
             gratis: v.Gratis === true || v.Gratis === 'TRUE'
         }));
 
+        pagos = (data.pagos || []).map(p => ({
+            fecha: p.Fecha || fechaHoraLocal(),
+            socio: String(p.Numero ?? ''),
+            nombre: p.Nombre || '',
+            monto: Number(p.Monto) || 0
+        }));
+
         guardarEnLocal();
         pendingSync = false;
         actualizarEstadoSync('✅ Todo enlazado', '');
@@ -577,7 +625,7 @@ async function loadAllData() {
         const local = localStorage.getItem('estado_app');
         if (local) {
             const s = JSON.parse(local);
-            pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || [];
+            pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || []; pagos = s.pagos || [];
             actualizarEstadoSync('☁️ Sin señal — datos locales', 'offline');
             renderPilotos();
             updateHistorial();
@@ -588,7 +636,7 @@ async function loadAllData() {
 }
 
 function guardarEnLocal() {
-    localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos }));
+    localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos }));
 }
 
 function actualizarEstadoSync(msg, clase) {
@@ -600,7 +648,7 @@ function actualizarEstadoSync(msg, clase) {
 async function saveData(mensajeExito) {
     guardarEnLocal();
     try {
-        await apiSave({ pilotos: pilotosParaGuardar(), lotes: lotesParaGuardar(), viajes: viajesParaGuardar() });
+        await apiSave({ pilotos: pilotosParaGuardar(), lotes: lotesParaGuardar(), viajes: viajesParaGuardar(), pagos: pagosParaGuardar() });
         pendingSync = false;
         actualizarEstadoSync('✅ ' + (mensajeExito || 'Todo enlazado'), '');
     } catch (e) {
@@ -628,6 +676,11 @@ function viajesParaGuardar() {
         Precio_Unitario: v.precio, Total: v.total,
         Dto_Aplicado: v.descuento, Lote_Usado: v.lote, Deuda_Generada: v.deuda,
         Gratis: v.gratis
+    }));
+}
+function pagosParaGuardar() {
+    return pagos.map(p => ({
+        Fecha: p.fecha, Numero: p.socio, Nombre: p.nombre, Monto: p.monto
     }));
 }
 
@@ -1042,6 +1095,55 @@ async function guardarEdicionPiloto() {
 }
 
 // ============================================================
+// PAGO INMEDIATO (salda toda la deuda del piloto seleccionado)
+// ============================================================
+function abrirModalPago() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
+    const deuda = selectedPiloto.deuda || 0;
+    if (deuda <= 0) { showToast('✅ Este piloto no tiene deuda pendiente'); return; }
+    document.getElementById('modalPagoInfo').innerHTML =
+        `<b>${selectedPiloto.numero} - ${selectedPiloto.nombre}</b><br>Deuda actual: <b>$${deuda}</b><br>Al confirmar, la deuda queda en $0.`;
+    document.getElementById('modalPago').classList.add('show');
+}
+function cerrarModalPago() {
+    document.getElementById('modalPago').classList.remove('show');
+}
+async function confirmarPagoInmediato() {
+    if (!selectedPiloto) return;
+    const monto = selectedPiloto.deuda || 0;
+    pagos.push({ fecha: fechaHoraLocal(), socio: selectedPiloto.numero, nombre: selectedPiloto.nombre, monto: monto });
+    selectedPiloto.deuda = 0;
+
+    cerrarModalPago();
+    updateSelectedInfo();
+    renderPilotos('');
+    await saveData('Pago registrado');
+    showToast(`💵 Pago de $${monto} registrado — ${selectedPiloto.nombre}`);
+}
+
+// ============================================================
+// LISTADO DE DEUDORES
+// ============================================================
+function abrirModalDeudores() {
+    const deudores = pilotos.filter(p => (p.deuda || 0) > 0).sort((a, b) => b.deuda - a.deuda);
+    const cont = document.getElementById('listaDeudores');
+    if (deudores.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">🎉 Nadie tiene deuda pendiente</div>`;
+    } else {
+        cont.innerHTML = deudores.map(p => `
+            <div style="display:flex;justify-content:space-between;padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
+                <span>${p.numero} - ${p.nombre}${p.alias ? ` "${p.alias}"` : ''}</span>
+                <b style="color:var(--coral-dark);">$${p.deuda}</b>
+            </div>
+        `).join('');
+    }
+    document.getElementById('modalDeudores').classList.add('show');
+}
+function cerrarModalDeudores() {
+    document.getElementById('modalDeudores').classList.remove('show');
+}
+
+// ============================================================
 // UTILIDADES
 // ============================================================
 function showToast(msg) {
@@ -1072,6 +1174,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnEditar').addEventListener('click', abrirModalEditar);
     document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicionPiloto);
     document.getElementById('btnCancelarEdicion').addEventListener('click', cerrarModalEditar);
+    document.getElementById('btnPago').addEventListener('click', abrirModalPago);
+    document.getElementById('btnPagoSi').addEventListener('click', confirmarPagoInmediato);
+    document.getElementById('btnPagoNo').addEventListener('click', cerrarModalPago);
+    document.getElementById('btnDeudores').addEventListener('click', abrirModalDeudores);
+    document.getElementById('btnCerrarDeudores').addEventListener('click', cerrarModalDeudores);
     document.getElementById('btnQuitarManual').addEventListener('click', () => {
         document.getElementById('descuentoManualInput').value = '';
     });
