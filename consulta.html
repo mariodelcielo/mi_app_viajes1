@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🚁 Mi cuenta — RESCATES</title>
+    <meta name="theme-color" content="#f4e9d8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Quicksand:wght@500;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --parchment: #f4e9d8; --parchment-dark: #e9d9bd; --wood: #8b5e34; --wood-dark: #6b4423;
+            --brass: #d9a441; --brass-dark: #b8842e; --coral: #e17055; --coral-dark: #c2543b;
+            --sage: #7fa66b; --sage-dark: #5f8a4c; --ink: #4a3f35; --ink-soft: #8a7a68; --cream: #fffaf0;
+        }
+        body {
+            font-family: 'Quicksand', sans-serif; font-weight: 500;
+            background: radial-gradient(circle at 20% 0%, #fdf3e0 0%, var(--parchment) 45%, var(--parchment-dark) 100%);
+            color: var(--ink); padding: 20px; max-width: 440px; margin: 0 auto; min-height: 100vh;
+        }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { width: 64px; }
+        .header h1 { font-family: 'Baloo 2', sans-serif; font-size: 22px; color: var(--wood-dark); margin-top: 6px; }
+        .panel {
+            background: linear-gradient(170deg, var(--cream), var(--parchment));
+            border: 3px solid var(--wood); border-radius: 20px;
+            box-shadow: 0 4px 0 var(--wood-dark), 0 6px 14px rgba(107,68,35,0.25);
+            padding: 20px; margin-bottom: 14px;
+        }
+        label { font-size: 13px; font-weight: 700; color: var(--ink-soft); display: block; margin: 12px 0 4px; }
+        input {
+            width: 100%; padding: 13px 16px; border: 3px solid var(--brass); border-radius: 14px;
+            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 16px;
+            background: var(--cream); color: var(--ink);
+        }
+        button {
+            width: 100%; margin-top: 18px; padding: 15px; border: none; border-radius: 18px;
+            background: var(--sage); color: var(--cream); font-family: 'Baloo 2', sans-serif;
+            font-size: 17px; box-shadow: 0 4px 0 var(--sage-dark); cursor: pointer;
+        }
+        button:active { transform: translateY(3px); box-shadow: none; }
+        .resultado { display: none; }
+        .nombre-resultado { font-family: 'Baloo 2', sans-serif; font-size: 19px; color: var(--wood-dark); text-align: center; margin-bottom: 14px; }
+        .dato { display: flex; justify-content: space-between; padding: 10px 4px; border-bottom: 2px dashed var(--parchment-dark); font-size: 15px; }
+        .dato b { font-family: 'Baloo 2', sans-serif; }
+        .saldo b { color: var(--sage-dark); }
+        .deuda b { color: var(--coral-dark); }
+        .historial-titulo { font-family: 'Baloo 2', sans-serif; font-size: 13px; color: var(--wood-dark); margin: 16px 0 6px; }
+        .historial-item { font-size: 13px; padding: 5px 0; border-bottom: 1px dashed var(--parchment-dark); display: flex; justify-content: space-between; }
+        .msg { text-align: center; padding: 14px; color: var(--coral-dark); font-weight: 700; display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="rescates-logo.png" alt="Rescates">
+        <h1>Consultá tu cuenta</h1>
+    </div>
+
+    <div class="panel">
+        <label>Tu número de piloto</label>
+        <input type="text" id="numeroInput" inputmode="numeric" placeholder="Ej: 12">
+        <label>Tu nombre</label>
+        <input type="text" id="nombreInput" placeholder="Como figura registrado">
+        <button id="btnConsultar">🔍 Ver mi cuenta</button>
+    </div>
+
+    <div class="msg" id="msgError"></div>
+
+    <div class="panel resultado" id="resultado">
+        <div class="nombre-resultado" id="nombreResultado"></div>
+        <div class="dato saldo"><span>💰 Crédito disponible</span><b id="rSaldo"></b></div>
+        <div class="dato deuda"><span>💳 Deuda</span><b id="rDeuda"></b></div>
+        <div class="dato"><span>🎁 Subidas libres</span><b id="rLibres"></b></div>
+        <div class="historial-titulo">📋 Últimas subidas</div>
+        <div id="rHistorial"></div>
+    </div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-USyjf2woING_IaRRKKu-ZrsFcHmiZMBWNQu0xZrYQAv9pB8I2sKNDCJMOeH9NrAU/exec';
+
+document.getElementById('btnConsultar').addEventListener('click', async () => {
+    const numero = document.getElementById('numeroInput').value.trim();
+    const nombre = document.getElementById('nombreInput').value.trim();
+    const msg = document.getElementById('msgError');
+    const resultado = document.getElementById('resultado');
+    msg.style.display = 'none';
+    resultado.style.display = 'none';
+
+    if (!numero || !nombre) {
+        msg.textContent = '⚠️ Completá los dos datos';
+        msg.style.display = 'block';
+        return;
+    }
+
+    try {
+        const url = `${APPS_SCRIPT_URL}?action=consultaPiloto&numero=${encodeURIComponent(numero)}&nombre=${encodeURIComponent(nombre)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.error) {
+            msg.textContent = '⚠️ ' + data.error;
+            msg.style.display = 'block';
+            return;
+        }
+
+        document.getElementById('nombreResultado').textContent = `${data.numero} - ${data.nombre}${data.alias ? ` "${data.alias}"` : ''}`;
+        document.getElementById('rSaldo').textContent = `$${data.saldo}`;
+        document.getElementById('rDeuda').textContent = `$${data.deuda}`;
+        document.getElementById('rLibres').textContent = data.viajesLibres;
+
+        const hist = document.getElementById('rHistorial');
+        if (!data.ultimosViajes || data.ultimosViajes.length === 0) {
+            hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>';
+        } else {
+            hist.innerHTML = data.ultimosViajes.map(v => `
+                <div class="historial-item"><span>${v.fecha}</span><span>${v.origen} $${v.total} ${v.gratis ? '🎁' : ''}</span></div>
+            `).join('');
+        }
+
+        resultado.style.display = 'block';
+    } catch (e) {
+        msg.textContent = '⚠️ No se pudo conectar. Probá de nuevo.';
+        msg.style.display = 'block';
+    }
+});
+</script>
+</body>
+</html>
