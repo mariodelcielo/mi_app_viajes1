@@ -348,41 +348,7 @@
     </div>
 
     <div class="accion-group">
-        <button class="btn-accion btn-datos full-width" id="btnStats"><span class="icono">🗺️</span>VER BITÁCORA COMPLETA</button>
-    </div>
-
-    <div class="accion-group">
-        <button class="btn-accion btn-legajo" id="btnEditar">
-            <svg width="40" height="40" viewBox="0 0 100 100">
-                <!-- casco de cuero, vista de perfil, fiel a la referencia -->
-                <path d="M34,10 C58,4 86,16 90,38 C93,54 87,66 76,74 L70,86 C67,92 58,93 55,86 L50,74 C40,76 30,74 24,66 C17,57 16,44 20,32 C24,20 28,14 34,10 Z"
-                      fill="#f0c9a6" stroke="#b8916e" stroke-width="3.2" stroke-linejoin="round"/>
-                <!-- sombra interna de cuero -->
-                <path d="M34,10 C50,5 68,8 78,20 C68,18 54,22 46,32 C38,40 34,52 36,64 C28,62 22,54 20,44 C18,32 24,18 34,10 Z"
-                      fill="#f7ddc0" opacity="0.65"/>
-                <!-- solapa de la oreja + hebilla -->
-                <path d="M50,74 C44,78 40,84 42,90 C44,95 52,95 55,90 L58,80 Z" fill="#e4b78d" stroke="#b8916e" stroke-width="2.5"/>
-                <rect x="43" y="82" width="11" height="8" rx="1.5" fill="#d9a9a0" stroke="#b8916e" stroke-width="2.2" transform="rotate(20 48 86)"/>
-                <line x1="46" y1="84" x2="51" y2="88" stroke="#b8916e" stroke-width="1.5"/>
-                <!-- orejera acolchada tipo rosquilla -->
-                <ellipse cx="66" cy="58" rx="11" ry="14" fill="#e4b78d" stroke="#b8916e" stroke-width="2.5"/>
-                <ellipse cx="66" cy="58" rx="5" ry="7" fill="none" stroke="#b8916e" stroke-width="2"/>
-                <!-- costura punteada del borde -->
-                <path d="M22,34 C19,44 21,54 27,62" fill="none" stroke="#b8916e" stroke-width="1.5" stroke-dasharray="2.5 3"/>
-                <!-- correa de las antiparras -->
-                <path d="M18,26 Q52,8 84,24" fill="none" stroke="#a8896e" stroke-width="3"/>
-                <!-- lente delantero -->
-                <ellipse cx="27" cy="24" rx="14" ry="10.5" fill="#c2c7c2" stroke="#7a6a5a" stroke-width="3.3" transform="rotate(-14 27 24)"/>
-                <ellipse cx="27" cy="24" rx="8" ry="5.5" fill="#e8ddb8" opacity="0.9" transform="rotate(-14 27 24)"/>
-                <circle cx="15" cy="21" r="2" fill="#7a6a5a"/>
-                <circle cx="39" cy="20" r="2" fill="#7a6a5a"/>
-                <!-- lente trasero, parcialmente detr\u00e1s del casco -->
-                <ellipse cx="56" cy="24" rx="10" ry="8" fill="#c2c7c2" stroke="#7a6a5a" stroke-width="3" transform="rotate(-8 56 24)"/>
-                <ellipse cx="56" cy="24" rx="5.5" ry="4.3" fill="#e8ddb8" opacity="0.85" transform="rotate(-8 56 24)"/>
-                <circle cx="65" cy="21" r="1.8" fill="#7a6a5a"/>
-            </svg>
-        </button>
-        <button class="btn-accion btn-deudores" id="btnDeudores"><span class="icono">📋</span>DEUDORES</button>
+        <button class="btn-accion btn-datos full-width" id="btnDatos"><span class="icono">📁</span>DATOS</button>
     </div>
 
     <div class="panel historial" id="historial">
@@ -472,6 +438,43 @@
         <div id="listaDeudores" style="max-height:50vh;overflow-y:auto;"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-cancel" id="btnCerrarDeudores">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalDatos">
+    <div class="modal">
+        <h2>📁 Datos</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn-chip" id="btnAbrirPlanilla" style="padding:14px;text-align:left;width:100%;">🗺️ Planilla</button>
+            <button class="btn-chip" id="btnAbrirFicha" style="padding:14px;text-align:left;width:100%;">🥽 Ficha del piloto</button>
+            <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;">📋 Deudores</button>
+            <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;">📊 Estadísticas</button>
+        </div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarDatos">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalEstadisticas">
+    <div class="modal">
+        <h2>📊 Estadísticas</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn-chip" id="btnAbrirResumenDiario" style="padding:14px;text-align:left;width:100%;">📅 Resumen diario</button>
+        </div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarEstadisticas">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalResumenDiario">
+    <div class="modal">
+        <h2>📅 Resumen de hoy</h2>
+        <div id="resumenDiarioInfo" style="background:var(--cream);padding:14px;border-radius:14px;font-size:15px;line-height:2;color:var(--ink);"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarResumenDiario">✖ Cerrar</button>
         </div>
     </div>
 </div>
@@ -1154,6 +1157,49 @@ function cerrarModalDeudores() {
 }
 
 // ============================================================
+// MENÚ DATOS (planilla / ficha / deudores / estadísticas)
+// ============================================================
+function abrirModalDatos() {
+    document.getElementById('modalDatos').classList.add('show');
+}
+function cerrarModalDatos() {
+    document.getElementById('modalDatos').classList.remove('show');
+}
+function abrirModalEstadisticas() {
+    document.getElementById('modalEstadisticas').classList.add('show');
+}
+function cerrarModalEstadisticas() {
+    document.getElementById('modalEstadisticas').classList.remove('show');
+}
+
+// ============================================================
+// RESUMEN DIARIO
+// ============================================================
+function abrirResumenDiario() {
+    const hoy = fechaSoloLocal();
+    const viajesHoy = viajes.filter(v => (v.fecha || '').startsWith(hoy));
+    const cantidad = viajesHoy.length;
+    const ganancia = viajesHoy.reduce((acc, v) => acc + (v.total || 0), 0);
+    const deudaGenerada = viajesHoy.reduce((acc, v) => acc + (v.deuda || 0), 0);
+
+    const cargasHoy = lotes.filter(l => (l.fecha || '').startsWith(hoy));
+    const pagosHoy = pagos.filter(p => (p.fecha || '').startsWith(hoy));
+    const ingresado = cargasHoy.reduce((acc, l) => acc + (l.monto || 0), 0)
+        + pagosHoy.reduce((acc, p) => acc + (p.monto || 0), 0);
+
+    document.getElementById('resumenDiarioInfo').innerHTML = `
+        <div style="display:flex;justify-content:space-between;"><span>🛫 Subidas realizadas</span><b>${cantidad}</b></div>
+        <div style="display:flex;justify-content:space-between;"><span>💰 Ganancia generada</span><b>$${ganancia}</b></div>
+        <div style="display:flex;justify-content:space-between;"><span>💵 Dinero ingresado</span><b>$${ingresado}</b></div>
+        <div style="display:flex;justify-content:space-between;"><span>💳 Dinero adeudado (nuevo hoy)</span><b>$${deudaGenerada}</b></div>
+    `;
+    document.getElementById('modalResumenDiario').classList.add('show');
+}
+function cerrarModalResumenDiario() {
+    document.getElementById('modalResumenDiario').classList.remove('show');
+}
+
+// ============================================================
 // UTILIDADES
 // ============================================================
 function showToast(msg) {
@@ -1178,17 +1224,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnConfirmarNo').addEventListener('click', cerrarModalConfirmarViaje);
     document.getElementById('btnAnular').addEventListener('click', anularUltimoViaje);
     document.getElementById('btnCarga').addEventListener('click', abrirModalCarga);
-    document.getElementById('btnStats').addEventListener('click', () => window.open(SHEET_VIEW_URL, '_blank'));
     document.getElementById('btnAplicarCarga').addEventListener('click', confirmarCarga);
     document.getElementById('btnCancelarCarga').addEventListener('click', cerrarModal);
-    document.getElementById('btnEditar').addEventListener('click', abrirModalEditar);
+    document.getElementById('btnEditar')?.addEventListener('click', abrirModalEditar);
     document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicionPiloto);
     document.getElementById('btnCancelarEdicion').addEventListener('click', cerrarModalEditar);
     document.getElementById('btnPago').addEventListener('click', abrirModalPago);
     document.getElementById('btnPagoSi').addEventListener('click', confirmarPagoInmediato);
     document.getElementById('btnPagoNo').addEventListener('click', cerrarModalPago);
-    document.getElementById('btnDeudores').addEventListener('click', abrirModalDeudores);
     document.getElementById('btnCerrarDeudores').addEventListener('click', cerrarModalDeudores);
+
+    // Menú DATOS
+    document.getElementById('btnDatos').addEventListener('click', abrirModalDatos);
+    document.getElementById('btnCerrarDatos').addEventListener('click', cerrarModalDatos);
+    document.getElementById('btnAbrirPlanilla').addEventListener('click', () => window.open(SHEET_VIEW_URL, '_blank'));
+    document.getElementById('btnAbrirFicha').addEventListener('click', () => { cerrarModalDatos(); abrirModalEditar(); });
+    document.getElementById('btnAbrirDeudores').addEventListener('click', () => { cerrarModalDatos(); abrirModalDeudores(); });
+    document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirModalEstadisticas(); });
+    document.getElementById('btnCerrarEstadisticas').addEventListener('click', cerrarModalEstadisticas);
+    document.getElementById('btnAbrirResumenDiario').addEventListener('click', () => { cerrarModalEstadisticas(); abrirResumenDiario(); });
+    document.getElementById('btnCerrarResumenDiario').addEventListener('click', cerrarModalResumenDiario);
+
     document.getElementById('btnQuitarManual').addEventListener('click', () => {
         document.getElementById('descuentoManualInput').value = '';
     });
@@ -1209,3 +1265,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
