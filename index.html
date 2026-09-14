@@ -75,17 +75,17 @@
             gap: 6px;
         }
 
-        .header { text-align: center; margin-bottom: 14px; }
+        .header { text-align: center; margin-bottom: 8px; }
         .header h1 {
             font-family: 'Baloo 2', sans-serif;
-            font-size: 24px;
+            font-size: 13px;
             color: var(--wood-dark);
             letter-spacing: 0.5px;
         }
         .header .status {
-            font-size: 12px;
+            font-size: 10px;
             color: var(--sage-dark);
-            margin-top: 4px;
+            margin-top: 2px;
             font-weight: 700;
         }
         .header .status.offline { color: var(--brass-dark); }
@@ -233,13 +233,9 @@
         .btn-deshacer:active { box-shadow: 0 1px 0 var(--coral-dark); }
         .btn-fuel { background: var(--brass); box-shadow: 0 4px 0 var(--brass-dark); }
         .btn-fuel:active { box-shadow: 0 1px 0 var(--brass-dark); }
-        .btn-legajo { background: var(--sky); box-shadow: 0 4px 0 var(--sky-dark); }
-        .btn-legajo:active { box-shadow: 0 1px 0 var(--sky-dark); }
         .btn-datos { background: var(--wood); box-shadow: 0 4px 0 var(--wood-dark); }
         .btn-pago { background: #6b9b6b; box-shadow: 0 4px 0 #4f7a4f; }
         .btn-pago:active { box-shadow: 0 1px 0 #4f7a4f; }
-        .btn-deudores { background: #b8703f; box-shadow: 0 4px 0 #8f5730; }
-        .btn-deudores:active { box-shadow: 0 1px 0 #8f5730; }
         .btn-datos:active { box-shadow: 0 1px 0 var(--wood-dark); }
         .full-width { grid-column: 1 / -1; }
 
@@ -299,13 +295,14 @@
             cursor: pointer;
         }
         .btn-chip.quitar { border-color: var(--coral); color: var(--coral-dark); }
+        .btn-chip.metodo-activo { background: var(--sky); border-color: var(--sky-dark); color: var(--wood-dark); }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div class="header">
-        <img src="rescates-logo.png" alt="Rescate" id="headerIcono" style="width:130px;height:auto;display:block;margin:0 auto;">
+        <img src="rescates-logo.png" alt="Rescate" id="headerIcono" style="width:65px;height:auto;display:block;margin:0 auto;">
         <h1>RESCATES RAMBLA</h1>
         <div class="status" id="statusSync">⬇️ Enlazando...</div>
     </div>
@@ -319,7 +316,7 @@
     </div>
 
     <div class="panel">
-        <div class="placa">⛽ Instrumento — piloto activo</div>
+        <div class="placa">⛽</div>
         <div class="selected-info" id="selectedInfo">
             <span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>
         </div>
@@ -376,6 +373,12 @@
         <input type="number" id="montoInput" placeholder="Otro monto..." min="0" step="1000">
         <div class="modal-hint" id="hintDeuda"></div>
 
+        <label style="margin-top:16px;">💳 Método de pago</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip metodo-carga metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;">💵 Efectivo</button>
+            <button type="button" class="btn-chip metodo-carga" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;">🏦 Transferencia</button>
+        </div>
+
         <label style="margin-top:16px;">🎁 Subidas libres extra</label>
         <div>
             <button type="button" class="btn-chip" data-libres="1">+1</button>
@@ -399,6 +402,13 @@
 
         <label>Alias / apodo</label>
         <input type="text" id="aliasInput" placeholder="Ej: 'El Colo', 'Petiso'...">
+
+        <label style="margin-top:16px;">🎓 Categoría</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip categoria-btn metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;">🧑‍✈️ Piloto</button>
+            <button type="button" class="btn-chip categoria-btn" data-categoria="alumno" style="width:100%;text-align:center;margin:0;">🎓 Alumno</button>
+        </div>
+        <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 subidas libres.</div>
 
         <label style="margin-top:16px;">🎯 Beneficio (descuento) personalizado</label>
         <div class="modal-hint">Si lo completás, este % se usa siempre para este piloto en vez del tramo por lote.</div>
@@ -426,7 +436,12 @@
 <div class="modal-overlay" id="modalPago">
     <div class="modal">
         <h2>⚡ Pago rápido</h2>
-        <div id="modalPagoInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:6px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
+        <div id="modalPagoInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:12px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
+        <label>💳 Método de pago</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip metodo-rapido metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;">💵 Efectivo</button>
+            <button type="button" class="btn-chip metodo-rapido" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;">🏦 Transferencia</button>
+        </div>
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnPagoSi">✅ Confirmar pago</button>
             <button class="btn-modal-cancel" id="btnPagoNo">✖ Cancelar</button>
@@ -451,10 +466,30 @@
             <button class="btn-chip" id="btnAbrirPlanilla" style="padding:14px;text-align:left;width:100%;">🗺️ Planilla</button>
             <button class="btn-chip" id="btnAbrirFicha" style="padding:14px;text-align:left;width:100%;">🥽 Ficha del piloto</button>
             <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;">📋 Deudores</button>
+            <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;">💲 Precios</button>
             <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;">📊 Estadísticas</button>
         </div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-cancel" id="btnCerrarDatos">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalPrecios">
+    <div class="modal">
+        <h2>💲 Precios</h2>
+        <label>Precio Escuela ($)</label>
+        <input type="number" id="precioEscuelaInput" min="0" step="100">
+        <label style="margin-top:12px;">Precio Pista ($)</label>
+        <input type="number" id="precioPistaInput" min="0" step="100">
+        <div class="modal-hint">Al guardar, se actualiza el precio vigente y queda una fila nueva en el historial con la fecha de hoy.</div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarPrecios">✅ Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarPrecios">✖ Cancelar</button>
+        </div>
+        <div style="margin-top:18px;">
+            <div class="historial-titulo">📈 Historial de precios</div>
+            <div id="listaHistorialPrecios" style="max-height:30vh;overflow-y:auto;"></div>
         </div>
     </div>
 </div>
@@ -464,6 +499,8 @@
         <h2>📊 Estadísticas</h2>
         <div style="display:flex;flex-direction:column;gap:10px;">
             <button class="btn-chip" id="btnAbrirResumenDiario" style="padding:14px;text-align:left;width:100%;">📅 Resumen diario</button>
+            <button class="btn-chip" id="btnAbrirResumenSemanal" style="padding:14px;text-align:left;width:100%;">🗓️ Resumen semanal</button>
+            <button class="btn-chip" id="btnAbrirResumenMensual" style="padding:14px;text-align:left;width:100%;">📆 Resumen mensual</button>
         </div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-cancel" id="btnCerrarEstadisticas">✖ Cerrar</button>
@@ -473,10 +510,79 @@
 
 <div class="modal-overlay" id="modalResumenDiario">
     <div class="modal">
-        <h2>📅 Resumen de hoy</h2>
+        <h2 id="resumenDiarioTitulo">📅 Resumen del día</h2>
         <div id="resumenDiarioInfo" style="background:var(--cream);padding:14px;border-radius:14px;font-size:15px;line-height:2;color:var(--ink);"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-cancel" id="btnCerrarResumenDiario">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalTipoResumen">
+    <div class="modal">
+        <h2>📅 Resumen diario</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn-chip" id="btnResumenUltimoDia" style="padding:14px;text-align:left;width:100%;">📅 Último día trabajado</button>
+            <button class="btn-chip" id="btnResumenOtraFecha" style="padding:14px;text-align:left;width:100%;">🗓️ Elegir otra fecha</button>
+        </div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarTipoResumen">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalListaFechas">
+    <div class="modal">
+        <h2>🗓️ Elegí una fecha</h2>
+        <div id="listaFechasTrabajadas" style="max-height:50vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarListaFechas">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalTipoResumenSemanal">
+    <div class="modal">
+        <h2>🗓️ Resumen semanal</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn-chip" id="btnResumenUltimaSemana" style="padding:14px;text-align:left;width:100%;">🗓️ Última semana trabajada</button>
+            <button class="btn-chip" id="btnResumenOtraSemana" style="padding:14px;text-align:left;width:100%;">📋 Elegir otra semana</button>
+        </div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarTipoResumenSemanal">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalListaSemanas">
+    <div class="modal">
+        <h2>📋 Elegí una semana</h2>
+        <div id="listaSemanasTrabajadas" style="max-height:50vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarListaSemanas">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalTipoResumenMensual">
+    <div class="modal">
+        <h2>📆 Resumen mensual</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn-chip" id="btnResumenUltimoMes" style="padding:14px;text-align:left;width:100%;">📆 Último mes trabajado</button>
+            <button class="btn-chip" id="btnResumenOtroMes" style="padding:14px;text-align:left;width:100%;">📋 Elegir otro mes</button>
+        </div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarTipoResumenMensual">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalListaMeses">
+    <div class="modal">
+        <h2>📋 Elegí un mes</h2>
+        <div id="listaMesesTrabajados" style="max-height:50vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarListaMeses">✖ Cerrar</button>
         </div>
     </div>
 </div>
@@ -497,6 +603,7 @@ let viajes = [];
 let pagos = [];
 let config = {};
 let tramos = []; // [{minimo, porcentaje}], ordenado ascendente por minimo
+let historialPrecios = []; // [{fecha, precioEscuela, precioPista}]
 let selectedPiloto = null;
 let tipoViaje = null;
 let cantidadSubidas = 1;
@@ -505,6 +612,8 @@ let lastBatchLotesAntes = []; // snapshot de saldos de lotes antes de la confirm
 let lastBatchDeudaAntes = 0;
 let pendingSync = false;
 let pin = localStorage.getItem('pin_app') || '';
+let metodoPagoCarga = 'efectivo';
+let metodoPagoRapido = 'efectivo';
 
 // ============================================================
 // FECHA/HORA LOCAL (evita el desfasaje de usar UTC)
@@ -572,7 +681,8 @@ async function loadAllData(reintentando) {
             viajesLibres: Number(p.ViajesLibres) || 0,
             deuda: Number(p.Deuda) || 0,
             descuentoManual: (p.Descuento_Manual === '' || p.Descuento_Manual === undefined || p.Descuento_Manual === null)
-                ? null : Number(p.Descuento_Manual)
+                ? null : Number(p.Descuento_Manual),
+            fechaAlta: p.Fecha_Alta || ''
         }));
 
         config = {};
@@ -599,7 +709,8 @@ async function loadAllData(reintentando) {
             monto: Number(l.Monto_Cargado) || 0,
             descuento: Number(l.Porcentaje_Descuento) || 0,
             saldo: Number(l.Saldo_Disponible) || 0,
-            fecha: l.Fecha_Carga || fechaSoloLocal()
+            fecha: l.Fecha_Carga || fechaSoloLocal(),
+            metodoPago: l.Metodo_Pago || 'efectivo'
         }));
 
         viajes = (data.viajes || []).map(v => ({
@@ -607,9 +718,9 @@ async function loadAllData(reintentando) {
             socio: String(v.Numero ?? ''),
             nombre: v.Nombre || '',
             tipo: v.Origen || 'escuela',
-            precio: Number(v.Precio_Unitario) || 0,
+            precioLista: Number(v.Precio_Unitario) || 0,
             total: Number(v.Total) || 0,
-            descuento: v.Dto_Aplicado || '0%',
+            descuento: Number(v.Dto_Aplicado) || 0,
             lote: v.Lote_Usado || '',
             deuda: Number(v.Deuda_Generada) || 0,
             gratis: v.Gratis === true || v.Gratis === 'TRUE'
@@ -619,7 +730,14 @@ async function loadAllData(reintentando) {
             fecha: p.Fecha || fechaHoraLocal(),
             socio: String(p.Numero ?? ''),
             nombre: p.Nombre || '',
-            monto: Number(p.Monto) || 0
+            monto: Number(p.Monto) || 0,
+            metodoPago: p.Metodo_Pago || 'efectivo'
+        }));
+
+        historialPrecios = (data.historialPrecios || []).map(h => ({
+            fecha: h.Fecha_Vigencia || '',
+            precioEscuela: Number(h.PrecioEscuela) || 0,
+            precioPista: Number(h.PrecioPista) || 0
         }));
 
         guardarEnLocal();
@@ -640,7 +758,7 @@ async function loadAllData(reintentando) {
         const local = localStorage.getItem('estado_app');
         if (local) {
             const s = JSON.parse(local);
-            pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || []; pagos = s.pagos || [];
+            pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || []; pagos = s.pagos || []; historialPrecios = s.historialPrecios || [];
             actualizarEstadoSync('☁️ Sin señal (' + e.message + ')', 'offline');
             renderPilotos();
             updateHistorial();
@@ -651,7 +769,7 @@ async function loadAllData(reintentando) {
 }
 
 function guardarEnLocal() {
-    localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos }));
+    localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos, historialPrecios }));
 }
 
 function actualizarEstadoSync(msg, clase) {
@@ -663,7 +781,10 @@ function actualizarEstadoSync(msg, clase) {
 async function saveData(mensajeExito) {
     guardarEnLocal();
     try {
-        await apiSave({ pilotos: pilotosParaGuardar(), lotes: lotesParaGuardar(), viajes: viajesParaGuardar(), pagos: pagosParaGuardar() });
+        await apiSave({
+            pilotos: pilotosParaGuardar(), lotes: lotesParaGuardar(), viajes: viajesParaGuardar(),
+            pagos: pagosParaGuardar(), config: configParaGuardar(), historialPrecios: historialPreciosParaGuardar()
+        });
         pendingSync = false;
         actualizarEstadoSync('✅ ' + (mensajeExito || 'Todo enlazado'), '');
     } catch (e) {
@@ -676,26 +797,37 @@ function pilotosParaGuardar() {
     return pilotos.map(p => ({
         Numero: p.numero, Nombre: p.nombre, Alias: p.alias || '', Categoria: p.categoria,
         ViajesLibres: p.viajesLibres, Deuda: p.deuda,
-        Descuento_Manual: (p.descuentoManual === null || p.descuentoManual === undefined) ? '' : p.descuentoManual
+        Descuento_Manual: (p.descuentoManual === null || p.descuentoManual === undefined) ? '' : p.descuentoManual,
+        Fecha_Alta: p.fechaAlta || ''
     }));
 }
 function lotesParaGuardar() {
     return lotes.map(l => ({
         Numero: l.socio, Lote_ID: l.loteId, Monto_Cargado: l.monto,
-        Porcentaje_Descuento: l.descuento, Saldo_Disponible: l.saldo, Fecha_Carga: l.fecha
+        Porcentaje_Descuento: l.descuento, Saldo_Disponible: l.saldo, Fecha_Carga: l.fecha,
+        Metodo_Pago: l.metodoPago || 'efectivo'
     }));
 }
 function viajesParaGuardar() {
     return viajes.map(v => ({
         Fecha: v.fecha, Numero: v.socio, Nombre: v.nombre, Origen: v.tipo,
-        Precio_Unitario: v.precio, Total: v.total,
+        Precio_Unitario: v.precioLista, Total: v.total,
         Dto_Aplicado: v.descuento, Lote_Usado: v.lote, Deuda_Generada: v.deuda,
         Gratis: v.gratis
     }));
 }
 function pagosParaGuardar() {
     return pagos.map(p => ({
-        Fecha: p.fecha, Numero: p.socio, Nombre: p.nombre, Monto: p.monto
+        Fecha: p.fecha, Numero: p.socio, Nombre: p.nombre, Monto: p.monto,
+        Metodo_Pago: p.metodoPago || 'efectivo'
+    }));
+}
+function configParaGuardar() {
+    return Object.keys(config).map(k => ({ Parametro: k, Valor: config[k] }));
+}
+function historialPreciosParaGuardar() {
+    return historialPrecios.map(h => ({
+        Fecha_Vigencia: h.fecha, PrecioEscuela: h.precioEscuela, PrecioPista: h.precioPista
     }));
 }
 
@@ -894,18 +1026,19 @@ function cambiarCantidad(delta) {
 // COBRAR UNA SUBIDA (regla completa: libres -> lote más viejo -> cascada -> deuda)
 // ============================================================
 function cobrarUnaSubida(piloto, tipo) {
+    const precioLista = getPrecioLista(tipo);
+
     // 1. viajes libres primero
     if ((piloto.viajesLibres || 0) > 0) {
         piloto.viajesLibres -= 1;
         const viaje = {
             fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
-            tipo, precio: 0, total: 0, descuento: '100%', lote: 'GRATIS', deuda: 0, gratis: true
+            tipo, precioLista: precioLista, total: 0, descuento: 100, lote: 'GRATIS', deuda: 0, gratis: true
         };
         viajes.push(viaje);
         return viaje;
     }
 
-    const precioLista = getPrecioLista(tipo);
     const descuento = getDescuentoVigente(piloto.numero);
     const montoNecesario = Math.round(precioLista * (1 - descuento / 100));
 
@@ -929,8 +1062,8 @@ function cobrarUnaSubida(piloto, tipo) {
 
     const viaje = {
         fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
-        tipo, precio: montoNecesario, total: montoNecesario,
-        descuento: descuento + '%', lote: lotesUsados.length ? lotesUsados.join(', ') : 'SIN LOTE',
+        tipo, precioLista: precioLista, total: montoNecesario,
+        descuento: descuento, lote: lotesUsados.length ? lotesUsados.join(', ') : 'SIN LOTE',
         deuda: restante, gratis: false, _lotesDetalle: lotesUsados
     };
     viajes.push(viaje);
@@ -1030,6 +1163,8 @@ function abrirModalCarga() {
     document.getElementById('modalPilotoInfo').textContent = `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
     document.getElementById('montoInput').value = '';
     document.getElementById('libresInput').value = '';
+    metodoPagoCarga = 'efectivo';
+    document.querySelectorAll('.metodo-carga').forEach(b => b.classList.toggle('metodo-activo', b.dataset.metodo === 'efectivo'));
     const deuda = selectedPiloto.deuda || 0;
     document.getElementById('hintDeuda').textContent = deuda > 0
         ? `Este piloto debe $${deuda}. Se descuenta primero de lo que cargues, y el resto arma el nuevo lote.`
@@ -1054,6 +1189,11 @@ async function confirmarCarga() {
         piloto.deuda = deudaActual - pagoDeuda;
         const remanente = monto - pagoDeuda;
 
+        if (pagoDeuda > 0) {
+            // registrar la parte que canceló deuda, para que quede en Pagos y cuente como dinero ingresado
+            pagos.push({ fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre, monto: pagoDeuda, metodoPago: metodoPagoCarga });
+        }
+
         if (remanente > 0) {
             const descuento = getDescuentoPorMonto(remanente);
             lotes.push({
@@ -1062,7 +1202,8 @@ async function confirmarCarga() {
                 monto: remanente,
                 descuento: descuento,
                 saldo: remanente,
-                fecha: fechaSoloLocal()
+                fecha: fechaSoloLocal(),
+                metodoPago: metodoPagoCarga
             });
             if (pagoDeuda > 0) {
                 showToast(`💳 Se pagaron $${pagoDeuda} de deuda. Lote nuevo: $${remanente} (${descuento}% dto)`);
@@ -1091,6 +1232,8 @@ function abrirModalEditar() {
     document.getElementById('aliasInput').value = selectedPiloto.alias || '';
     document.getElementById('descuentoManualInput').value =
         (selectedPiloto.descuentoManual === null || selectedPiloto.descuentoManual === undefined) ? '' : selectedPiloto.descuentoManual;
+    const categoriaActual = selectedPiloto.categoria || 'piloto';
+    document.querySelectorAll('.categoria-btn').forEach(b => b.classList.toggle('metodo-activo', b.dataset.categoria === categoriaActual));
     document.getElementById('modalEditar').classList.add('show');
 }
 function cerrarModalEditar() {
@@ -1102,11 +1245,20 @@ async function guardarEdicionPiloto() {
     const valorManual = document.getElementById('descuentoManualInput').value;
     selectedPiloto.descuentoManual = valorManual === '' ? null : Math.max(0, Math.min(100, Number(valorManual)));
 
+    const categoriaAnterior = selectedPiloto.categoria || 'piloto';
+    const nuevaCategoria = document.querySelector('.categoria-btn.metodo-activo')?.dataset.categoria || 'piloto';
+    let mensajeExtra = '';
+    if (nuevaCategoria === 'alumno' && categoriaAnterior !== 'alumno') {
+        selectedPiloto.viajesLibres = (selectedPiloto.viajesLibres || 0) + 10;
+        mensajeExtra = ' — se le asignaron 10 subidas libres 🎁';
+    }
+    selectedPiloto.categoria = nuevaCategoria;
+
     cerrarModalEditar();
     updateSelectedInfo();
     renderPilotos('');
     await saveData('Ficha actualizada');
-    showToast(`🥽 Ficha actualizada — ${selectedPiloto.nombre}`);
+    showToast(`🥽 Ficha actualizada — ${selectedPiloto.nombre}${mensajeExtra}`);
 }
 
 // ============================================================
@@ -1116,6 +1268,8 @@ function abrirModalPago() {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
     const deuda = selectedPiloto.deuda || 0;
     if (deuda <= 0) { showToast('✅ Este piloto no tiene deuda pendiente'); return; }
+    metodoPagoRapido = 'efectivo';
+    document.querySelectorAll('.metodo-rapido').forEach(b => b.classList.toggle('metodo-activo', b.dataset.metodo === 'efectivo'));
     document.getElementById('modalPagoInfo').innerHTML =
         `<b>${selectedPiloto.numero} - ${selectedPiloto.nombre}</b><br>Deuda actual: <b>$${deuda}</b><br>Al confirmar, la deuda queda en $0.`;
     document.getElementById('modalPago').classList.add('show');
@@ -1126,7 +1280,7 @@ function cerrarModalPago() {
 async function confirmarPagoInmediato() {
     if (!selectedPiloto) return;
     const monto = selectedPiloto.deuda || 0;
-    pagos.push({ fecha: fechaHoraLocal(), socio: selectedPiloto.numero, nombre: selectedPiloto.nombre, monto: monto });
+    pagos.push({ fecha: fechaHoraLocal(), socio: selectedPiloto.numero, nombre: selectedPiloto.nombre, monto: monto, metodoPago: metodoPagoRapido });
     selectedPiloto.deuda = 0;
 
     cerrarModalPago();
@@ -1139,18 +1293,34 @@ async function confirmarPagoInmediato() {
 // ============================================================
 // LISTADO DE DEUDORES
 // ============================================================
+function contarSubidasAdeudadas(numero) {
+    const viajesConDeuda = viajes.filter(v => v.socio === numero && (v.deuda || 0) > 0);
+    const escuela = viajesConDeuda.filter(v => v.tipo === 'escuela').length;
+    const pista = viajesConDeuda.filter(v => v.tipo === 'pista').length;
+    const partes = [];
+    if (escuela > 0) partes.push(`${escuela} escuela`);
+    if (pista > 0) partes.push(`${pista} pista`);
+    return partes.join(', ');
+}
+
 function abrirModalDeudores() {
     const deudores = pilotos.filter(p => (p.deuda || 0) > 0).sort((a, b) => b.deuda - a.deuda);
     const cont = document.getElementById('listaDeudores');
     if (deudores.length === 0) {
         cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">🎉 Nadie tiene deuda pendiente</div>`;
     } else {
-        cont.innerHTML = deudores.map(p => `
-            <div style="display:flex;justify-content:space-between;padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
+        cont.innerHTML = deudores.map(p => {
+            const desglose = contarSubidasAdeudadas(p.numero);
+            return `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
                 <span>${p.numero} - ${p.nombre}${p.alias ? ` "${p.alias}"` : ''}</span>
-                <b style="color:var(--coral-dark);">$${p.deuda}</b>
+                <span style="text-align:right;">
+                    <b style="color:var(--coral-dark);display:block;">$${p.deuda}</b>
+                    ${desglose ? `<span style="font-size:11px;color:var(--ink-soft);">${desglose}</span>` : ''}
+                </span>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
     document.getElementById('modalDeudores').classList.add('show');
 }
@@ -1167,6 +1337,48 @@ function abrirModalDatos() {
 function cerrarModalDatos() {
     document.getElementById('modalDatos').classList.remove('show');
 }
+
+// ============================================================
+// PRECIOS (con historial automático)
+// ============================================================
+function abrirModalPrecios() {
+    document.getElementById('precioEscuelaInput').value = config.PrecioEscuela || 0;
+    document.getElementById('precioPistaInput').value = config.PrecioPista || 0;
+    renderHistorialPrecios();
+    document.getElementById('modalPrecios').classList.add('show');
+}
+function cerrarModalPrecios() {
+    document.getElementById('modalPrecios').classList.remove('show');
+}
+function renderHistorialPrecios() {
+    const cont = document.getElementById('listaHistorialPrecios');
+    const ordenado = [...historialPrecios].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 10);
+    if (ordenado.length === 0) {
+        cont.innerHTML = `<div style="color:var(--ink-soft);font-size:13px;">Sin cambios registrados todavía</div>`;
+    } else {
+        cont.innerHTML = ordenado.map(h => `
+            <div class="historial-item"><span>${formatoFechaLinda(h.fecha)}</span><span>Escuela $${h.precioEscuela} / Pista $${h.precioPista}</span></div>
+        `).join('');
+    }
+}
+async function guardarPrecios() {
+    const nuevoEscuela = Number(document.getElementById('precioEscuelaInput').value) || 0;
+    const nuevoPista = Number(document.getElementById('precioPistaInput').value) || 0;
+    if (nuevoEscuela <= 0 || nuevoPista <= 0) { showToast('⚠️ Ingresá precios válidos'); return; }
+
+    const cambiaron = nuevoEscuela !== config.PrecioEscuela || nuevoPista !== config.PrecioPista;
+    config.PrecioEscuela = nuevoEscuela;
+    config.PrecioPista = nuevoPista;
+
+    if (cambiaron) {
+        historialPrecios.push({ fecha: fechaSoloLocal(), precioEscuela: nuevoEscuela, precioPista: nuevoPista });
+    }
+
+    cerrarModalPrecios();
+    await saveData('Precios actualizados');
+    showToast('💲 Precios actualizados');
+}
+
 function abrirModalEstadisticas() {
     document.getElementById('modalEstadisticas').classList.add('show');
 }
@@ -1177,28 +1389,228 @@ function cerrarModalEstadisticas() {
 // ============================================================
 // RESUMEN DIARIO
 // ============================================================
-function abrirResumenDiario() {
-    const hoy = fechaSoloLocal();
-    const viajesHoy = viajes.filter(v => (v.fecha || '').startsWith(hoy));
-    const cantidad = viajesHoy.length;
-    const ganancia = viajesHoy.reduce((acc, v) => acc + (v.total || 0), 0);
-    const deudaGenerada = viajesHoy.reduce((acc, v) => acc + (v.deuda || 0), 0);
+function fechaSolo(str) {
+    return (str || '').slice(0, 10);
+}
 
-    const cargasHoy = lotes.filter(l => (l.fecha || '').startsWith(hoy));
-    const pagosHoy = pagos.filter(p => (p.fecha || '').startsWith(hoy));
-    const ingresado = cargasHoy.reduce((acc, l) => acc + (l.monto || 0), 0)
-        + pagosHoy.reduce((acc, p) => acc + (p.monto || 0), 0);
+function formatoFechaLinda(dia) {
+    const [y, m, d] = dia.split('-');
+    return `${d}/${m}/${y}`;
+}
 
-    document.getElementById('resumenDiarioInfo').innerHTML = `
-        <div style="display:flex;justify-content:space-between;"><span>🛫 Subidas realizadas</span><b>${cantidad}</b></div>
-        <div style="display:flex;justify-content:space-between;"><span>💰 Ganancia generada</span><b>$${ganancia}</b></div>
-        <div style="display:flex;justify-content:space-between;"><span>💵 Dinero ingresado</span><b>$${ingresado}</b></div>
-        <div style="display:flex;justify-content:space-between;"><span>💳 Dinero adeudado (nuevo hoy)</span><b>$${deudaGenerada}</b></div>
-    `;
+function sumarDias(diaStr, n) {
+    const [y, m, d] = diaStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + n);
+    const pad = x => String(x).padStart(2, '0');
+    return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+}
+
+// ============================================================
+// CÁLCULO Y RENDERIZADO GENÉRICO (usado por día / semana / mes)
+// ============================================================
+function calcularResumen(viajesF, lotesF, pagosF) {
+    return {
+        cantidad: viajesF.length,
+        ganancia: viajesF.reduce((acc, v) => acc + (v.total || 0), 0),
+        deuda: viajesF.reduce((acc, v) => acc + (v.deuda || 0), 0),
+        ingresado: lotesF.reduce((acc, l) => acc + (l.monto || 0), 0)
+            + pagosF.reduce((acc, p) => acc + (p.monto || 0), 0)
+    };
+}
+
+function renderResumen(titulo, r) {
+    document.getElementById('resumenDiarioTitulo').textContent = titulo;
+    if (!r) {
+        document.getElementById('resumenDiarioInfo').innerHTML =
+            `<div style="text-align:center;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
+    } else {
+        document.getElementById('resumenDiarioInfo').innerHTML = `
+            <div style="display:flex;justify-content:space-between;"><span>🛫 Subidas realizadas</span><b>${r.cantidad}</b></div>
+            <div style="display:flex;justify-content:space-between;"><span>💰 Ganancia generada</span><b>$${r.ganancia}</b></div>
+            <div style="display:flex;justify-content:space-between;"><span>💵 Dinero ingresado</span><b>$${r.ingresado}</b></div>
+            <div style="display:flex;justify-content:space-between;"><span>💳 Dinero adeudado (nuevo)</span><b>$${r.deuda}</b></div>
+        `;
+    }
     document.getElementById('modalResumenDiario').classList.add('show');
 }
 function cerrarModalResumenDiario() {
     document.getElementById('modalResumenDiario').classList.remove('show');
+}
+
+// ============================================================
+// RESUMEN DIARIO
+// ============================================================
+function obtenerFechasTrabajadas() {
+    const fechas = [
+        ...viajes.map(v => fechaSolo(v.fecha)),
+        ...lotes.map(l => fechaSolo(l.fecha)),
+        ...pagos.map(p => fechaSolo(p.fecha))
+    ].filter(f => f);
+    return [...new Set(fechas)].sort().reverse(); // únicas, más reciente primero
+}
+
+function abrirTipoResumen() {
+    document.getElementById('modalTipoResumen').classList.add('show');
+}
+function cerrarTipoResumen() {
+    document.getElementById('modalTipoResumen').classList.remove('show');
+}
+
+function abrirResumenDiario() {
+    const fechas = obtenerFechasTrabajadas();
+    mostrarResumenParaFecha(fechas.length ? fechas[0] : null);
+}
+
+function abrirListaFechas() {
+    const fechas = obtenerFechasTrabajadas().slice(0, 10);
+    const cont = document.getElementById('listaFechasTrabajadas');
+    if (fechas.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
+    } else {
+        cont.innerHTML = fechas.map(f => `
+            <button class="btn-chip fecha-item" data-fecha="${f}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📅 ${formatoFechaLinda(f)}</button>
+        `).join('');
+        cont.querySelectorAll('.fecha-item').forEach(el => {
+            el.addEventListener('click', () => {
+                cerrarModalListaFechas();
+                mostrarResumenParaFecha(el.dataset.fecha);
+            });
+        });
+    }
+    document.getElementById('modalListaFechas').classList.add('show');
+}
+function cerrarModalListaFechas() {
+    document.getElementById('modalListaFechas').classList.remove('show');
+}
+
+function mostrarResumenParaFecha(dia) {
+    if (!dia) { renderResumen('📅 Resumen del día', null); return; }
+    const viajesDia = viajes.filter(v => fechaSolo(v.fecha) === dia);
+    const lotesDia = lotes.filter(l => fechaSolo(l.fecha) === dia);
+    const pagosDia = pagos.filter(p => fechaSolo(p.fecha) === dia);
+    renderResumen(`📅 ${formatoFechaLinda(dia)}`, calcularResumen(viajesDia, lotesDia, pagosDia));
+}
+
+// ============================================================
+// RESUMEN SEMANAL (semana de lunes a domingo)
+// ============================================================
+function inicioSemanaStr(diaStr) {
+    const [y, m, d] = diaStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const dow = dt.getDay(); // 0=domingo..6=sábado
+    const diff = dow === 0 ? -6 : 1 - dow;
+    return sumarDias(diaStr, diff);
+}
+
+function obtenerSemanasTrabajadas() {
+    const dias = obtenerFechasTrabajadas();
+    return [...new Set(dias.map(inicioSemanaStr))].sort().reverse();
+}
+
+function formatoRangoSemana(lunesStr) {
+    return `${formatoFechaLinda(lunesStr)} al ${formatoFechaLinda(sumarDias(lunesStr, 6))}`;
+}
+
+function abrirTipoResumenSemanal() {
+    document.getElementById('modalTipoResumenSemanal').classList.add('show');
+}
+function cerrarTipoResumenSemanal() {
+    document.getElementById('modalTipoResumenSemanal').classList.remove('show');
+}
+
+function abrirResumenSemanal() {
+    const semanas = obtenerSemanasTrabajadas();
+    mostrarResumenParaSemana(semanas.length ? semanas[0] : null);
+}
+
+function abrirListaSemanas() {
+    const semanas = obtenerSemanasTrabajadas().slice(0, 10);
+    const cont = document.getElementById('listaSemanasTrabajadas');
+    if (semanas.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
+    } else {
+        cont.innerHTML = semanas.map(s => `
+            <button class="btn-chip semana-item" data-semana="${s}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">🗓️ ${formatoRangoSemana(s)}</button>
+        `).join('');
+        cont.querySelectorAll('.semana-item').forEach(el => {
+            el.addEventListener('click', () => {
+                cerrarModalListaSemanas();
+                mostrarResumenParaSemana(el.dataset.semana);
+            });
+        });
+    }
+    document.getElementById('modalListaSemanas').classList.add('show');
+}
+function cerrarModalListaSemanas() {
+    document.getElementById('modalListaSemanas').classList.remove('show');
+}
+
+function mostrarResumenParaSemana(lunesStr) {
+    if (!lunesStr) { renderResumen('🗓️ Resumen semanal', null); return; }
+    const finStr = sumarDias(lunesStr, 6);
+    const enRango = f => f >= lunesStr && f <= finStr;
+    const viajesSem = viajes.filter(v => enRango(fechaSolo(v.fecha)));
+    const lotesSem = lotes.filter(l => enRango(fechaSolo(l.fecha)));
+    const pagosSem = pagos.filter(p => enRango(fechaSolo(p.fecha)));
+    renderResumen(`🗓️ ${formatoRangoSemana(lunesStr)}`, calcularResumen(viajesSem, lotesSem, pagosSem));
+}
+
+// ============================================================
+// RESUMEN MENSUAL
+// ============================================================
+const NOMBRES_MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function obtenerMesesTrabajados() {
+    const dias = obtenerFechasTrabajadas();
+    return [...new Set(dias.map(d => d.slice(0, 7)))].sort().reverse(); // 'YYYY-MM'
+}
+
+function formatoMesLindo(mesStr) {
+    const [y, m] = mesStr.split('-').map(Number);
+    return `${NOMBRES_MES[m - 1]} ${y}`;
+}
+
+function abrirTipoResumenMensual() {
+    document.getElementById('modalTipoResumenMensual').classList.add('show');
+}
+function cerrarTipoResumenMensual() {
+    document.getElementById('modalTipoResumenMensual').classList.remove('show');
+}
+
+function abrirResumenMensual() {
+    const meses = obtenerMesesTrabajados();
+    mostrarResumenParaMes(meses.length ? meses[0] : null);
+}
+
+function abrirListaMeses() {
+    const meses = obtenerMesesTrabajados().slice(0, 10);
+    const cont = document.getElementById('listaMesesTrabajados');
+    if (meses.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
+    } else {
+        cont.innerHTML = meses.map(m => `
+            <button class="btn-chip mes-item" data-mes="${m}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📆 ${formatoMesLindo(m)}</button>
+        `).join('');
+        cont.querySelectorAll('.mes-item').forEach(el => {
+            el.addEventListener('click', () => {
+                cerrarModalListaMeses();
+                mostrarResumenParaMes(el.dataset.mes);
+            });
+        });
+    }
+    document.getElementById('modalListaMeses').classList.add('show');
+}
+function cerrarModalListaMeses() {
+    document.getElementById('modalListaMeses').classList.remove('show');
+}
+
+function mostrarResumenParaMes(mesStr) {
+    if (!mesStr) { renderResumen('📆 Resumen mensual', null); return; }
+    const viajesMes = viajes.filter(v => fechaSolo(v.fecha).startsWith(mesStr));
+    const lotesMes = lotes.filter(l => fechaSolo(l.fecha).startsWith(mesStr));
+    const pagosMes = pagos.filter(p => fechaSolo(p.fecha).startsWith(mesStr));
+    renderResumen(`📆 ${formatoMesLindo(mesStr)}`, calcularResumen(viajesMes, lotesMes, pagosMes));
 }
 
 // ============================================================
@@ -1243,9 +1655,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnAbrirFicha').addEventListener('click', () => { cerrarModalDatos(); abrirModalEditar(); });
     document.getElementById('btnAbrirDeudores').addEventListener('click', () => { cerrarModalDatos(); abrirModalDeudores(); });
     document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirModalEstadisticas(); });
+    document.getElementById('btnAbrirPrecios').addEventListener('click', () => { cerrarModalDatos(); abrirModalPrecios(); });
+    document.getElementById('btnGuardarPrecios').addEventListener('click', guardarPrecios);
+    document.getElementById('btnCancelarPrecios').addEventListener('click', cerrarModalPrecios);
     document.getElementById('btnCerrarEstadisticas').addEventListener('click', cerrarModalEstadisticas);
-    document.getElementById('btnAbrirResumenDiario').addEventListener('click', () => { cerrarModalEstadisticas(); abrirResumenDiario(); });
+    document.getElementById('btnAbrirResumenDiario').addEventListener('click', () => { cerrarModalEstadisticas(); abrirTipoResumen(); });
     document.getElementById('btnCerrarResumenDiario').addEventListener('click', cerrarModalResumenDiario);
+    document.getElementById('btnCerrarTipoResumen').addEventListener('click', cerrarTipoResumen);
+    document.getElementById('btnResumenUltimoDia').addEventListener('click', () => { cerrarTipoResumen(); abrirResumenDiario(); });
+    document.getElementById('btnResumenOtraFecha').addEventListener('click', () => { cerrarTipoResumen(); abrirListaFechas(); });
+    document.getElementById('btnCerrarListaFechas').addEventListener('click', cerrarModalListaFechas);
+
+    // Resumen semanal
+    document.getElementById('btnAbrirResumenSemanal').addEventListener('click', () => { cerrarModalEstadisticas(); abrirTipoResumenSemanal(); });
+    document.getElementById('btnCerrarTipoResumenSemanal').addEventListener('click', cerrarTipoResumenSemanal);
+    document.getElementById('btnResumenUltimaSemana').addEventListener('click', () => { cerrarTipoResumenSemanal(); abrirResumenSemanal(); });
+    document.getElementById('btnResumenOtraSemana').addEventListener('click', () => { cerrarTipoResumenSemanal(); abrirListaSemanas(); });
+    document.getElementById('btnCerrarListaSemanas').addEventListener('click', cerrarModalListaSemanas);
+
+    // Resumen mensual
+    document.getElementById('btnAbrirResumenMensual').addEventListener('click', () => { cerrarModalEstadisticas(); abrirTipoResumenMensual(); });
+    document.getElementById('btnCerrarTipoResumenMensual').addEventListener('click', cerrarTipoResumenMensual);
+    document.getElementById('btnResumenUltimoMes').addEventListener('click', () => { cerrarTipoResumenMensual(); abrirResumenMensual(); });
+    document.getElementById('btnResumenOtroMes').addEventListener('click', () => { cerrarTipoResumenMensual(); abrirListaMeses(); });
+    document.getElementById('btnCerrarListaMeses').addEventListener('click', cerrarModalListaMeses);
 
     document.getElementById('btnQuitarManual').addEventListener('click', () => {
         document.getElementById('descuentoManualInput').value = '';
@@ -1256,6 +1689,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-libres]').forEach(b => b.addEventListener('click', () => {
         const input = document.getElementById('libresInput');
         input.value = (Number(input.value) || 0) + Number(b.dataset.libres);
+    }));
+    document.querySelectorAll('.metodo-carga').forEach(b => b.addEventListener('click', () => {
+        metodoPagoCarga = b.dataset.metodo;
+        document.querySelectorAll('.metodo-carga').forEach(x => x.classList.toggle('metodo-activo', x === b));
+    }));
+    document.querySelectorAll('.metodo-rapido').forEach(b => b.addEventListener('click', () => {
+        metodoPagoRapido = b.dataset.metodo;
+        document.querySelectorAll('.metodo-rapido').forEach(x => x.classList.toggle('metodo-activo', x === b));
+    }));
+    document.querySelectorAll('.categoria-btn').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('.categoria-btn').forEach(x => x.classList.toggle('metodo-activo', x === b));
     }));
 
     loadAllData();
