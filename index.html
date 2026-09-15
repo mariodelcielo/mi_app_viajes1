@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>RESCATES RAMBLA</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico?v=2" sizes="any">
@@ -90,6 +90,7 @@
         }
         .header .status.offline { color: var(--brass-dark); }
         .header .status.error { color: var(--coral-dark); }
+        .header .status.pendiente { color: var(--brass-dark); cursor: pointer; text-decoration: underline dotted; }
 
         /* ===== BUSCADOR ===== */
         .search-wrap { position: relative; margin-bottom: 12px; }
@@ -323,8 +324,8 @@
     </div>
 
     <div class="switches">
-        <button class="switch-btn" id="btnEscuela">E</button>
-        <button class="switch-btn" id="btnPista">P</button>
+        <button class="switch-btn" id="btnEscuela" aria-label="Subida de Escuela" title="Escuela">E</button>
+        <button class="switch-btn" id="btnPista" aria-label="Subida de Pista" title="Pista">P</button>
     </div>
 
     <div class="panel contador">
@@ -337,17 +338,17 @@
     </div>
 
     <div class="accion-group">
-        <button class="btn-accion btn-despegar" id="btnConfirmar">Enter</button>
-        <button class="btn-accion btn-deshacer" id="btnAnular"><span class="icono">↺</span></button>
+        <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar las subidas" title="Registrar las subidas">Enter</button>
+        <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación"><span class="icono">↺</span></button>
     </div>
 
     <div class="accion-group">
-        <button class="btn-accion btn-fuel" id="btnCarga"><span class="icono">$</span></button>
-        <button class="btn-accion btn-pago" id="btnPago"><span class="icono">⚡</span>PAGO RÁPIDO</button>
+        <button class="btn-accion btn-fuel" id="btnCarga" aria-label="Cargar crédito" title="Cargar crédito"><span class="icono">$</span></button>
+        <button class="btn-accion btn-pago" id="btnPago" aria-label="Pago rápido de la deuda" title="Pago rápido de la deuda"><span class="icono">⚡</span>PAGO RÁPIDO</button>
     </div>
 
     <div class="accion-group">
-        <button class="btn-accion btn-datos full-width" id="btnDatos"><span class="icono">📁</span>DATOS</button>
+        <button class="btn-accion btn-datos full-width" id="btnDatos" aria-label="Menú de datos" title="Menú de datos"><span class="icono">📁</span>DATOS</button>
     </div>
 
     <div class="panel historial" id="historial">
@@ -370,6 +371,7 @@
             <button type="button" class="btn-chip" data-monto="150000">$150.000</button>
             <button type="button" class="btn-chip" data-monto="200000">$200.000</button>
         </div>
+        <div class="modal-hint">Los botones de arriba reemplazan el monto; también podés escribirlo a mano.</div>
         <input type="number" id="montoInput" placeholder="Otro monto..." min="0" step="1000">
         <div class="modal-hint" id="hintDeuda"></div>
 
@@ -387,6 +389,7 @@
             <button type="button" class="btn-chip" data-libres="10">+10</button>
         </div>
         <input type="number" id="libresInput" placeholder="Cantidad personalizada..." min="0" step="1">
+        <div class="modal-hint">Los botones de arriba SUMAN sobre lo que ya esté cargado.</div>
 
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnAplicarCarga">✅ Aplicar</button>
@@ -410,6 +413,9 @@
         </div>
         <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 subidas libres.</div>
 
+        <label style="margin-top:16px;">📅 Fecha de alta</label>
+        <input type="date" id="fechaAltaInput">
+
         <label style="margin-top:16px;">🎯 Beneficio (descuento) personalizado</label>
         <div class="modal-hint">Si lo completás, este % se usa siempre para este piloto en vez del tramo por lote.</div>
         <input type="number" id="descuentoManualInput" placeholder="Ej: 20" min="0" max="100" step="1">
@@ -418,6 +424,44 @@
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnGuardarEdicion">✅ Guardar</button>
             <button class="btn-modal-cancel" id="btnCancelarEdicion">✖ Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalPin">
+    <div class="modal">
+        <h2>🔐 Código de acceso</h2>
+        <div class="modal-hint" id="pinMensaje"></div>
+        <label>Tu código secreto</label>
+        <input type="password" id="pinInput" autocomplete="current-password" placeholder="Código de la app">
+        <div class="modal-hint">Queda guardado en este celular. Si lo cambiás en Apps Script, la app te lo vuelve a pedir.</div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnPinOk">✅ Entrar</button>
+            <button class="btn-modal-cancel" id="btnPinCancelar">✖ Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalNuevoPiloto">
+    <div class="modal">
+        <h2>➕ Nuevo piloto</h2>
+        <label>Número</label>
+        <input type="text" id="npNumero" inputmode="numeric" placeholder="Ej: 27">
+        <label style="margin-top:12px;">Nombre y apellido</label>
+        <input type="text" id="npNombre" placeholder="Como quiere figurar">
+        <label style="margin-top:12px;">Alias / apodo (opcional)</label>
+        <input type="text" id="npAlias" placeholder="Ej: 'El Colo'">
+        <label style="margin-top:12px;">🎓 Categoría</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip np-categoria metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;">🧑‍✈️ Piloto</button>
+            <button type="button" class="btn-chip np-categoria" data-categoria="alumno" style="width:100%;text-align:center;margin:0;">🎓 Alumno</button>
+        </div>
+        <label style="margin-top:12px;">📅 Fecha de alta</label>
+        <input type="date" id="npFechaAlta">
+        <div class="modal-hint">Si arranca como "Alumno" se le asignan 10 subidas libres.</div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnCrearPiloto">✅ Crear</button>
+            <button class="btn-modal-cancel" id="btnCancelarNuevoPiloto">✖ Cancelar</button>
         </div>
     </div>
 </div>
@@ -459,13 +503,27 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="modalApartadas">
+    <div class="modal">
+        <h2>⚠️ Cambios apartados</h2>
+        <div class="modal-hint">Son cambios que la planilla rechazó (por ejemplo, si el piloto ya no existe ahí). No se pierden: quedan guardados en el celular. Reintentalos o cargalos a mano en la planilla, y después borrá la lista.</div>
+        <div id="listaApartadas" style="max-height:45vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnReintentarApartadas">🔄 Reintentar</button>
+            <button class="btn-modal-cancel" id="btnCerrarApartadas">✖ Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="modalDatos">
     <div class="modal">
         <h2>📁 Datos</h2>
         <div style="display:flex;flex-direction:column;gap:10px;">
             <button class="btn-chip" id="btnAbrirPlanilla" style="padding:14px;text-align:left;width:100%;">🗺️ Planilla</button>
+            <button class="btn-chip" id="btnAbrirNuevoPiloto" style="padding:14px;text-align:left;width:100%;">➕ Nuevo piloto</button>
             <button class="btn-chip" id="btnAbrirFicha" style="padding:14px;text-align:left;width:100%;">🥽 Ficha del piloto</button>
             <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;">📋 Deudores</button>
+            <button class="btn-chip" id="btnAbrirApartadas" style="padding:14px;text-align:left;width:100%;">⚠️ Cambios apartados (<span id="contApartadas">0</span>)</button>
             <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;">💲 Precios</button>
             <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;">📊 Estadísticas</button>
         </div>
@@ -593,6 +651,15 @@
 // ============================================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rwe45LyMor89wsGsnPT4M5Ggt0rVomXKsrSVq5c6TkSRhdGtO7a9Bt/exec';
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
+// Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
+// avisa que hay que volver a pegar el backend en Apps Script.
+const VERSION_BACKEND = 2;
+
+const TRAMOS_POR_DEFECTO = [
+    { minimo: 25000, porcentaje: 5 }, { minimo: 50000, porcentaje: 10 },
+    { minimo: 100000, porcentaje: 15 }, { minimo: 150000, porcentaje: 20 },
+    { minimo: 200000, porcentaje: 30 }
+];
 
 // ============================================================
 // ESTADO GLOBAL
@@ -607,144 +674,326 @@ let historialPrecios = []; // [{fecha, precioEscuela, precioPista}]
 let selectedPiloto = null;
 let tipoViaje = null;
 let cantidadSubidas = 1;
-let lastBatch = [];       // viajes de la última confirmación (para poder deshacer)
-let lastBatchLotesAntes = []; // snapshot de saldos de lotes antes de la confirmación (para deshacer con precisión)
+let lastBatch = [];           // viajes de la última confirmación (para deshacer)
+let lastBatchLotesAntes = []; // saldos de los lotes antes de esa confirmación
 let lastBatchDeudaAntes = 0;
-let pendingSync = false;
+let lastBatchLibresAntes = 0;
+let lastBatchOpId = '';       // operación que creó esas subidas (permite borrarlas)
+let colaPendiente = [];       // cambios ya aplicados en el celular, sin subir
+let opsApartadas = [];        // cambios que el servidor rechazó y quedan a revisar
+let enviandoCola = false;
+let flushEnCurso = null;      // promesa del envío en curso (para no abrir dos a la vez)
+let reintentos = 0;
+let origenDatos = 'servidor'; // 'servidor' | 'local'
+let backendViejo = false;
 let pin = localStorage.getItem('pin_app') || '';
+let pinResolver = null;
 let metodoPagoCarga = 'efectivo';
 let metodoPagoRapido = 'efectivo';
 
 // ============================================================
-// FECHA/HORA LOCAL (evita el desfasaje de usar UTC)
+// FECHAS: siempre TEXTO en la hora local del celular.
+// Según de dónde vengan, pueden llegar como Date, como ISO en UTC
+// ('...T21:42:33.000Z') o como texto ya local. Las tres formas se
+// normalizan acá para que el día nunca se corra.
 // ============================================================
-function fechaHoraLocal() {
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-function fechaSoloLocal() {
-    const d = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function formatearLocal(d, conHora) {
+    const fecha = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    return conHora ? `${fecha} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}` : fecha;
 }
 
-// ============================================================
-// PIN DE ACCESO
-// ============================================================
-function pedirPin() {
-    const ingresado = prompt('Código de acceso de la app:');
-    if (ingresado) {
-        pin = ingresado.trim();
-        localStorage.setItem('pin_app', pin);
+function fechaHoraLocal() { return formatearLocal(new Date(), true); }
+function fechaSoloLocal() { return formatearLocal(new Date(), false); }
+
+// Detecta un Date aunque venga de otro contexto (se usa el toString del prototipo,
+// que sí funciona entre marcos distintos; `instanceof` fallaría).
+function esFecha(v) { return Object.prototype.toString.call(v) === '[object Date]'; }
+
+function aFechaLocal(valor, conHora) {
+    if (valor === null || valor === undefined || valor === '') return '';
+    if (esFecha(valor)) return formatearLocal(valor, conHora);
+    const s = String(valor).trim();
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+        const d = new Date(s); // viene con zona (UTC): se pasa a hora local
+        if (!isNaN(d.getTime())) return formatearLocal(d, conHora);
     }
-    return pin;
+    if (conHora) return s.length >= 19 ? s.slice(0, 19) : s + (s.length === 10 ? ' 00:00:00' : '');
+    return s.slice(0, 10);
 }
 
 // ============================================================
-// COMUNICACIÓN CON APPS SCRIPT
+// ESCAPADO: todo lo que viene de la planilla se muestra escapado
 // ============================================================
-async function apiGet() {
-    if (!pin) pedirPin();
-    const url = `${APPS_SCRIPT_URL}?action=getAll&pin=${encodeURIComponent(pin)}`;
-    const resp = await fetch(url);
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error);
-    return data;
+function esc(v) {
+    return String(v === null || v === undefined ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-async function apiSave(state) {
-    if (!pin) pedirPin();
-    const resp = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action: 'saveAll', pin: pin, data: JSON.stringify(state) })
+// ============================================================
+// PIN DE ACCESO (modal, no prompt(): en app instalada el prompt a veces no aparece)
+// ============================================================
+function pedirPinModal(mensaje) {
+    return new Promise(resolve => {
+        pinResolver = resolve;
+        document.getElementById('pinMensaje').textContent = mensaje || '';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('modalPin').classList.add('show');
+        setTimeout(() => { try { document.getElementById('pinInput').focus(); } catch (e) {} }, 120);
     });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error);
+}
+
+function cerrarPinModal(valor) {
+    document.getElementById('modalPin').classList.remove('show');
+    const r = pinResolver;
+    pinResolver = null;
+    if (r) r(valor);
+}
+
+async function asegurarPin(mensaje) {
+    if (pin) return true;
+    const ingresado = await pedirPinModal(mensaje);
+    if (!ingresado) return false;
+    pin = ingresado;
+    localStorage.setItem('pin_app', pin);
+    return true;
+}
+
+// ============================================================
+// COMUNICACIÓN CON APPS SCRIPT (siempre POST: el PIN no viaja en la URL)
+// ============================================================
+// Los errores se marcan según su origen: sinConexion (se reintenta siempre) o
+// delServidor (el servidor rechazó el cambio: se reintenta poco y se aparta).
+async function apiPost(params) {
+    let resp;
+    try {
+        resp = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(params)
+        });
+    } catch (e) {
+        const err = new Error('No hay conexión con la planilla');
+        err.sinConexion = true;
+        throw err;
+    }
+    let data;
+    try {
+        data = await resp.json();
+    } catch (e) {
+        const err = new Error('Respuesta inválida del servidor');
+        err.sinConexion = true; // puede ser un corte a mitad de camino
+        throw err;
+    }
+    if (data.error) {
+        const err = new Error(data.error);
+        err.delServidor = true;
+        throw err;
+    }
     return data;
+}
+
+// ============================================================
+// COLA DE CAMBIOS PENDIENTES
+// Cada cambio se aplica primero en el celular y queda en esta cola. Si no hay
+// señal se sube solo cuando vuelve, y lo que está en la cola nunca se pisa con
+// lo que devuelve el servidor.
+// ============================================================
+function guardarCola() {
+    try { localStorage.setItem('cola_app', JSON.stringify(colaPendiente)); } catch (e) {}
+}
+
+function cargarColaGuardada() {
+    try { colaPendiente = JSON.parse(localStorage.getItem('cola_app') || '[]') || []; }
+    catch (e) { colaPendiente = []; }
+    if (!Array.isArray(colaPendiente)) colaPendiente = [];
+}
+
+function nuevoOpId() {
+    return 'op-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+}
+
+/** Aplica un cambio acá y lo encola para subirlo a la planilla. */
+function mutar(cambios) {
+    const op = Object.assign({ opId: nuevoOpId() }, cambios);
+    colaPendiente.push(op);
+    guardarEnLocal();
+    guardarCola();
+    actualizarEstadoSync();
+    flushCola().catch(() => {});
+    return op;
+}
+
+/** Sube la cola en orden. Devuelve true solo si la cola quedó vacía. */
+function flushCola() {
+    if (flushEnCurso) return flushEnCurso; // ya se está subiendo: se engancha al mismo intento
+    flushEnCurso = subirCola().finally(() => { flushEnCurso = null; });
+    return flushEnCurso;
+}
+
+async function subirCola() {
+    if (colaPendiente.length === 0) return true;
+    if (!(await asegurarPin())) return false;
+
+    enviandoCola = true;
+    actualizarEstadoSync();
+    let todoBien = true;
+    try {
+        while (colaPendiente.length > 0) {
+            const op = colaPendiente[0];
+            try {
+                await apiPost({ action: 'mutar', pin: pin, op: op });
+                colaPendiente.shift();
+                guardarCola();
+                reintentos = 0;
+            } catch (e) {
+                if (e.message === 'PIN incorrecto') {
+                    localStorage.removeItem('pin_app');
+                    pin = '';
+                    showToast('⚠️ El código guardado ya no sirve, ingresá el actual');
+                    todoBien = false;
+                    break;
+                }
+                if (e.sinConexion) {
+                    // sin señal: se reintenta solo, más tarde
+                    reintentos++;
+                    console.warn('No se pudo subir todavía, se reintenta:', e.message);
+                    programarReintento();
+                    todoBien = false;
+                    break;
+                }
+                // El servidor rechazó el cambio (un dato raro, un piloto que ya no
+                // está...). Se reintenta un par de veces y después se aparta, para
+                // que un solo cambio no trabe todo lo demás.
+                op._intentos = (op._intentos || 0) + 1;
+                if (op._intentos < 3) {
+                    reintentos++;
+                    programarReintento();
+                    todoBien = false;
+                    break;
+                }
+                colaPendiente.shift();
+                guardarCola();
+                apartarOperacion(op, e.message);
+                showToast('⚠️ Un cambio quedó apartado: revisá Datos → Cambios apartados');
+            }
+        }
+        if (todoBien) origenDatos = 'servidor';
+        return todoBien && colaPendiente.length === 0;
+    } finally {
+        enviandoCola = false;
+        actualizarEstadoSync();
+    }
+}
+
+// ============================================================
+// CAMBIOS APARTADOS (no se pierden: quedan guardados para revisarlos)
+// ============================================================
+function guardarApartadas() {
+    try { localStorage.setItem('ops_apartadas', JSON.stringify(opsApartadas.slice(-50))); } catch (e) {}
+}
+
+function cargarApartadasGuardadas() {
+    try { opsApartadas = JSON.parse(localStorage.getItem('ops_apartadas') || '[]') || []; }
+    catch (e) { opsApartadas = []; }
+    if (!Array.isArray(opsApartadas)) opsApartadas = [];
+}
+
+function apartarOperacion(op, motivo) {
+    opsApartadas.push({ fecha: fechaHoraLocal(), motivo: motivo || '', op: op });
+    guardarApartadas();
+    console.error('Cambio apartado:', motivo, op);
+}
+
+function resumenOperacion(op) {
+    const partes = [];
+    if (op.viajes && op.viajes.length) {
+        const v = op.viajes[0];
+        partes.push(`${op.viajes.length} subida(s) de ${v.Nombre} (N° ${v.Numero})`);
+    }
+    if (op.viajesBorrar && op.viajesBorrar.length) partes.push('deshacer de subidas');
+    if (op.lotesNuevos && op.lotesNuevos.length) partes.push(`carga de crédito de $${op.lotesNuevos[0].Monto_Cargado}`);
+    if (op.pagos && op.pagos.length) partes.push(`pago de $${op.pagos[0].Monto} (${op.pagos[0].Nombre})`);
+    if (op.pilotoNuevo) partes.push(`alta del piloto N° ${op.piloto ? op.piloto.Numero : '?'}`);
+    else if (op.piloto) partes.push(`ficha del piloto N° ${op.piloto.Numero}`);
+    if (op.config) partes.push('cambio de precios');
+    if (op.lotesSaldo && op.lotesSaldo.length && partes.length === 0) partes.push('ajuste de saldos de lotes');
+    return partes.join(' + ') || 'cambio';
+}
+
+function abrirModalApartadas() {
+    const cont = document.getElementById('listaApartadas');
+    if (opsApartadas.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">🎉 No hay ningún cambio apartado</div>`;
+    } else {
+        cont.innerHTML = opsApartadas.map((a, i) => `
+            <div style="padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
+                <div style="font-weight:700;font-size:13px;">${esc(resumenOperacion(a.op))}</div>
+                <div style="font-size:11px;color:var(--ink-soft);">${esc(formatoFechaLinda(fechaSolo(a.fecha)))} — ${esc(a.motivo)}</div>
+            </div>
+        `).join('');
+    }
+    document.getElementById('modalApartadas').classList.add('show');
+}
+
+function cerrarModalApartadas() {
+    document.getElementById('modalApartadas').classList.remove('show');
+}
+
+async function reintentarApartadas() {
+    if (opsApartadas.length === 0) { showToast('No hay nada apartado'); return; }
+    // Vuelven al principio de la cola, en el mismo orden en que se hicieron
+    const ops = opsApartadas.map(a => a.op);
+    ops.forEach(op => { delete op._intentos; });
+    colaPendiente = ops.concat(colaPendiente);
+    opsApartadas = [];
+    guardarApartadas();
+    guardarCola();
+    cerrarModalApartadas();
+    actualizarEstadoSync();
+    const ok = await flushCola();
+    showToast(ok ? '✅ Se pudieron guardar todos' : '📱 Siguen sin poder guardarse, quedan en la lista');
+    abrirModalApartadas();
+}
+
+function programarReintento() {
+    const espera = Math.min(60000, 2000 * Math.pow(2, Math.min(reintentos, 5)));
+    clearTimeout(programarReintento._t);
+    programarReintento._t = setTimeout(() => { flushCola().catch(() => {}); }, espera);
+}
+
+/** Deja de ofrecer el deshacer apenas se hace otra operación distinta. */
+function invalidarDeshacer() {
+    lastBatch = [];
+    lastBatchLotesAntes = [];
+    lastBatchOpId = '';
 }
 
 // ============================================================
 // CARGA DE DATOS
 // ============================================================
 async function loadAllData(reintentando) {
-    actualizarEstadoSync('⬇️ Enlazando...', '');
+    actualizarEstadoSync();
     try {
-        const data = await apiGet();
-
-        pilotos = (data.pilotos || []).map(p => ({
-            numero: String(p.Numero ?? ''),
-            nombre: p.Nombre || '',
-            alias: p.Alias || '',
-            categoria: p.Categoria || 'piloto',
-            viajesLibres: Number(p.ViajesLibres) || 0,
-            deuda: Number(p.Deuda) || 0,
-            descuentoManual: (p.Descuento_Manual === '' || p.Descuento_Manual === undefined || p.Descuento_Manual === null)
-                ? null : Number(p.Descuento_Manual),
-            fechaAlta: p.Fecha_Alta || ''
-        }));
-
-        config = {};
-        (data.config || []).forEach(row => {
-            config[row.Parametro] = isNaN(Number(row.Valor)) ? row.Valor : Number(row.Valor);
-        });
-        if (!config.PrecioEscuela) config.PrecioEscuela = 11000;
-        if (!config.PrecioPista) config.PrecioPista = 6500;
-
-        tramos = (data.tramos || [])
-            .map(t => ({ minimo: Number(t.Monto_Minimo) || 0, porcentaje: Number(t.Porcentaje_Descuento) || 0 }))
-            .sort((a, b) => a.minimo - b.minimo);
-        if (tramos.length === 0) {
-            tramos = [
-                { minimo: 25000, porcentaje: 5 }, { minimo: 50000, porcentaje: 10 },
-                { minimo: 100000, porcentaje: 15 }, { minimo: 150000, porcentaje: 20 },
-                { minimo: 200000, porcentaje: 30 }
-            ];
+        // 1) Si quedaron cambios sin subir, se suben ANTES de leer: lo del
+        //    servidor nunca pisa cambios que todavía no llegaron a la planilla.
+        if (colaPendiente.length > 0) {
+            const subido = await flushCola();
+            if (!subido && colaPendiente.length > 0) { usarDatosLocales(); return; }
         }
+        if (!(await asegurarPin())) { usarDatosLocales(); return; }
 
-        lotes = (data.lotes || []).map(l => ({
-            socio: String(l.Numero ?? ''),
-            loteId: l.Lote_ID || '',
-            monto: Number(l.Monto_Cargado) || 0,
-            descuento: Number(l.Porcentaje_Descuento) || 0,
-            saldo: Number(l.Saldo_Disponible) || 0,
-            fecha: l.Fecha_Carga || fechaSoloLocal(),
-            metodoPago: l.Metodo_Pago || 'efectivo'
-        }));
-
-        viajes = (data.viajes || []).map(v => ({
-            fecha: v.Fecha || fechaHoraLocal(),
-            socio: String(v.Numero ?? ''),
-            nombre: v.Nombre || '',
-            tipo: v.Origen || 'escuela',
-            precioLista: Number(v.Precio_Unitario) || 0,
-            total: Number(v.Total) || 0,
-            descuento: Number(v.Dto_Aplicado) || 0,
-            lote: v.Lote_Usado || '',
-            deuda: Number(v.Deuda_Generada) || 0,
-            gratis: v.Gratis === true || v.Gratis === 'TRUE'
-        }));
-
-        pagos = (data.pagos || []).map(p => ({
-            fecha: p.Fecha || fechaHoraLocal(),
-            socio: String(p.Numero ?? ''),
-            nombre: p.Nombre || '',
-            monto: Number(p.Monto) || 0,
-            metodoPago: p.Metodo_Pago || 'efectivo'
-        }));
-
-        historialPrecios = (data.historialPrecios || []).map(h => ({
-            fecha: h.Fecha_Vigencia || '',
-            precioEscuela: Number(h.PrecioEscuela) || 0,
-            precioPista: Number(h.PrecioPista) || 0
-        }));
-
-        guardarEnLocal();
-        pendingSync = false;
-        actualizarEstadoSync('✅ Todo enlazado', '');
+        const data = await apiPost({ action: 'getAll', pin: pin });
+        aplicarDatosDelServidor(data);
+        origenDatos = 'servidor';
         renderPilotos();
         updateHistorial();
+        actualizarEstadoSync();
+        if (backendViejo) {
+            showToast('⚠️ El backend quedó viejo: volvé a pegar Code.gs en Apps Script');
+        }
     } catch (e) {
         console.error('Error cargando datos:', e);
         if (e.message === 'PIN incorrecto' && !reintentando) {
@@ -752,95 +1001,209 @@ async function loadAllData(reintentando) {
             localStorage.removeItem('pin_app');
             pin = '';
             showToast('⚠️ El código guardado ya no es válido, ingresá el actual');
-            pedirPin();
             return loadAllData(true);
         }
-        const local = localStorage.getItem('estado_app');
-        if (local) {
-            const s = JSON.parse(local);
-            pilotos = s.pilotos; lotes = s.lotes; viajes = s.viajes; config = s.config; tramos = s.tramos || []; pagos = s.pagos || []; historialPrecios = s.historialPrecios || [];
-            actualizarEstadoSync('☁️ Sin señal (' + e.message + ')', 'offline');
-            renderPilotos();
-            updateHistorial();
-        } else {
-            actualizarEstadoSync('⚠️ Error: ' + e.message, 'error');
-        }
+        usarDatosLocales();
     }
+}
+
+function aplicarDatosDelServidor(data) {
+    pilotos = (data.pilotos || []).map(p => ({
+        numero: String(p.Numero ?? ''),
+        nombre: p.Nombre || '',
+        alias: p.Alias || '',
+        categoria: p.Categoria || 'piloto',
+        viajesLibres: Number(p.ViajesLibres) || 0,
+        deuda: Number(p.Deuda) || 0,
+        descuentoManual: (p.Descuento_Manual === '' || p.Descuento_Manual === undefined || p.Descuento_Manual === null)
+            ? null : Number(p.Descuento_Manual),
+        fechaAlta: aFechaLocal(p.Fecha_Alta, false)
+    }));
+
+    config = {};
+    (data.config || []).forEach(row => {
+        config[row.Parametro] = isNaN(Number(row.Valor)) ? row.Valor : Number(row.Valor);
+    });
+    if (!config.PrecioEscuela) config.PrecioEscuela = 11000;
+    if (!config.PrecioPista) config.PrecioPista = 6500;
+
+    tramos = (data.tramos || [])
+        .map(t => ({ minimo: Number(t.Monto_Minimo) || 0, porcentaje: Number(t.Porcentaje_Descuento) || 0 }))
+        .sort((a, b) => a.minimo - b.minimo);
+    if (tramos.length === 0) tramos = TRAMOS_POR_DEFECTO.slice();
+
+    lotes = (data.lotes || []).map((l, i) => ({
+        socio: String(l.Numero ?? ''),
+        loteId: l.Lote_ID || '',
+        monto: Number(l.Monto_Cargado) || 0,
+        descuento: Number(l.Porcentaje_Descuento) || 0,
+        saldo: Number(l.Saldo_Disponible) || 0,
+        fecha: aFechaLocal(l.Fecha_Carga, false) || fechaSoloLocal(),
+        metodoPago: l.Metodo_Pago || 'efectivo',
+        _orden: i // orden real de carga dentro de la planilla (desempata el mismo día)
+    }));
+
+    viajes = (data.viajes || []).map(v => ({
+        fecha: aFechaLocal(v.Fecha, true) || fechaHoraLocal(),
+        socio: String(v.Numero ?? ''),
+        nombre: v.Nombre || '',
+        tipo: v.Origen || 'escuela',
+        precioLista: Number(v.Precio_Unitario) || 0,
+        total: Number(v.Total) || 0,
+        descuento: Number(v.Dto_Aplicado) || 0,
+        lote: v.Lote_Usado || '',
+        deuda: Number(v.Deuda_Generada) || 0,
+        gratis: v.Gratis === true || String(v.Gratis).toUpperCase() === 'TRUE' || String(v.Gratis).toUpperCase() === 'SI'
+    }));
+
+    pagos = (data.pagos || []).map(p => ({
+        fecha: aFechaLocal(p.Fecha, true) || fechaHoraLocal(),
+        socio: String(p.Numero ?? ''),
+        nombre: p.Nombre || '',
+        monto: Number(p.Monto) || 0,
+        metodoPago: p.Metodo_Pago || 'efectivo'
+    }));
+
+    historialPrecios = (data.historialPrecios || []).map(h => ({
+        fecha: aFechaLocal(h.Fecha_Vigencia, false),
+        precioEscuela: Number(h.PrecioEscuela) || 0,
+        precioPista: Number(h.PrecioPista) || 0
+    }));
+
+    // Si el backend todavía es el viejo, devuelve las fechas en UTC: avisamos.
+    backendViejo = Number(data.version || 1) < VERSION_BACKEND;
+
+    guardarEnLocal();
+}
+
+/** Usa lo guardado en el celular (sin señal, o con cambios que aún no subieron). */
+function usarDatosLocales() {
+    const local = localStorage.getItem('estado_app');
+    if (!local) {
+        actualizarEstadoSync('⚠️ No hay datos: revisá el código de acceso o la conexión');
+        return;
+    }
+    try {
+        const s = JSON.parse(local);
+        pilotos = (s.pilotos || []).map(p => Object.assign({}, p, { fechaAlta: aFechaLocal(p.fechaAlta, false) }));
+        lotes = (s.lotes || []).map((l, i) => Object.assign({}, l, {
+            fecha: aFechaLocal(l.fecha, false) || fechaSoloLocal(),
+            _orden: (l._orden === undefined ? i : l._orden)
+        }));
+        viajes = (s.viajes || []).map(v => Object.assign({}, v, { fecha: aFechaLocal(v.fecha, true) || fechaHoraLocal() }));
+        pagos = (s.pagos || []).map(p => Object.assign({}, p, { fecha: aFechaLocal(p.fecha, true) || fechaHoraLocal() }));
+        historialPrecios = (s.historialPrecios || []).map(h => Object.assign({}, h, { fecha: aFechaLocal(h.fecha, false) }));
+        config = s.config || {};
+        tramos = (s.tramos && s.tramos.length) ? s.tramos : TRAMOS_POR_DEFECTO.slice();
+        if (!config.PrecioEscuela) config.PrecioEscuela = 11000;
+        if (!config.PrecioPista) config.PrecioPista = 6500;
+        origenDatos = 'local';
+    } catch (e) {
+        actualizarEstadoSync('⚠️ Los datos guardados en el celular están dañados');
+        return;
+    }
+    renderPilotos();
+    updateHistorial();
+    actualizarEstadoSync();
 }
 
 function guardarEnLocal() {
-    localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos, historialPrecios }));
-}
-
-function actualizarEstadoSync(msg, clase) {
-    const el = document.getElementById('statusSync');
-    el.textContent = msg;
-    el.className = 'status ' + (clase || '');
-}
-
-async function saveData(mensajeExito) {
-    guardarEnLocal();
     try {
-        await apiSave({
-            pilotos: pilotosParaGuardar(), lotes: lotesParaGuardar(), viajes: viajesParaGuardar(),
-            pagos: pagosParaGuardar(), config: configParaGuardar(), historialPrecios: historialPreciosParaGuardar()
-        });
-        pendingSync = false;
-        actualizarEstadoSync('✅ ' + (mensajeExito || 'Todo enlazado'), '');
-    } catch (e) {
-        pendingSync = true;
-        actualizarEstadoSync('🔄 Pendiente de enlazar', 'offline');
-    }
+        localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos, historialPrecios }));
+    } catch (e) {}
 }
 
-function pilotosParaGuardar() {
-    return pilotos.map(p => ({
-        Numero: p.numero, Nombre: p.nombre, Alias: p.alias || '', Categoria: p.categoria,
-        ViajesLibres: p.viajesLibres, Deuda: p.deuda,
-        Descuento_Manual: (p.descuentoManual === null || p.descuentoManual === undefined) ? '' : p.descuentoManual,
-        Fecha_Alta: p.fechaAlta || ''
-    }));
+/** Refleja en el encabezado si hay cambios sin subir, si estamos sin señal, etc. */
+function actualizarEstadoSync(mensajeForzado, claseForzada) {
+    const el = document.getElementById('statusSync');
+    if (!el) return;
+    let msg, clase = '';
+    if (mensajeForzado) {
+        msg = mensajeForzado;
+        clase = claseForzada || 'error';
+    } else if (colaPendiente.length > 0) {
+        msg = enviandoCola
+            ? `⏳ Subiendo ${colaPendiente.length} cambio(s)...`
+            : `🔄 ${colaPendiente.length} cambio(s) sin subir — tocá acá para reintentar`;
+        clase = 'pendiente';
+    } else if (origenDatos === 'local') {
+        msg = '☁️ Sin señal (usando los datos del celular)';
+        clase = 'offline';
+    } else {
+        msg = '✅ Todo enlazado';
+    }
+    if (backendViejo) { msg = '⚠️ Backend viejo: hay que volver a pegar Code.gs'; clase = 'error'; }
+    if (opsApartadas.length > 0) msg += ` · ⚠️${opsApartadas.length} apartado(s)`;
+    el.textContent = msg;
+    el.className = 'status ' + clase;
+    const contA = document.getElementById('contApartadas');
+    if (contA) contA.textContent = opsApartadas.length;
 }
-function lotesParaGuardar() {
-    return lotes.map(l => ({
-        Numero: l.socio, Lote_ID: l.loteId, Monto_Cargado: l.monto,
-        Porcentaje_Descuento: l.descuento, Saldo_Disponible: l.saldo, Fecha_Carga: l.fecha,
-        Metodo_Pago: l.metodoPago || 'efectivo'
-    }));
-}
-function viajesParaGuardar() {
-    return viajes.map(v => ({
+
+// ============================================================
+// ARMADO DE LO QUE SE MANDA AL SERVIDOR (solo lo que cambió)
+// ============================================================
+function viajeParaServidor(v) {
+    return {
         Fecha: v.fecha, Numero: v.socio, Nombre: v.nombre, Origen: v.tipo,
-        Precio_Unitario: v.precioLista, Total: v.total,
-        Dto_Aplicado: v.descuento, Lote_Usado: v.lote, Deuda_Generada: v.deuda,
-        Gratis: v.gratis
-    }));
+        Precio_Unitario: v.precioLista, Total: v.total, Dto_Aplicado: v.descuento,
+        Lote_Usado: v.lote, Deuda_Generada: v.deuda, Gratis: v.gratis === true
+    };
 }
-function pagosParaGuardar() {
-    return pagos.map(p => ({
+function loteParaServidor(l) {
+    return {
+        Numero: l.socio, Lote_ID: l.loteId, Monto_Cargado: l.monto,
+        Porcentaje_Descuento: l.descuento, Saldo_Disponible: l.saldo,
+        Fecha_Carga: l.fecha, Metodo_Pago: l.metodoPago || 'efectivo'
+    };
+}
+function pagoParaServidor(p) {
+    return {
         Fecha: p.fecha, Numero: p.socio, Nombre: p.nombre, Monto: p.monto,
         Metodo_Pago: p.metodoPago || 'efectivo'
-    }));
+    };
 }
-function configParaGuardar() {
-    return Object.keys(config).map(k => ({ Parametro: k, Valor: config[k] }));
+function pilotoParaServidor(p, incluirNumero) {
+    const o = {
+        Nombre: p.nombre, Alias: p.alias || '', Categoria: p.categoria || 'piloto',
+        ViajesLibres: p.viajesLibres || 0, Deuda: p.deuda || 0,
+        Descuento_Manual: (p.descuentoManual === null || p.descuentoManual === undefined) ? '' : p.descuentoManual,
+        Fecha_Alta: p.fechaAlta || ''
+    };
+    if (incluirNumero) o.Numero = p.numero;
+    return o;
 }
-function historialPreciosParaGuardar() {
-    return historialPrecios.map(h => ({
-        Fecha_Vigencia: h.fecha, PrecioEscuela: h.precioEscuela, PrecioPista: h.precioPista
-    }));
+function proximoOrdenLote() {
+    return lotes.reduce((m, l) => Math.max(m, l._orden || 0), 0) + 1;
 }
 
-window.addEventListener('online', () => { if (pendingSync) saveData(); });
+window.addEventListener('online', async () => {
+    const subido = await flushCola();
+    if (subido && origenDatos === 'local') loadAllData();
+    else actualizarEstadoSync();
+});
+
+// Al volver a la app, si estábamos con datos del celular, se intenta enlazar.
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && origenDatos === 'local') loadAllData();
+});
 
 // ============================================================
 // TANQUE DE COMBUSTIBLE (saldo visual)
 // ============================================================
 function referenciaTanque(piloto) {
-    const lotesPiloto = lotes.filter(l => l.socio === piloto.numero);
     const base = tramos.length ? tramos[0].minimo : 25000;
-    if (lotesPiloto.length === 0) return base;
-    return Math.max(base, ...lotesPiloto.map(l => l.monto || 0));
+    const propios = lotes.filter(l => l.socio === piloto.numero);
+    if (propios.length === 0) return base;
+    // "Tanque lleno" = el lote más grande que TODAVÍA tiene saldo (la última
+    // carga activa). Así la aguja no queda casi vacía para siempre por haber
+    // cargado una vez un monto enorme. Si no queda ninguno con saldo, se usa el
+    // más grande de la historia.
+    const conSaldo = propios.filter(l => (l.saldo || 0) > 0);
+    const referencia = conSaldo.length
+        ? Math.max(...conSaldo.map(l => l.monto || 0))
+        : Math.max(...propios.map(l => l.monto || 0));
+    return Math.max(base, referencia);
 }
 function porcentajeTanque(piloto) {
     const ref = referenciaTanque(piloto);
@@ -881,14 +1244,14 @@ function renderPilotos(filter = '') {
         const categoriaBadge = p.categoria === 'alumno' ? 'badge-alumno' : '';
 
         return `
-            <div class="piloto-item" data-numero="${p.numero}">
+            <div class="piloto-item" data-numero="${esc(p.numero)}">
                 <div class="info">
-                    <span class="nombre">${p.numero} - ${p.nombre}${p.alias ? ` <span class="detalle">"${p.alias}"</span>` : ''}</span>
+                    <span class="nombre">${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` <span class="detalle">"${esc(p.alias)}"</span>` : ''}</span>
                     <span>
                         ${p.categoria === 'alumno' ? `<span class="badge ${categoriaBadge}">alumno</span>` : ''}
                         ${libres > 0 ? `<span class="badge badge-libres">🎁${libres}</span>` : ''}
                         ${deuda > 0 ? `<span class="badge badge-deuda">💳$${deuda}</span>` : ''}
-                        ${tieneManual ? `<span class="badge badge-manual">🎯${p.descuentoManual}%</span>` : ''}
+                        ${tieneManual ? `<span class="badge badge-manual">🎯${esc(p.descuentoManual)}%</span>` : ''}
                     </span>
                 </div>
                 <div class="mini-tanque"><div class="relleno" style="width:${pct}%;background:${colorTanque(pct)};"></div></div>
@@ -936,7 +1299,7 @@ function updateSelectedInfo() {
     const vacio = saldo <= 0;
 
     info.innerHTML = `
-        <div class="placa-nombre">${selectedPiloto.numero} - ${selectedPiloto.nombre}${selectedPiloto.alias ? ` "${selectedPiloto.alias}"` : ''}</div>
+        <div class="placa-nombre">${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}${selectedPiloto.alias ? ` "${esc(selectedPiloto.alias)}"` : ''}</div>
         <div class="gauge-wrap">
             <div class="gauge-case">
                 ${svgGauge(pct, vacio)}
@@ -962,8 +1325,8 @@ function updateHistorial() {
         <div class="titulo">📋 Últimas subidas</div>
         ${ultimos.map(v => `
             <div class="item">
-                <span>${v.socio} - ${v.nombre}</span>
-                <span>${v.tipo} $${v.total} ${v.gratis ? '🎁' : ''}</span>
+                <span>${esc(v.socio)} - ${esc(v.nombre)}</span>
+                <span>${esc(v.tipo)} $${v.total} ${v.gratis ? '🎁' : ''}</span>
             </div>
         `).join('')}
     `;
@@ -980,15 +1343,23 @@ function getDescuentoPorMonto(monto) {
     return descuento;
 }
 
+// Lotes de un piloto, del más viejo al más nuevo. `_orden` (la posición en la
+// planilla) desempata los cargados el mismo día, que comparten la misma fecha.
+function lotesDelPilotoOrdenados(numero, soloConSaldo) {
+    return lotes
+        .filter(l => l.socio === numero && (!soloConSaldo || l.saldo > 0))
+        .sort((a, b) => a.fecha.localeCompare(b.fecha) || (a._orden || 0) - (b._orden || 0));
+}
+
 // Descuento vigente de un piloto: manual si está seteado, si no el del lote más viejo con saldo
 function getDescuentoVigente(numero) {
     const piloto = pilotos.find(p => p.numero === numero);
     if (piloto && piloto.descuentoManual !== null && piloto.descuentoManual !== undefined) {
         return piloto.descuentoManual;
     }
-    const lotesPiloto = lotes.filter(l => l.socio === numero && l.saldo > 0).sort((a, b) => a.fecha.localeCompare(b.fecha));
-    if (lotesPiloto.length === 0) return 0;
-    return lotesPiloto[0].descuento || 0;
+    const ordenados = lotesDelPilotoOrdenados(numero, true);
+    if (ordenados.length === 0) return 0;
+    return ordenados[0].descuento || 0;
 }
 
 function getPrecioLista(tipo) {
@@ -1043,9 +1414,10 @@ function cobrarUnaSubida(piloto, tipo) {
     const montoNecesario = Math.round(precioLista * (1 - descuento / 100));
 
     // 2. cascada por lotes (más viejo primero)
-    const lotesPiloto = lotes.filter(l => l.socio === piloto.numero).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    const lotesPiloto = lotesDelPilotoOrdenados(piloto.numero, false);
     let restante = montoNecesario;
     const lotesUsados = [];
+    const detalleLotes = [];
     for (const lote of lotesPiloto) {
         if (restante <= 0) break;
         if (lote.saldo <= 0) continue;
@@ -1053,6 +1425,7 @@ function cobrarUnaSubida(piloto, tipo) {
         lote.saldo -= usar;
         restante -= usar;
         lotesUsados.push(`${lote.loteId}:$${usar}`);
+        detalleLotes.push({ loteId: lote.loteId, usar: usar });
     }
 
     // 3. lo que sobra queda como deuda
@@ -1064,7 +1437,7 @@ function cobrarUnaSubida(piloto, tipo) {
         fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
         tipo, precioLista: precioLista, total: montoNecesario,
         descuento: descuento, lote: lotesUsados.length ? lotesUsados.join(', ') : 'SIN LOTE',
-        deuda: restante, gratis: false, _lotesDetalle: lotesUsados
+        deuda: restante, gratis: false, _lotesUsados: detalleLotes
     };
     viajes.push(viaje);
     return viaje;
@@ -1088,7 +1461,7 @@ function pedirConfirmacionViaje() {
     }
     const gratisUsados = Math.min(libres, cantidadSubidas);
 
-    detalle = `<b>${selectedPiloto.numero} - ${selectedPiloto.nombre}</b><br>`;
+    detalle = `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>`;
     detalle += `Origen: ${tipoTexto}<br>`;
     detalle += `Subidas: ${cantidadSubidas}<br>`;
     if (gratisUsados > 0) detalle += `🎁 ${gratisUsados} subida(s) libre(s)<br>`;
@@ -1109,17 +1482,33 @@ async function confirmarViaje() {
     lastBatch = [];
     lastBatchLotesAntes = lotes.filter(l => l.socio === piloto.numero).map(l => ({ loteId: l.loteId, saldo: l.saldo }));
     lastBatchDeudaAntes = piloto.deuda || 0;
+    lastBatchLibresAntes = piloto.viajesLibres || 0;
 
+    const lotesTocados = new Set();
     for (let i = 0; i < cantidadSubidas; i++) {
         const viaje = cobrarUnaSubida(piloto, tipoViaje);
         lastBatch.push(viaje);
+        (viaje._lotesUsados || []).forEach(u => lotesTocados.add(u.loteId));
     }
 
     updateSelectedInfo();
     renderPilotos('');
     updateHistorial();
-    await saveData(`${cantidadSubidas} subida(s) registradas`);
+
+    const op = mutar({
+        viajes: lastBatch.map(viajeParaServidor),
+        piloto: pilotoParaServidor(piloto, true),
+        lotesSaldo: [...lotesTocados].map(id => {
+            const l = lotes.find(x => x.socio === piloto.numero && x.loteId === id);
+            return { Lote_ID: id, Saldo_Disponible: l ? l.saldo : 0 };
+        })
+    });
+    lastBatchOpId = op.opId;
+
     showToast(`🛫 ${cantidadSubidas} subida(s) registradas para ${piloto.nombre}`);
+    // El encabezado ya muestra si quedaron cambios sin subir. Este aviso aparece
+    // recién cuando el dato llegó de verdad a la planilla (nunca antes).
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -1129,30 +1518,41 @@ async function anularUltimoViaje() {
     if (lastBatch.length === 0) { showToast('⚠️ No hay nada reciente para deshacer'); return; }
 
     const piloto = pilotos.find(p => p.numero === lastBatch[0].socio);
-    if (piloto) {
-        // restaurar viajes libres consumidos
-        const libresUsados = lastBatch.filter(v => v.gratis).length;
-        piloto.viajesLibres = (piloto.viajesLibres || 0) + libresUsados;
-        // restaurar deuda y saldos de lotes al estado exacto de antes
-        piloto.deuda = lastBatchDeudaAntes;
-        lastBatchLotesAntes.forEach(snap => {
-            const lote = lotes.find(l => l.socio === piloto.numero && l.loteId === snap.loteId);
-            if (lote) lote.saldo = snap.saldo;
-        });
-    }
+    if (!piloto) { lastBatch = []; lastBatchLotesAntes = []; lastBatchOpId = ''; return; }
 
+    // Se vuelve EXACTAMENTE al estado anterior a esa confirmación.
+    piloto.viajesLibres = lastBatchLibresAntes;
+    piloto.deuda = lastBatchDeudaAntes;
+    lastBatchLotesAntes.forEach(snap => {
+        const lote = lotes.find(l => l.socio === piloto.numero && l.loteId === snap.loteId);
+        if (lote) lote.saldo = snap.saldo;
+    });
+
+    const anulados = lastBatch.length;
     lastBatch.forEach(v => {
         const idx = viajes.indexOf(v);
         if (idx !== -1) viajes.splice(idx, 1);
     });
 
-    showToast(`↩️ Se deshicieron ${lastBatch.length} subida(s)`);
+    const saldos = lastBatchLotesAntes.map(snap => ({ Lote_ID: snap.loteId, Saldo_Disponible: snap.saldo }));
+    const opIdAnulado = lastBatchOpId;
     lastBatch = [];
     lastBatchLotesAntes = [];
+    lastBatchOpId = '';
+
     updateSelectedInfo();
     renderPilotos('');
     updateHistorial();
-    await saveData('Deshecho guardado');
+
+    // En la planilla las subidas se borran por su _Op_ID (nunca se reescribe la
+    // hoja entera), y el piloto y sus lotes vuelven a los valores de antes.
+    mutar({
+        viajesBorrar: opIdAnulado ? [opIdAnulado] : [],
+        piloto: pilotoParaServidor(piloto, true),
+        lotesSaldo: saldos
+    });
+
+    showToast(`↩️ Se deshicieron ${anulados} subida(s)`);
 }
 
 // ============================================================
@@ -1182,45 +1582,64 @@ async function confirmarCarga() {
 
     if (monto <= 0 && libres <= 0) { showToast('⚠️ Ingresá un monto o cantidad de subidas libres'); return; }
 
+    const piloto = selectedPiloto;
+    const pagosNuevos = [];
+    const lotesNuevos = [];
+    let detalle = '';
+
     if (monto > 0) {
-        const piloto = selectedPiloto;
         const deudaActual = piloto.deuda || 0;
         const pagoDeuda = Math.min(monto, deudaActual);
         piloto.deuda = deudaActual - pagoDeuda;
         const remanente = monto - pagoDeuda;
 
         if (pagoDeuda > 0) {
-            // registrar la parte que canceló deuda, para que quede en Pagos y cuente como dinero ingresado
-            pagos.push({ fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre, monto: pagoDeuda, metodoPago: metodoPagoCarga });
+            // la parte que canceló deuda queda registrada en Pagos
+            pagosNuevos.push({ fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre, monto: pagoDeuda, metodoPago: metodoPagoCarga });
         }
 
         if (remanente > 0) {
             const descuento = getDescuentoPorMonto(remanente);
-            lotes.push({
+            const lote = {
                 socio: piloto.numero,
                 loteId: 'L' + Date.now(),
                 monto: remanente,
                 descuento: descuento,
                 saldo: remanente,
                 fecha: fechaSoloLocal(),
-                metodoPago: metodoPagoCarga
-            });
-            if (pagoDeuda > 0) {
-                showToast(`💳 Se pagaron $${pagoDeuda} de deuda. Lote nuevo: $${remanente} (${descuento}% dto)`);
-            }
+                metodoPago: metodoPagoCarga,
+                _orden: proximoOrdenLote()
+            };
+            lotes.push(lote);
+            lotesNuevos.push(lote);
+            detalle = pagoDeuda > 0
+                ? `$${pagoDeuda} a la deuda + lote nuevo de $${remanente} (${descuento}% dto)`
+                : `lote nuevo de $${remanente} (${descuento}% dto)`;
         } else {
-            showToast(`💳 Se pagaron $${pagoDeuda} de deuda`);
+            detalle = `$${pagoDeuda} aplicados a la deuda`;
         }
     }
     if (libres > 0) {
-        selectedPiloto.viajesLibres = (selectedPiloto.viajesLibres || 0) + libres;
+        piloto.viajesLibres = (piloto.viajesLibres || 0) + libres;
+        detalle += (detalle ? ' · ' : '') + `+${libres} subidas libres 🎁`;
     }
 
+    pagosNuevos.forEach(p => pagos.push(p));
+
     cerrarModal();
+    invalidarDeshacer();
     updateSelectedInfo();
     renderPilotos('');
-    await saveData('Crédito cargado');
-    showToast(`🪙 Carga aplicada para ${selectedPiloto.nombre}`);
+
+    mutar({
+        pagos: pagosNuevos.map(pagoParaServidor),
+        lotesNuevos: lotesNuevos.map(loteParaServidor),
+        piloto: pilotoParaServidor(piloto, true)
+    });
+
+    // Un solo aviso con TODO el detalle (antes cada cartel pisaba al anterior)
+    showToast(`🪙 ${piloto.nombre}: ${detalle}`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -1230,10 +1649,11 @@ function abrirModalEditar() {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
     document.getElementById('modalEditarInfo').textContent = `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
     document.getElementById('aliasInput').value = selectedPiloto.alias || '';
+    document.getElementById('fechaAltaInput').value = selectedPiloto.fechaAlta || '';
     document.getElementById('descuentoManualInput').value =
         (selectedPiloto.descuentoManual === null || selectedPiloto.descuentoManual === undefined) ? '' : selectedPiloto.descuentoManual;
     const categoriaActual = selectedPiloto.categoria || 'piloto';
-    document.querySelectorAll('.categoria-btn').forEach(b => b.classList.toggle('metodo-activo', b.dataset.categoria === categoriaActual));
+    document.querySelectorAll('#modalEditar .categoria-btn').forEach(b => b.classList.toggle('metodo-activo', b.dataset.categoria === categoriaActual));
     document.getElementById('modalEditar').classList.add('show');
 }
 function cerrarModalEditar() {
@@ -1242,11 +1662,12 @@ function cerrarModalEditar() {
 async function guardarEdicionPiloto() {
     if (!selectedPiloto) return;
     selectedPiloto.alias = document.getElementById('aliasInput').value.trim();
+    selectedPiloto.fechaAlta = document.getElementById('fechaAltaInput').value || selectedPiloto.fechaAlta || '';
     const valorManual = document.getElementById('descuentoManualInput').value;
     selectedPiloto.descuentoManual = valorManual === '' ? null : Math.max(0, Math.min(100, Number(valorManual)));
 
     const categoriaAnterior = selectedPiloto.categoria || 'piloto';
-    const nuevaCategoria = document.querySelector('.categoria-btn.metodo-activo')?.dataset.categoria || 'piloto';
+    const nuevaCategoria = document.querySelector('#modalEditar .categoria-btn.metodo-activo')?.dataset.categoria || 'piloto';
     let mensajeExtra = '';
     if (nuevaCategoria === 'alumno' && categoriaAnterior !== 'alumno') {
         selectedPiloto.viajesLibres = (selectedPiloto.viajesLibres || 0) + 10;
@@ -1255,9 +1676,12 @@ async function guardarEdicionPiloto() {
     selectedPiloto.categoria = nuevaCategoria;
 
     cerrarModalEditar();
+    invalidarDeshacer();
     updateSelectedInfo();
     renderPilotos('');
-    await saveData('Ficha actualizada');
+
+    mutar({ piloto: pilotoParaServidor(selectedPiloto, true) });
+
     showToast(`🥽 Ficha actualizada — ${selectedPiloto.nombre}${mensajeExtra}`);
 }
 
@@ -1271,7 +1695,7 @@ function abrirModalPago() {
     metodoPagoRapido = 'efectivo';
     document.querySelectorAll('.metodo-rapido').forEach(b => b.classList.toggle('metodo-activo', b.dataset.metodo === 'efectivo'));
     document.getElementById('modalPagoInfo').innerHTML =
-        `<b>${selectedPiloto.numero} - ${selectedPiloto.nombre}</b><br>Deuda actual: <b>$${deuda}</b><br>Al confirmar, la deuda queda en $0.`;
+        `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>Deuda actual: <b>$${deuda}</b><br>Al confirmar, la deuda queda en $0.`;
     document.getElementById('modalPago').classList.add('show');
 }
 function cerrarModalPago() {
@@ -1280,14 +1704,22 @@ function cerrarModalPago() {
 async function confirmarPagoInmediato() {
     if (!selectedPiloto) return;
     const monto = selectedPiloto.deuda || 0;
-    pagos.push({ fecha: fechaHoraLocal(), socio: selectedPiloto.numero, nombre: selectedPiloto.nombre, monto: monto, metodoPago: metodoPagoRapido });
+    const pago = { fecha: fechaHoraLocal(), socio: selectedPiloto.numero, nombre: selectedPiloto.nombre, monto: monto, metodoPago: metodoPagoRapido };
+    pagos.push(pago);
     selectedPiloto.deuda = 0;
 
     cerrarModalPago();
+    invalidarDeshacer();
     updateSelectedInfo();
     renderPilotos('');
-    await saveData('Pago registrado');
+
+    mutar({
+        pagos: [pagoParaServidor(pago)],
+        piloto: pilotoParaServidor(selectedPiloto, true)
+    });
+
     showToast(`⚡ Pago de $${monto} registrado — ${selectedPiloto.nombre}`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -1313,10 +1745,10 @@ function abrirModalDeudores() {
             const desglose = contarSubidasAdeudadas(p.numero);
             return `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
-                <span>${p.numero} - ${p.nombre}${p.alias ? ` "${p.alias}"` : ''}</span>
+                <span>${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` "${esc(p.alias)}"` : ''}</span>
                 <span style="text-align:right;">
                     <b style="color:var(--coral-dark);display:block;">$${p.deuda}</b>
-                    ${desglose ? `<span style="font-size:11px;color:var(--ink-soft);">${desglose}</span>` : ''}
+                    ${desglose ? `<span style="font-size:11px;color:var(--ink-soft);">${esc(desglose)}</span>` : ''}
                 </span>
             </div>
         `;
@@ -1357,7 +1789,7 @@ function renderHistorialPrecios() {
         cont.innerHTML = `<div style="color:var(--ink-soft);font-size:13px;">Sin cambios registrados todavía</div>`;
     } else {
         cont.innerHTML = ordenado.map(h => `
-            <div class="historial-item"><span>${formatoFechaLinda(h.fecha)}</span><span>Escuela $${h.precioEscuela} / Pista $${h.precioPista}</span></div>
+            <div class="historial-item"><span>${esc(formatoFechaLinda(h.fecha))}</span><span>Escuela $${h.precioEscuela} / Pista $${h.precioPista}</span></div>
         `).join('');
     }
 }
@@ -1370,13 +1802,19 @@ async function guardarPrecios() {
     config.PrecioEscuela = nuevoEscuela;
     config.PrecioPista = nuevoPista;
 
+    const op = { config: { PrecioEscuela: nuevoEscuela, PrecioPista: nuevoPista } };
     if (cambiaron) {
-        historialPrecios.push({ fecha: fechaSoloLocal(), precioEscuela: nuevoEscuela, precioPista: nuevoPista });
+        const fila = { fecha: fechaSoloLocal(), precioEscuela: nuevoEscuela, precioPista: nuevoPista };
+        historialPrecios.push(fila);
+        op.historialPrecios = [{ Fecha_Vigencia: fila.fecha, PrecioEscuela: fila.precioEscuela, PrecioPista: fila.precioPista }];
     }
 
     cerrarModalPrecios();
-    await saveData('Precios actualizados');
+    invalidarDeshacer();
+    mutar(op);
+
     showToast('💲 Precios actualizados');
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 function abrirModalEstadisticas() {
@@ -1394,7 +1832,8 @@ function fechaSolo(str) {
 }
 
 function formatoFechaLinda(dia) {
-    const [y, m, d] = dia.split('-');
+    const [y, m, d] = String(dia || '').split('-');
+    if (!y || !m || !d) return dia || '';
     return `${d}/${m}/${y}`;
 }
 
@@ -1469,7 +1908,7 @@ function abrirListaFechas() {
         cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
     } else {
         cont.innerHTML = fechas.map(f => `
-            <button class="btn-chip fecha-item" data-fecha="${f}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📅 ${formatoFechaLinda(f)}</button>
+            <button class="btn-chip fecha-item" data-fecha="${esc(f)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📅 ${esc(formatoFechaLinda(f))}</button>
         `).join('');
         cont.querySelectorAll('.fecha-item').forEach(el => {
             el.addEventListener('click', () => {
@@ -1531,7 +1970,7 @@ function abrirListaSemanas() {
         cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
     } else {
         cont.innerHTML = semanas.map(s => `
-            <button class="btn-chip semana-item" data-semana="${s}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">🗓️ ${formatoRangoSemana(s)}</button>
+            <button class="btn-chip semana-item" data-semana="${esc(s)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">🗓️ ${esc(formatoRangoSemana(s))}</button>
         `).join('');
         cont.querySelectorAll('.semana-item').forEach(el => {
             el.addEventListener('click', () => {
@@ -1590,7 +2029,7 @@ function abrirListaMeses() {
         cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
     } else {
         cont.innerHTML = meses.map(m => `
-            <button class="btn-chip mes-item" data-mes="${m}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📆 ${formatoMesLindo(m)}</button>
+            <button class="btn-chip mes-item" data-mes="${esc(m)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📆 ${esc(formatoMesLindo(m))}</button>
         `).join('');
         cont.querySelectorAll('.mes-item').forEach(el => {
             el.addEventListener('click', () => {
@@ -1611,6 +2050,49 @@ function mostrarResumenParaMes(mesStr) {
     const lotesMes = lotes.filter(l => fechaSolo(l.fecha).startsWith(mesStr));
     const pagosMes = pagos.filter(p => fechaSolo(p.fecha).startsWith(mesStr));
     renderResumen(`📆 ${formatoMesLindo(mesStr)}`, calcularResumen(viajesMes, lotesMes, pagosMes));
+}
+
+// ============================================================
+// ALTA DE PILOTO NUEVO (antes había que agregarlo a mano en la planilla)
+// ============================================================
+function abrirModalNuevoPiloto() {
+    document.getElementById('npNumero').value = '';
+    document.getElementById('npNombre').value = '';
+    document.getElementById('npAlias').value = '';
+    document.getElementById('npFechaAlta').value = fechaSoloLocal();
+    document.querySelectorAll('.np-categoria').forEach(b => b.classList.toggle('metodo-activo', b.dataset.categoria === 'piloto'));
+    document.getElementById('modalNuevoPiloto').classList.add('show');
+    setTimeout(() => { try { document.getElementById('npNumero').focus(); } catch (e) {} }, 120);
+}
+function cerrarModalNuevoPiloto() {
+    document.getElementById('modalNuevoPiloto').classList.remove('show');
+}
+function crearPiloto() {
+    const numero = document.getElementById('npNumero').value.trim();
+    const nombre = document.getElementById('npNombre').value.trim();
+    const alias = document.getElementById('npAlias').value.trim();
+    const fechaAlta = document.getElementById('npFechaAlta').value || fechaSoloLocal();
+    const categoria = document.querySelector('.np-categoria.metodo-activo')?.dataset.categoria || 'piloto';
+
+    if (!numero || !nombre) { showToast('⚠️ Completá el número y el nombre'); return; }
+    if (pilotos.some(p => p.numero === numero)) { showToast('⚠️ Ya existe un piloto con el número ' + numero); return; }
+
+    const nuevo = {
+        numero: numero, nombre: nombre, alias: alias, categoria: categoria,
+        viajesLibres: categoria === 'alumno' ? 10 : 0,
+        deuda: 0, descuentoManual: null, fechaAlta: fechaAlta
+    };
+    pilotos.push(nuevo);
+
+    cerrarModalNuevoPiloto();
+    invalidarDeshacer();
+    renderPilotos('');
+    selectPiloto(numero);
+
+    mutar({ piloto: pilotoParaServidor(nuevo, true), pilotoNuevo: true });
+
+    showToast(`➕ ${nombre} agregado${categoria === 'alumno' ? ' con 10 subidas libres 🎁' : ''}`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -1640,20 +2122,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnCarga').addEventListener('click', abrirModalCarga);
     document.getElementById('btnAplicarCarga').addEventListener('click', confirmarCarga);
     document.getElementById('btnCancelarCarga').addEventListener('click', cerrarModal);
-    document.getElementById('btnEditar')?.addEventListener('click', abrirModalEditar);
     document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicionPiloto);
     document.getElementById('btnCancelarEdicion').addEventListener('click', cerrarModalEditar);
     document.getElementById('btnPago').addEventListener('click', abrirModalPago);
     document.getElementById('btnPagoSi').addEventListener('click', confirmarPagoInmediato);
     document.getElementById('btnPagoNo').addEventListener('click', cerrarModalPago);
     document.getElementById('btnCerrarDeudores').addEventListener('click', cerrarModalDeudores);
+    document.getElementById('btnCerrarApartadas').addEventListener('click', cerrarModalApartadas);
+    document.getElementById('btnReintentarApartadas').addEventListener('click', reintentarApartadas);
 
     // Menú DATOS
     document.getElementById('btnDatos').addEventListener('click', abrirModalDatos);
     document.getElementById('btnCerrarDatos').addEventListener('click', cerrarModalDatos);
     document.getElementById('btnAbrirPlanilla').addEventListener('click', () => window.open(SHEET_VIEW_URL, '_blank'));
+    document.getElementById('btnAbrirNuevoPiloto').addEventListener('click', () => { cerrarModalDatos(); abrirModalNuevoPiloto(); });
     document.getElementById('btnAbrirFicha').addEventListener('click', () => { cerrarModalDatos(); abrirModalEditar(); });
     document.getElementById('btnAbrirDeudores').addEventListener('click', () => { cerrarModalDatos(); abrirModalDeudores(); });
+    document.getElementById('btnAbrirApartadas').addEventListener('click', () => { cerrarModalDatos(); abrirModalApartadas(); });
     document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirModalEstadisticas(); });
     document.getElementById('btnAbrirPrecios').addEventListener('click', () => { cerrarModalDatos(); abrirModalPrecios(); });
     document.getElementById('btnGuardarPrecios').addEventListener('click', guardarPrecios);
@@ -1683,6 +2168,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnQuitarManual').addEventListener('click', () => {
         document.getElementById('descuentoManualInput').value = '';
     });
+
+    // PIN de acceso (modal) y alta de piloto
+    document.getElementById('btnPinOk').addEventListener('click', () => cerrarPinModal(document.getElementById('pinInput').value.trim()));
+    document.getElementById('btnPinCancelar').addEventListener('click', () => cerrarPinModal(null));
+    document.getElementById('pinInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') cerrarPinModal(document.getElementById('pinInput').value.trim());
+    });
+    document.getElementById('btnCrearPiloto').addEventListener('click', crearPiloto);
+    document.getElementById('btnCancelarNuevoPiloto').addEventListener('click', cerrarModalNuevoPiloto);
+    document.querySelectorAll('.np-categoria').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('.np-categoria').forEach(x => x.classList.toggle('metodo-activo', x === b));
+    }));
     document.querySelectorAll('[data-monto]').forEach(b => b.addEventListener('click', () => {
         document.getElementById('montoInput').value = b.dataset.monto;
     }));
@@ -1702,6 +2199,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.categoria-btn').forEach(x => x.classList.toggle('metodo-activo', x === b));
     }));
 
+    // El cartel de estado también sirve para reintentar a mano
+    document.getElementById('statusSync').addEventListener('click', () => {
+        flushCola().then(ok => showToast(ok ? '✅ Todo enlazado' : '📱 Sigue sin señal, se reintenta solo'));
+    });
+
+    cargarColaGuardada();
+    cargarApartadasGuardadas();
     loadAllData();
 
     if ('serviceWorker' in navigator) {
