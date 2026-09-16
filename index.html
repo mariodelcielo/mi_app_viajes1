@@ -297,6 +297,42 @@
         }
         .btn-chip.quitar { border-color: var(--coral); color: var(--coral-dark); }
         .btn-chip.metodo-activo { background: var(--sky); border-color: var(--sky-dark); color: var(--wood-dark); }
+        /* ===== ESTADÍSTICAS ===== */
+        .header .resumen-linea {
+            font-size: 11px; color: var(--ink-soft); margin-top: 3px; font-weight: 700;
+            cursor: pointer; line-height: 1.4;
+        }
+        .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        .tabs .btn-chip { margin: 0; text-align: center; width: 100%; }
+        .btn-chip.activo { background: var(--wood); border-color: var(--wood-dark); color: var(--cream); }
+        .periodo-linea {
+            display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+            margin: 12px 0 10px; font-family: 'Baloo 2', sans-serif; font-size: 14px; color: var(--wood-dark);
+        }
+        .link-mini {
+            background: none; border: none; padding: 0; margin: 0; width: auto;
+            font-family: 'Quicksand', sans-serif; font-size: 11px; font-weight: 700;
+            color: var(--sky-dark); text-decoration: underline; cursor: pointer;
+        }
+        .est-bloque {
+            background: var(--cream); border: 2px solid var(--parchment-dark); border-radius: 14px;
+            padding: 10px 12px; margin-bottom: 10px;
+        }
+        .est-bloque h3 { font-family: 'Baloo 2', sans-serif; font-size: 13px; color: var(--wood-dark); margin-bottom: 6px; }
+        .est-fila { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 3px 0; }
+        .est-fila.sub { padding-left: 14px; color: var(--ink-soft); font-size: 12px; }
+        .est-fila b { font-family: 'Baloo 2', sans-serif; }
+        .est-fila.sube b { color: var(--sage-dark); }
+        .est-fila.baja b { color: var(--coral-dark); }
+        .est-nota { font-size: 10px; color: var(--ink-soft); margin-top: 6px; line-height: 1.4; }
+        .est-bloques-2 { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 10px; }
+        /* En la computadora el resumen se abre a lo ancho y en tres columnas */
+        @media (min-width: 780px) {
+            .modal-ancho { max-width: 920px; }
+            .est-bloques { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: start; }
+            .est-bloque { margin-bottom: 0; }
+            .est-bloques-2 { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -306,6 +342,7 @@
         <img src="rescates-logo.png" alt="Rescate" id="headerIcono" style="width:65px;height:auto;display:block;margin:0 auto;">
         <h1>RESCATES RAMBLA</h1>
         <div class="status" id="statusSync">⬇️ Enlazando...</div>
+        <div class="resumen-linea" id="resumenHoy" title="Ver el cierre del día"></div>
     </div>
 
     <div class="search-wrap">
@@ -553,94 +590,30 @@
 </div>
 
 <div class="modal-overlay" id="modalEstadisticas">
-    <div class="modal">
+    <div class="modal modal-ancho">
         <h2>📊 Estadísticas</h2>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-chip" id="btnAbrirResumenDiario" style="padding:14px;text-align:left;width:100%;">📅 Resumen diario</button>
-            <button class="btn-chip" id="btnAbrirResumenSemanal" style="padding:14px;text-align:left;width:100%;">🗓️ Resumen semanal</button>
-            <button class="btn-chip" id="btnAbrirResumenMensual" style="padding:14px;text-align:left;width:100%;">📆 Resumen mensual</button>
+        <div class="tabs">
+            <button type="button" class="btn-chip tab-est" data-periodo="dia">📅 Día</button>
+            <button type="button" class="btn-chip tab-est" data-periodo="semana">🗓️ Semana</button>
+            <button type="button" class="btn-chip tab-est" data-periodo="mes">📆 Mes</button>
         </div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+        <div class="periodo-linea">
+            <span id="estPeriodo"></span>
+            <button type="button" class="link-mini" id="btnElegirPeriodo">elegir otro</button>
+        </div>
+        <div id="estContenido"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr; margin-top:14px;">
             <button class="btn-modal-cancel" id="btnCerrarEstadisticas">✖ Cerrar</button>
         </div>
     </div>
 </div>
 
-<div class="modal-overlay" id="modalResumenDiario">
+<div class="modal-overlay" id="modalElegirPeriodo">
     <div class="modal">
-        <h2 id="resumenDiarioTitulo">📅 Resumen del día</h2>
-        <div id="resumenDiarioInfo" style="background:var(--cream);padding:14px;border-radius:14px;font-size:15px;line-height:2;color:var(--ink);"></div>
+        <h2 id="elegirPeriodoTitulo">📋 Elegí un día</h2>
+        <div id="listaPeriodos" style="max-height:50vh;overflow-y:auto;"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarResumenDiario">✖ Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalTipoResumen">
-    <div class="modal">
-        <h2>📅 Resumen diario</h2>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-chip" id="btnResumenUltimoDia" style="padding:14px;text-align:left;width:100%;">📅 Último día trabajado</button>
-            <button class="btn-chip" id="btnResumenOtraFecha" style="padding:14px;text-align:left;width:100%;">🗓️ Elegir otra fecha</button>
-        </div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarTipoResumen">✖ Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalListaFechas">
-    <div class="modal">
-        <h2>🗓️ Elegí una fecha</h2>
-        <div id="listaFechasTrabajadas" style="max-height:50vh;overflow-y:auto;"></div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarListaFechas">✖ Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalTipoResumenSemanal">
-    <div class="modal">
-        <h2>🗓️ Resumen semanal</h2>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-chip" id="btnResumenUltimaSemana" style="padding:14px;text-align:left;width:100%;">🗓️ Última semana trabajada</button>
-            <button class="btn-chip" id="btnResumenOtraSemana" style="padding:14px;text-align:left;width:100%;">📋 Elegir otra semana</button>
-        </div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarTipoResumenSemanal">✖ Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalListaSemanas">
-    <div class="modal">
-        <h2>📋 Elegí una semana</h2>
-        <div id="listaSemanasTrabajadas" style="max-height:50vh;overflow-y:auto;"></div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarListaSemanas">✖ Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalTipoResumenMensual">
-    <div class="modal">
-        <h2>📆 Resumen mensual</h2>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-chip" id="btnResumenUltimoMes" style="padding:14px;text-align:left;width:100%;">📆 Último mes trabajado</button>
-            <button class="btn-chip" id="btnResumenOtroMes" style="padding:14px;text-align:left;width:100%;">📋 Elegir otro mes</button>
-        </div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarTipoResumenMensual">✖ Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalListaMeses">
-    <div class="modal">
-        <h2>📋 Elegí un mes</h2>
-        <div id="listaMesesTrabajados" style="max-height:50vh;overflow-y:auto;"></div>
-        <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarListaMeses">✖ Cerrar</button>
+            <button class="btn-modal-cancel" id="btnCerrarElegirPeriodo">✖ Cerrar</button>
         </div>
     </div>
 </div>
@@ -1138,6 +1111,7 @@ function actualizarEstadoSync(mensajeForzado, claseForzada) {
     el.className = 'status ' + clase;
     const contA = document.getElementById('contApartadas');
     if (contA) contA.textContent = opsApartadas.length;
+    actualizarLineaHoy();
 }
 
 // ============================================================
@@ -1817,13 +1791,6 @@ async function guardarPrecios() {
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
-function abrirModalEstadisticas() {
-    document.getElementById('modalEstadisticas').classList.add('show');
-}
-function cerrarModalEstadisticas() {
-    document.getElementById('modalEstadisticas').classList.remove('show');
-}
-
 // ============================================================
 // RESUMEN DIARIO
 // ============================================================
@@ -1846,35 +1813,296 @@ function sumarDias(diaStr, n) {
 }
 
 // ============================================================
-// CÁLCULO Y RENDERIZADO GENÉRICO (usado por día / semana / mes)
+// ESTADÍSTICAS — PERÍODOS
 // ============================================================
-function calcularResumen(viajesF, lotesF, pagosF) {
+const NOMBRES_DIA = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+let estPeriodo = 'dia'; // 'dia' | 'semana' | 'mes'
+let estAncla = '';      // 'YYYY-MM-DD' (día o lunes) o 'YYYY-MM' (mes)
+
+function rangoDe(periodo, ancla) {
+    if (periodo === 'semana') return { desde: ancla, hasta: sumarDias(ancla, 6) };
+    if (periodo === 'mes') {
+        const [y, m] = ancla.split('-').map(Number);
+        return { desde: `${ancla}-01`, hasta: `${ancla}-${pad2(new Date(y, m, 0).getDate())}` };
+    }
+    return { desde: ancla, hasta: ancla };
+}
+
+function rangoAnterior(periodo, ancla) {
+    if (periodo === 'semana') return rangoDe('semana', sumarDias(ancla, -7));
+    if (periodo === 'mes') {
+        const [y, m] = ancla.split('-').map(Number);
+        const prev = new Date(y, m - 2, 1);
+        return rangoDe('mes', `${prev.getFullYear()}-${pad2(prev.getMonth() + 1)}`);
+    }
+    const ayer = sumarDias(ancla, -1);
+    return { desde: ayer, hasta: ayer };
+}
+
+function etiquetaPeriodo(periodo, ancla) {
+    if (periodo === 'semana') return `${formatoFechaLinda(ancla)} al ${formatoFechaLinda(sumarDias(ancla, 6))}`;
+    if (periodo === 'mes') return formatoMesLindo(ancla);
+    const [y, m, d] = ancla.split('-').map(Number);
+    const nombre = NOMBRES_DIA[new Date(y, m - 1, d).getDay()];
+    return `${ancla === fechaSoloLocal() ? 'HOY · ' : ''}${nombre} ${formatoFechaLinda(ancla)}`;
+}
+
+function etiquetaAnterior(periodo) {
+    if (periodo === 'semana') return 'la semana anterior';
+    if (periodo === 'mes') return 'el mes anterior';
+    return 'el día anterior';
+}
+
+// ============================================================
+// ESTADÍSTICAS — MÉTRICAS
+// Las fechas son texto 'YYYY-MM-DD', así que se comparan como texto.
+// ============================================================
+function calcularMetricas(desde, hasta) {
+    const enRango = f => { const d = fechaSolo(f); return d !== '' && d >= desde && d <= hasta; };
+    const vP = viajes.filter(v => enRango(v.fecha));
+    const lP = lotes.filter(l => enRango(l.fecha));
+    const pP = pagos.filter(p => enRango(p.fecha));
+
+    const cobradas = vP.filter(v => !v.gratis);
+    const gratis = vP.filter(v => v.gratis);
+
+    const facturado = vP.reduce((a, v) => a + (v.total || 0), 0);
+    const listaCobradas = cobradas.reduce((a, v) => a + (v.precioLista || 0), 0);
+    const descuentoOtorgado = cobradas.reduce((a, v) => a + Math.max(0, (v.precioLista || 0) - (v.total || 0)), 0);
+    const valorListaGratis = gratis.reduce((a, v) => a + (v.precioLista || 0), 0);
+
+    const sumaLotes = lP.reduce((a, l) => a + (l.monto || 0), 0);
+    const sumaPagos = pP.reduce((a, p) => a + (p.monto || 0), 0);
+    const esEfectivo = x => (x.metodoPago || 'efectivo') === 'efectivo';
+    const efectivo = lP.filter(esEfectivo).reduce((a, l) => a + (l.monto || 0), 0)
+        + pP.filter(esEfectivo).reduce((a, p) => a + (p.monto || 0), 0);
+
+    const porDia = {};
+    vP.forEach(v => {
+        const d = fechaSolo(v.fecha);
+        if (d) porDia[d] = (porDia[d] || 0) + (v.total || 0);
+    });
+    let mejorDia = '';
+    Object.keys(porDia).forEach(d => { if (!mejorDia || porDia[d] > porDia[mejorDia]) mejorDia = d; });
+
+    const socios = [...new Set(vP.map(v => v.socio))];
+    const nuevos = socios.filter(s => !viajes.some(v => v.socio === s && fechaSolo(v.fecha) < desde)).length;
+
     return {
-        cantidad: viajesF.length,
-        ganancia: viajesF.reduce((acc, v) => acc + (v.total || 0), 0),
-        deuda: viajesF.reduce((acc, v) => acc + (v.deuda || 0), 0),
-        ingresado: lotesF.reduce((acc, l) => acc + (l.monto || 0), 0)
-            + pagosF.reduce((acc, p) => acc + (p.monto || 0), 0)
+        subidas: vP.length,
+        escuela: vP.filter(v => v.tipo === 'escuela').length,
+        pista: vP.filter(v => v.tipo === 'pista').length,
+        cobradas: cobradas.length,
+        gratis: gratis.length,
+        valorListaGratis: valorListaGratis,
+        facturado: facturado,
+        precioPromedio: cobradas.length ? Math.round(facturado / cobradas.length) : 0,
+        descuentoOtorgado: descuentoOtorgado,
+        descuentoPct: listaCobradas > 0 ? Math.round(descuentoOtorgado / listaCobradas * 100) : 0,
+        pilotos: socios.length,
+        nuevos: nuevos,
+        recurrentes: socios.length - nuevos,
+        ingresado: sumaLotes + sumaPagos,
+        efectivo: efectivo,
+        transferencia: (sumaLotes + sumaPagos) - efectivo,
+        cargas: sumaLotes,
+        cobrosDeuda: sumaPagos,
+        deudaGenerada: vP.reduce((a, v) => a + (v.deuda || 0), 0),
+        diasTrabajados: Object.keys(porDia).length,
+        mejorDia: mejorDia,
+        mejorDiaMonto: mejorDia ? porDia[mejorDia] : 0
     };
 }
 
-function renderResumen(titulo, r) {
-    document.getElementById('resumenDiarioTitulo').textContent = titulo;
-    if (!r) {
-        document.getElementById('resumenDiarioInfo').innerHTML =
-            `<div style="text-align:center;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
-    } else {
-        document.getElementById('resumenDiarioInfo').innerHTML = `
-            <div style="display:flex;justify-content:space-between;"><span>🛫 Subidas realizadas</span><b>${r.cantidad}</b></div>
-            <div style="display:flex;justify-content:space-between;"><span>💰 Ganancia generada</span><b>$${r.ganancia}</b></div>
-            <div style="display:flex;justify-content:space-between;"><span>💵 Dinero ingresado</span><b>$${r.ingresado}</b></div>
-            <div style="display:flex;justify-content:space-between;"><span>💳 Dinero adeudado (nuevo)</span><b>$${r.deuda}</b></div>
-        `;
-    }
-    document.getElementById('modalResumenDiario').classList.add('show');
+/**
+ * Deuda pendiente al cierre de una fecha. Se reconstruye exacta:
+ * deuda de hoy − lo que se generó después + lo que se cobró después.
+ */
+function deudaPendienteAlCierre(hasta) {
+    const deudaHoy = pilotos.reduce((a, p) => a + (p.deuda || 0), 0);
+    if (hasta >= fechaSoloLocal()) return deudaHoy;
+    const generadaDespues = viajes.filter(v => fechaSolo(v.fecha) > hasta).reduce((a, v) => a + (v.deuda || 0), 0);
+    const cobradaDespues = pagos.filter(p => fechaSolo(p.fecha) > hasta).reduce((a, p) => a + (p.monto || 0), 0);
+    return deudaHoy - generadaDespues + cobradaDespues;
 }
-function cerrarModalResumenDiario() {
-    document.getElementById('modalResumenDiario').classList.remove('show');
+
+function saldoTotalPilotos() {
+    return lotes.reduce((a, l) => a + (l.saldo || 0), 0);
+}
+
+function libresTotalesPilotos() {
+    return pilotos.reduce((a, p) => a + (p.viajesLibres || 0), 0);
+}
+
+// ============================================================
+// ESTADÍSTICAS — RENDERIZADO
+// ============================================================
+function delta(actual, anterior) {
+    if (anterior === 0) return actual === 0 ? { txt: '—', clase: '' } : { txt: 'nuevo', clase: '' };
+    const pct = Math.round((actual - anterior) / anterior * 100);
+    if (pct === 0) return { txt: '= 0%', clase: '' };
+    return { txt: (pct > 0 ? '▲ ' : '▼ ') + Math.abs(pct) + '%', clase: pct > 0 ? 'sube' : 'baja' };
+}
+
+function filaEst(etiqueta, valor, clase) {
+    return `<div class="est-fila${clase ? ' ' + clase : ''}"><span>${etiqueta}</span><b>${valor}</b></div>`;
+}
+
+function renderEstadisticas() {
+    const r = rangoDe(estPeriodo, estAncla);
+    const m = calcularMetricas(r.desde, r.hasta);
+    const ma = calcularMetricas(rangoAnterior(estPeriodo, estAncla).desde, rangoAnterior(estPeriodo, estAncla).hasta);
+
+    document.getElementById('estPeriodo').textContent = etiquetaPeriodo(estPeriodo, estAncla);
+    document.querySelectorAll('.tab-est').forEach(b => b.classList.toggle('activo', b.dataset.periodo === estPeriodo));
+
+    const cont = document.getElementById('estContenido');
+    if (m.subidas === 0 && m.ingresado === 0) {
+        cont.innerHTML = `<div style="text-align:center;color:var(--ink-soft);padding:24px 0;">Todavía no hay actividad en este período</div>`;
+        return;
+    }
+
+    let caja = filaEst('Ingresado', '$' + m.ingresado);
+    caja += filaEst('Efectivo', '$' + m.efectivo, 'sub');
+    caja += filaEst('Transferencia', '$' + m.transferencia, 'sub');
+    caja += filaEst('Cargas de crédito', '$' + m.cargas);
+    caja += filaEst('Cobros de deuda', '$' + m.cobrosDeuda);
+    caja += `<div class="est-nota">El efectivo es lo que deberías tener a mano de este período, según lo cargado en la app.</div>`;
+
+    let act = filaEst('Subidas (personas)', m.subidas);
+    act += filaEst('Desde Escuela', m.escuela, 'sub');
+    act += filaEst('Desde Pista', m.pista, 'sub');
+    act += filaEst('Cobradas', m.cobradas);
+    act += filaEst('Gratis / con libres', m.gratis);
+    act += filaEst('Facturado', '$' + m.facturado);
+    act += filaEst('Precio promedio por subida', '$' + m.precioPromedio);
+    act += filaEst('Descuento otorgado', `$${m.descuentoOtorgado} (${m.descuentoPct}%)`);
+    act += filaEst('Pilotos que subieron', m.pilotos);
+    if (m.gratis > 0) {
+        act += `<div class="est-nota">Las ${m.gratis} gratis equivalen a $${m.valorListaGratis} de precio de lista.</div>`;
+    }
+
+    const esElFinal = r.hasta >= fechaSoloLocal();
+    let car = filaEst('Deuda generada', '$' + m.deudaGenerada);
+    car += filaEst(esElFinal ? 'Deuda pendiente' : 'Deuda pendiente al cierre', '$' + deudaPendienteAlCierre(r.hasta));
+    car += filaEst('Crédito sin consumir', '$' + saldoTotalPilotos());
+    car += filaEst('Subidas libres pendientes', libresTotalesPilotos());
+    car += `<div class="est-nota">El crédito y las subidas libres son el estado de ahora, no del período elegido.</div>`;
+
+    let extra = '';
+    if (estPeriodo !== 'dia') {
+        extra = `
+            <div class="est-bloque">
+                <h3>🗓️ DÍAS</h3>
+                ${filaEst('Días trabajados', m.diasTrabajados)}
+                ${filaEst('Facturado por día', '$' + (m.diasTrabajados ? Math.round(m.facturado / m.diasTrabajados) : 0))}
+                ${filaEst('Subidas por día', m.diasTrabajados ? (m.subidas / m.diasTrabajados).toFixed(1) : '0')}
+                ${m.mejorDia ? filaEst('Mejor día', `${formatoFechaLinda(m.mejorDia)} · $${m.mejorDiaMonto}`) : ''}
+                ${filaEst('Pilotos nuevos', m.nuevos)}
+                ${filaEst('Pilotos de siempre', m.recurrentes, 'sub')}
+            </div>`;
+    }
+
+    const dFac = delta(m.facturado, ma.facturado);
+    const dSub = delta(m.subidas, ma.subidas);
+    const dPre = delta(m.precioPromedio, ma.precioPromedio);
+    const dIng = delta(m.ingresado, ma.ingresado);
+    const comp = `
+        <div class="est-bloque">
+            <h3>📈 CONTRA ${etiquetaAnterior(estPeriodo).toUpperCase()}</h3>
+            <div class="est-fila ${dFac.clase}"><span>Facturado</span><b>${dFac.txt}</b></div>
+            <div class="est-fila ${dSub.clase}"><span>Subidas</span><b>${dSub.txt}</b></div>
+            <div class="est-fila ${dPre.clase}"><span>Precio promedio</span><b>${dPre.txt}</b></div>
+            <div class="est-fila ${dIng.clase}"><span>Ingresado</span><b>${dIng.txt}</b></div>
+            <div class="est-nota">Si el facturado sube pero las subidas bajan, el aumento vino del precio y no de más trabajo.</div>
+        </div>`;
+
+    cont.innerHTML = `
+        <div class="est-bloques">
+            <div class="est-bloque"><h3>💵 CAJA</h3>${caja}</div>
+            <div class="est-bloque"><h3>🪂 ACTIVIDAD</h3>${act}</div>
+            <div class="est-bloque"><h3>📊 CARTERA</h3>${car}</div>
+        </div>
+        <div class="est-bloques-2">
+            ${extra}
+            ${comp}
+        </div>
+    `;
+}
+
+/** La línea del encabezado: los tres números del día, a mano. */
+function actualizarLineaHoy() {
+    const el = document.getElementById('resumenHoy');
+    if (!el) return;
+    const hoy = fechaSoloLocal();
+    const m = calcularMetricas(hoy, hoy);
+    if (m.subidas === 0 && m.ingresado === 0) {
+        el.textContent = 'Hoy: sin movimientos todavía — tocá para ver el cierre';
+    } else {
+        el.textContent = `Hoy: ${m.subidas} subida(s) · $${m.facturado} facturado · $${m.efectivo} en efectivo`;
+    }
+}
+
+// ============================================================
+// ESTADÍSTICAS — NAVEGACIÓN (una pantalla, tres pestañas)
+// ============================================================
+function abrirEstadisticas(periodo) {
+    const hoy = fechaSoloLocal();
+    estPeriodo = periodo || 'dia';
+    estAncla = estPeriodo === 'semana' ? inicioSemanaStr(hoy) : (estPeriodo === 'mes' ? hoy.slice(0, 7) : hoy);
+    renderEstadisticas();
+    document.getElementById('modalEstadisticas').classList.add('show');
+}
+
+function cerrarEstadisticas() {
+    document.getElementById('modalEstadisticas').classList.remove('show');
+}
+
+function elegirTabEstadisticas(periodo) {
+    const hoy = fechaSoloLocal();
+    estPeriodo = periodo;
+    estAncla = periodo === 'semana' ? inicioSemanaStr(hoy) : (periodo === 'mes' ? hoy.slice(0, 7) : hoy);
+    renderEstadisticas();
+}
+
+function abrirElegirPeriodo() {
+    const cont = document.getElementById('listaPeriodos');
+    let opciones = [];
+    if (estPeriodo === 'dia') {
+        document.getElementById('elegirPeriodoTitulo').textContent = '📋 Elegí un día';
+        opciones = obtenerFechasTrabajadas().slice(0, 15).map(f => ({
+            valor: f, texto: `📅 ${formatoFechaLinda(f)}${f === fechaSoloLocal() ? ' (hoy)' : ''}`
+        }));
+    } else if (estPeriodo === 'semana') {
+        document.getElementById('elegirPeriodoTitulo').textContent = '📋 Elegí una semana';
+        opciones = obtenerSemanasTrabajadas().slice(0, 15).map(s => ({
+            valor: s, texto: `🗓️ ${formatoRangoSemana(s)}`
+        }));
+    } else {
+        document.getElementById('elegirPeriodoTitulo').textContent = '📋 Elegí un mes';
+        opciones = obtenerMesesTrabajados().slice(0, 15).map(m => ({
+            valor: m, texto: `📆 ${formatoMesLindo(m)}`
+        }));
+    }
+
+    if (opciones.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
+    } else {
+        cont.innerHTML = opciones.map(o => `
+            <button type="button" class="btn-chip periodo-item" data-valor="${esc(o.valor)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">${esc(o.texto)}</button>
+        `).join('');
+        cont.querySelectorAll('.periodo-item').forEach(el => el.addEventListener('click', () => {
+            estAncla = el.dataset.valor;
+            cerrarElegirPeriodo();
+            renderEstadisticas();
+        }));
+    }
+    document.getElementById('modalElegirPeriodo').classList.add('show');
+}
+
+function cerrarElegirPeriodo() {
+    document.getElementById('modalElegirPeriodo').classList.remove('show');
 }
 
 // ============================================================
@@ -1887,48 +2115,6 @@ function obtenerFechasTrabajadas() {
         ...pagos.map(p => fechaSolo(p.fecha))
     ].filter(f => f);
     return [...new Set(fechas)].sort().reverse(); // únicas, más reciente primero
-}
-
-function abrirTipoResumen() {
-    document.getElementById('modalTipoResumen').classList.add('show');
-}
-function cerrarTipoResumen() {
-    document.getElementById('modalTipoResumen').classList.remove('show');
-}
-
-function abrirResumenDiario() {
-    const fechas = obtenerFechasTrabajadas();
-    mostrarResumenParaFecha(fechas.length ? fechas[0] : null);
-}
-
-function abrirListaFechas() {
-    const fechas = obtenerFechasTrabajadas().slice(0, 10);
-    const cont = document.getElementById('listaFechasTrabajadas');
-    if (fechas.length === 0) {
-        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
-    } else {
-        cont.innerHTML = fechas.map(f => `
-            <button class="btn-chip fecha-item" data-fecha="${esc(f)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📅 ${esc(formatoFechaLinda(f))}</button>
-        `).join('');
-        cont.querySelectorAll('.fecha-item').forEach(el => {
-            el.addEventListener('click', () => {
-                cerrarModalListaFechas();
-                mostrarResumenParaFecha(el.dataset.fecha);
-            });
-        });
-    }
-    document.getElementById('modalListaFechas').classList.add('show');
-}
-function cerrarModalListaFechas() {
-    document.getElementById('modalListaFechas').classList.remove('show');
-}
-
-function mostrarResumenParaFecha(dia) {
-    if (!dia) { renderResumen('📅 Resumen del día', null); return; }
-    const viajesDia = viajes.filter(v => fechaSolo(v.fecha) === dia);
-    const lotesDia = lotes.filter(l => fechaSolo(l.fecha) === dia);
-    const pagosDia = pagos.filter(p => fechaSolo(p.fecha) === dia);
-    renderResumen(`📅 ${formatoFechaLinda(dia)}`, calcularResumen(viajesDia, lotesDia, pagosDia));
 }
 
 // ============================================================
@@ -1951,50 +2137,6 @@ function formatoRangoSemana(lunesStr) {
     return `${formatoFechaLinda(lunesStr)} al ${formatoFechaLinda(sumarDias(lunesStr, 6))}`;
 }
 
-function abrirTipoResumenSemanal() {
-    document.getElementById('modalTipoResumenSemanal').classList.add('show');
-}
-function cerrarTipoResumenSemanal() {
-    document.getElementById('modalTipoResumenSemanal').classList.remove('show');
-}
-
-function abrirResumenSemanal() {
-    const semanas = obtenerSemanasTrabajadas();
-    mostrarResumenParaSemana(semanas.length ? semanas[0] : null);
-}
-
-function abrirListaSemanas() {
-    const semanas = obtenerSemanasTrabajadas().slice(0, 10);
-    const cont = document.getElementById('listaSemanasTrabajadas');
-    if (semanas.length === 0) {
-        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
-    } else {
-        cont.innerHTML = semanas.map(s => `
-            <button class="btn-chip semana-item" data-semana="${esc(s)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">🗓️ ${esc(formatoRangoSemana(s))}</button>
-        `).join('');
-        cont.querySelectorAll('.semana-item').forEach(el => {
-            el.addEventListener('click', () => {
-                cerrarModalListaSemanas();
-                mostrarResumenParaSemana(el.dataset.semana);
-            });
-        });
-    }
-    document.getElementById('modalListaSemanas').classList.add('show');
-}
-function cerrarModalListaSemanas() {
-    document.getElementById('modalListaSemanas').classList.remove('show');
-}
-
-function mostrarResumenParaSemana(lunesStr) {
-    if (!lunesStr) { renderResumen('🗓️ Resumen semanal', null); return; }
-    const finStr = sumarDias(lunesStr, 6);
-    const enRango = f => f >= lunesStr && f <= finStr;
-    const viajesSem = viajes.filter(v => enRango(fechaSolo(v.fecha)));
-    const lotesSem = lotes.filter(l => enRango(fechaSolo(l.fecha)));
-    const pagosSem = pagos.filter(p => enRango(fechaSolo(p.fecha)));
-    renderResumen(`🗓️ ${formatoRangoSemana(lunesStr)}`, calcularResumen(viajesSem, lotesSem, pagosSem));
-}
-
 // ============================================================
 // RESUMEN MENSUAL
 // ============================================================
@@ -2008,48 +2150,6 @@ function obtenerMesesTrabajados() {
 function formatoMesLindo(mesStr) {
     const [y, m] = mesStr.split('-').map(Number);
     return `${NOMBRES_MES[m - 1]} ${y}`;
-}
-
-function abrirTipoResumenMensual() {
-    document.getElementById('modalTipoResumenMensual').classList.add('show');
-}
-function cerrarTipoResumenMensual() {
-    document.getElementById('modalTipoResumenMensual').classList.remove('show');
-}
-
-function abrirResumenMensual() {
-    const meses = obtenerMesesTrabajados();
-    mostrarResumenParaMes(meses.length ? meses[0] : null);
-}
-
-function abrirListaMeses() {
-    const meses = obtenerMesesTrabajados().slice(0, 10);
-    const cont = document.getElementById('listaMesesTrabajados');
-    if (meses.length === 0) {
-        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
-    } else {
-        cont.innerHTML = meses.map(m => `
-            <button class="btn-chip mes-item" data-mes="${esc(m)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">📆 ${esc(formatoMesLindo(m))}</button>
-        `).join('');
-        cont.querySelectorAll('.mes-item').forEach(el => {
-            el.addEventListener('click', () => {
-                cerrarModalListaMeses();
-                mostrarResumenParaMes(el.dataset.mes);
-            });
-        });
-    }
-    document.getElementById('modalListaMeses').classList.add('show');
-}
-function cerrarModalListaMeses() {
-    document.getElementById('modalListaMeses').classList.remove('show');
-}
-
-function mostrarResumenParaMes(mesStr) {
-    if (!mesStr) { renderResumen('📆 Resumen mensual', null); return; }
-    const viajesMes = viajes.filter(v => fechaSolo(v.fecha).startsWith(mesStr));
-    const lotesMes = lotes.filter(l => fechaSolo(l.fecha).startsWith(mesStr));
-    const pagosMes = pagos.filter(p => fechaSolo(p.fecha).startsWith(mesStr));
-    renderResumen(`📆 ${formatoMesLindo(mesStr)}`, calcularResumen(viajesMes, lotesMes, pagosMes));
 }
 
 // ============================================================
@@ -2139,31 +2239,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnAbrirFicha').addEventListener('click', () => { cerrarModalDatos(); abrirModalEditar(); });
     document.getElementById('btnAbrirDeudores').addEventListener('click', () => { cerrarModalDatos(); abrirModalDeudores(); });
     document.getElementById('btnAbrirApartadas').addEventListener('click', () => { cerrarModalDatos(); abrirModalApartadas(); });
-    document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirModalEstadisticas(); });
+    document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirEstadisticas('dia'); });
     document.getElementById('btnAbrirPrecios').addEventListener('click', () => { cerrarModalDatos(); abrirModalPrecios(); });
     document.getElementById('btnGuardarPrecios').addEventListener('click', guardarPrecios);
     document.getElementById('btnCancelarPrecios').addEventListener('click', cerrarModalPrecios);
-    document.getElementById('btnCerrarEstadisticas').addEventListener('click', cerrarModalEstadisticas);
-    document.getElementById('btnAbrirResumenDiario').addEventListener('click', () => { cerrarModalEstadisticas(); abrirTipoResumen(); });
-    document.getElementById('btnCerrarResumenDiario').addEventListener('click', cerrarModalResumenDiario);
-    document.getElementById('btnCerrarTipoResumen').addEventListener('click', cerrarTipoResumen);
-    document.getElementById('btnResumenUltimoDia').addEventListener('click', () => { cerrarTipoResumen(); abrirResumenDiario(); });
-    document.getElementById('btnResumenOtraFecha').addEventListener('click', () => { cerrarTipoResumen(); abrirListaFechas(); });
-    document.getElementById('btnCerrarListaFechas').addEventListener('click', cerrarModalListaFechas);
 
-    // Resumen semanal
-    document.getElementById('btnAbrirResumenSemanal').addEventListener('click', () => { cerrarModalEstadisticas(); abrirTipoResumenSemanal(); });
-    document.getElementById('btnCerrarTipoResumenSemanal').addEventListener('click', cerrarTipoResumenSemanal);
-    document.getElementById('btnResumenUltimaSemana').addEventListener('click', () => { cerrarTipoResumenSemanal(); abrirResumenSemanal(); });
-    document.getElementById('btnResumenOtraSemana').addEventListener('click', () => { cerrarTipoResumenSemanal(); abrirListaSemanas(); });
-    document.getElementById('btnCerrarListaSemanas').addEventListener('click', cerrarModalListaSemanas);
+    // Estadísticas: una sola pantalla, con pestañas Día / Semana / Mes
+    document.getElementById('btnCerrarEstadisticas').addEventListener('click', cerrarEstadisticas);
+    document.getElementById('btnElegirPeriodo').addEventListener('click', abrirElegirPeriodo);
+    document.getElementById('btnCerrarElegirPeriodo').addEventListener('click', cerrarElegirPeriodo);
+    document.querySelectorAll('.tab-est').forEach(b => b.addEventListener('click', () => elegirTabEstadisticas(b.dataset.periodo)));
 
-    // Resumen mensual
-    document.getElementById('btnAbrirResumenMensual').addEventListener('click', () => { cerrarModalEstadisticas(); abrirTipoResumenMensual(); });
-    document.getElementById('btnCerrarTipoResumenMensual').addEventListener('click', cerrarTipoResumenMensual);
-    document.getElementById('btnResumenUltimoMes').addEventListener('click', () => { cerrarTipoResumenMensual(); abrirResumenMensual(); });
-    document.getElementById('btnResumenOtroMes').addEventListener('click', () => { cerrarTipoResumenMensual(); abrirListaMeses(); });
-    document.getElementById('btnCerrarListaMeses').addEventListener('click', cerrarModalListaMeses);
+    // La línea del encabezado abre directo el cierre de hoy
+    document.getElementById('resumenHoy').addEventListener('click', () => abrirEstadisticas('dia'));
 
     document.getElementById('btnQuitarManual').addEventListener('click', () => {
         document.getElementById('descuentoManualInput').value = '';
