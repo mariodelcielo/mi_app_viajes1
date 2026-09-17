@@ -9,68 +9,155 @@
     <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#f2ede1">
     <style>
         /* ============================================================
            SKIN "SEÑALÉTICA" — alto contraste, sin adornos.
-           Regla: NEGRO = estructura · NARANJA = lo que se toca.
+           Regla de día:   NEGRO = estructura · NARANJA = lo que se toca.
+           Regla de noche: el borde pasa a gris claro (el negro no se vería
+           sobre fondo oscuro); el naranja sigue siendo el mismo, así que no
+           hay que reaprender los colores.
            Sin texturas, sin degradados, sin sombras decorativas.
            Tipografía del sistema: carga instantánea, no depende de internet.
-           Contrastes verificados: texto 18,9:1 · texto chico 8,9:1 ·
-           naranja con blanco encima 5,0:1 (mínimo recomendado 4,5:1).
+           Contrastes verificados (mínimo 4,5:1 texto chico · 3:1 bordes):
+             día   — texto 18,9:1 · chico 8,9:1 · acento 5,5:1
+             noche — texto 16,8:1 · chico 8,6:1 · naranja 5,2:1 · bordes 3,8:1
+             el naranja lleva texto negro encima: 5,3:1
            ============================================================ */
         :root {
-            /* Los nombres viejos se conservan para no reescribir cada regla,
-               pero ahora apuntan todos a la paleta nueva. */
-            --parchment: #ffffff;
-            --parchment-dark: #d1d5db;
-            --wood: #111111;
-            --wood-dark: #111111;
-            --brass: #111111;
-            --brass-dark: #111111;
-            --sky: #e8590c;
-            --sky-dark: #b8430a;
-            --coral: #b91c1c;
-            --coral-dark: #7f1d1d;
-            --sage: #e8590c;
-            --sage-dark: #b8430a;
-            --ink: #111111;
-            --ink-soft: #4a4a4a;
-            --cream: #ffffff;
+            /* Escala de la letra: Normal (1) / Grande (1.12) / Muy grande (1.25) */
+            --esc: 1;
 
-            /* Paleta nueva */
-            --fondo: #ffffff;
-            --pista: #f5f4f4;
+            /* Superficies y estructura.
+               El fondo de la pantalla es crema y las tarjetas y botones son
+               blancos: así se distinguen por el color, no solo por el borde. */
+            --fondo: #f2ede1;
+            --panel: #ffffff;
+            --pista: #f2ede1;
             --borde: #111111;
             --borde-suave: #d1d5db;
-            --accion: #e8590c;        /* relleno naranja */
-            --accion-borde: #111111;  /* el mismo borde negro que todo lo demás */
-            --accion-texto: #c2410c;  /* naranja más oscuro, para texto */
-            --ok: #15803d;
+
+            /* Texto */
+            --ink: #111111;
+            --ink-soft: #4a4a4a;
+
+            /* Acción: el naranja es relleno y siempre lleva texto negro */
+            --accion: #e8590c;
+            --accion-borde: #111111;
+            --accion-texto: #b8410b;   /* naranja oscurecido para texto: 5,5:1 */
+            --sobre-accion: #111111;   /* lo que va encima del naranja: 5,3:1 */
+
+            /* Semánticos */
+            --ok: #146c33;
             --alerta: #b91c1c;
             --alerta-texto: #7f1d1d;
+            --morado: #6b4a99;
+            --aviso: #fbbf24;
+
+            /* Aviso flotante */
+            --toast-fondo: #111111;
+            --toast-texto: #ffffff;
+
+            /* Nombres viejos: quedan porque algunas reglas todavía los usan */
+            --parchment: var(--panel);
+            --parchment-dark: var(--borde-suave);
+            --wood: var(--borde);
+            --wood-dark: var(--ink);
+            --brass: var(--borde);
+            --brass-dark: var(--borde);
+            --sky: var(--accion);
+            --sky-dark: var(--accion-texto);
+            --coral: var(--alerta);
+            --coral-dark: var(--alerta-texto);
+            --sage: var(--accion);
+            --sage-dark: var(--accion-texto);
+            --cream: var(--panel);
 
             --radio: 10px;
             --radio-chico: 6px;
             --grosor: 3px;
             --fuente: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
+
+        /* ============================================================
+           MODO NOCHE — solo se cambian variables, ninguna regla distinta
+           ============================================================ */
+        body.noche {
+            --fondo: #101214;
+            --panel: #1e2126;
+            --pista: #262b31;
+            --borde: #66727f;
+            --borde-suave: #3a424b;
+
+            --ink: #f2f2f2;
+            --ink-soft: #a8b0b8;
+
+            --accion-texto: #e8590c;   /* sobre fondo oscuro el naranja ya llega */
+            --sobre-accion: #111111;
+
+            --ok: #4ade80;
+            --alerta: #ff8a8a;
+            --alerta-texto: #ff8a8a;
+            --morado: #c4a9f0;
+
+            --toast-fondo: #f2f2f2;
+            --toast-texto: #111111;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* El fondo cubre toda la ventana, también a los costados en la computadora */
+        html { background: var(--fondo); }
+        html.noche { background: #101214; }
         body {
             font-family: var(--fuente);
             font-weight: 500;
             background: var(--fondo);
             color: var(--ink);
-            padding: 14px;
-            padding-bottom: 90px;
+            /* Los márgenes laterales y de arriba respetan el notch del celular */
+            padding-top: calc(14px + env(safe-area-inset-top, 0px));
+            padding-left: calc(14px + env(safe-area-inset-left, 0px));
+            padding-right: calc(14px + env(safe-area-inset-right, 0px));
+            padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
             max-width: 480px;
             margin: 0 auto;
             min-height: 100vh;
             touch-action: manipulation;
         }
+        #app { position: relative; }
+
+        /* ===== BOTÓN REDONDO DE MODO NOCHE (arriba a la derecha) ===== */
+        .boton-noche {
+            position: absolute;
+            top: 0; right: 0;
+            z-index: 10;
+            width: 42px; height: 42px; border-radius: 50%;
+            background: var(--panel); color: var(--ink);
+            border: var(--grosor) solid var(--borde);
+            display: flex; align-items: center; justify-content: center;
+            padding: 0; cursor: pointer;
+        }
+        .boton-noche:active { transform: translateY(2px); }
+        .boton-noche svg { width: 21px; height: 21px; display: block; }
+
+        /* ===== ÍCONOS DIBUJADOS ===== */
+        .ico { display: inline-flex; align-items: center; justify-content: center; vertical-align: -0.16em; }
+        .ico svg { width: 1.05em; height: 1.05em; display: block; }
+        .ico.grande svg { width: 1.5em; height: 1.5em; }
+
+        /* ===== AVISO DE CAMBIOS SIN SUBIR (no se puede ignorar) ===== */
+        .aviso-pendiente {
+            display: none; align-items: center; justify-content: center; gap: 8px;
+            background: repeating-linear-gradient(45deg, var(--aviso) 0 12px, #f59e0b 12px 24px);
+            color: #111111;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 11px 10px; margin-bottom: 11px; cursor: pointer;
+            font-size: calc(13px * var(--esc)); font-weight: 700; text-align: center;
+        }
+        body.con-pendientes .aviso-pendiente { display: flex; }
 
         .panel {
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             border-radius: var(--radio);
             padding: 12px 14px;
@@ -79,13 +166,13 @@
 
         .header { text-align: center; margin-bottom: 10px; }
         .header h1 {
-            font-size: 15px;
+            font-size: calc(15px * var(--esc));
             font-weight: 700;
             color: var(--ink);
             letter-spacing: 0.06em;
         }
         .header .status {
-            font-size: 11px;
+            font-size: calc(11px * var(--esc));
             color: var(--ok);
             margin-top: 3px;
             font-weight: 700;
@@ -97,7 +184,7 @@
         /* ===== BUSCADOR ===== */
         .search-wrap { position: relative; margin-bottom: 11px; }
         .search-box {
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             border-radius: var(--radio);
             padding: 11px 14px;
@@ -105,13 +192,13 @@
             align-items: center;
             gap: 10px;
         }
-        .search-box .icon { font-size: 17px; }
+        .search-box .icon { font-size: calc(17px * var(--esc)); }
         .search-box input {
             border: none;
             outline: none;
             font-family: var(--fuente);
             font-weight: 700;
-            font-size: 16px;
+            font-size: calc(16px * var(--esc));
             width: 100%;
             background: transparent;
             color: var(--ink);
@@ -122,7 +209,7 @@
             position: absolute;
             top: calc(100% + 6px);
             left: 0; right: 0;
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             border-radius: var(--radio);
             box-shadow: 0 6px 16px rgba(0,0,0,0.18);
@@ -145,48 +232,47 @@
         .piloto-item:last-child { border-bottom: none; }
         .piloto-item:active { background: var(--pista); }
         .piloto-item .info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-        .piloto-item .nombre { font-weight: 700; font-size: 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .piloto-item .detalle { font-size: 11px; color: var(--ink-soft); }
+        .piloto-item .nombre { font-weight: 700; font-size: calc(14px * var(--esc)); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .piloto-item .detalle { font-size: calc(11px * var(--esc)); color: var(--ink-soft); }
         .mini-tanque { width: 60px; height: 10px; background: var(--pista); border: 2px solid var(--borde); border-radius: var(--radio-chico); overflow: hidden; }
         .mini-tanque .relleno { height: 100%; transition: width 0.3s; }
-        .badge { display: inline-block; padding: 1px 7px; border-radius: var(--radio-chico); font-size: 10px; font-weight: 700; margin-right: 4px; background: #ffffff; border: 2px solid var(--borde); }
-        .badge-alumno { color: #6b4a99; }
+        .badge { display: inline-block; padding: 1px 7px; border-radius: var(--radio-chico); font-size: calc(10px * var(--esc)); font-weight: 700; margin-right: 4px; background: var(--panel); border: 2px solid var(--borde); }
+        .badge-alumno { color: var(--morado); }
         .badge-libres { color: var(--ok); }
         .badge-deuda { color: var(--alerta-texto); }
         .badge-manual { color: var(--accion-texto); }
-        .empty-state { text-align: center; padding: 20px; color: var(--ink-soft); font-size: 13px; }
+        .empty-state { text-align: center; padding: 20px; color: var(--ink-soft); font-size: calc(13px * var(--esc)); }
 
         /* ===== FICHA DEL PILOTO SELECCIONADO =====
            Antes era un medidor con aguja que ocupaba media pantalla.
            Ahora: saldo y deuda como dos números grandes y una barra fina. */
         .selected-info { text-align: center; }
-        .selected-info .placa-nombre { font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
-        .piloto-numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .piloto-numeros .num { text-align: center; }
-        .piloto-numeros .etq {
-            display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+        .selected-info .placa-nombre { font-size: calc(19px * var(--esc)); font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+        .saldo-unico { text-align: center; }
+        .saldo-unico .etq {
+            display: block; font-size: calc(10px * var(--esc)); font-weight: 700; letter-spacing: 0.08em;
             text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px;
         }
-        .piloto-numeros b { display: block; font-size: 27px; font-weight: 700; line-height: 1.1; }
-        .piloto-numeros b.bueno { color: var(--ok); }
-        .piloto-numeros b.malo { color: var(--alerta-texto); }
+        .saldo-unico b { display: block; font-size: calc(40px * var(--esc)); font-weight: 700; line-height: 1.15; }
+        .saldo-unico b.bueno { color: var(--ok); }
+        .saldo-unico b.malo { color: var(--alerta-texto); }
         .barra-credito {
             height: 10px; background: var(--pista); border: 2px solid var(--borde);
             border-radius: var(--radio-chico); overflow: hidden; margin-top: 12px;
         }
         .barra-credito i { display: block; height: 100%; transition: width 0.3s; }
-        .mini-nota { font-size: 11px; color: var(--ink-soft); margin-top: 8px; text-align: center; }
+        .mini-nota { font-size: calc(11px * var(--esc)); color: var(--ink-soft); margin-top: 8px; text-align: center; }
 
         /* ===== ORIGEN: ESCUELA / PISTA =====
            Con la palabra completa y el precio, no la inicial. */
         .switches { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 11px; }
         .switch-btn {
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             border-radius: var(--radio);
             padding: 14px 6px;
             font-family: var(--fuente);
-            font-size: 17px;
+            font-size: calc(17px * var(--esc));
             font-weight: 700;
             letter-spacing: 0.04em;
             text-transform: uppercase;
@@ -194,25 +280,25 @@
             display: flex; flex-direction: column; align-items: center; gap: 3px;
             cursor: pointer;
         }
-        .switch-btn .precio { font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
-        .switch-btn.active { background: var(--accion); border-color: var(--accion-borde); color: #ffffff; }
-        .switch-btn.active .precio { color: #ffffff; }
+        .switch-btn .precio { font-size: calc(12px * var(--esc)); font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+        .switch-btn.active { background: var(--accion); border-color: var(--accion-borde); color: var(--sobre-accion); }
+        .switch-btn.active .precio { color: var(--sobre-accion); }
         .switch-btn:active { transform: translateY(2px); }
 
         /* ===== CONTADOR ===== */
         .contador { display: flex; align-items: center; justify-content: center; gap: 22px; }
         .perilla {
             width: 56px; height: 56px; border-radius: 50%;
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             font-family: var(--fuente);
-            font-size: 26px; font-weight: 700; color: var(--ink);
+            font-size: calc(26px * var(--esc)); font-weight: 700; color: var(--ink);
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
         }
         .perilla:active { transform: translateY(2px); }
-        .contador span.valor { font-size: 38px; font-weight: 700; color: var(--ink); width: 46px; text-align: center; display: inline-block; line-height: 1.05; }
-        .contador .etq { font-size: 10px; color: var(--ink-soft); text-align: center; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .contador span.valor { font-size: calc(38px * var(--esc)); font-weight: 700; color: var(--ink); width: 46px; text-align: center; display: inline-block; line-height: 1.05; }
+        .contador .etq { font-size: calc(10px * var(--esc)); color: var(--ink-soft); text-align: center; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 
         /* ===== BOTONERA =====
            Todos los botones llevan el MISMO borde negro. El naranja es solo
@@ -223,39 +309,39 @@
             border-radius: var(--radio);
             padding: 14px 8px;
             font-family: var(--fuente);
-            font-size: 14px;
+            font-size: calc(14px * var(--esc));
             font-weight: 700;
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 6px;
-            background: #ffffff;
+            background: var(--panel);
             color: var(--ink);
         }
         .btn-accion:active { transform: translateY(2px); }
-        .btn-accion .icono { font-size: 17px; }
+        .btn-accion .icono { font-size: calc(17px * var(--esc)); }
         .btn-despegar {
             width: 100%;
-            background: var(--accion); color: #ffffff; border-color: var(--accion-borde);
+            background: var(--accion); color: var(--sobre-accion); border-color: var(--accion-borde);
             flex-direction: column; gap: 2px;
-            padding: 20px 12px; font-size: 20px; letter-spacing: 0.03em;
+            padding: 20px 12px; font-size: calc(20px * var(--esc)); letter-spacing: 0.03em;
             margin-bottom: 11px;
         }
-        .btn-despegar small { font-size: 13px; font-weight: 500; letter-spacing: 0; opacity: 0.95; }
+        .btn-despegar small { font-size: calc(13px * var(--esc)); font-weight: 500; letter-spacing: 0; opacity: 0.95; }
         .btn-deshacer { color: var(--alerta); }
         .full-width { grid-column: 1 / -1; }
 
         /* ===== BITÁCORA ===== */
-        .historial .titulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 8px; }
-        .historial .item { font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--borde-suave); display: flex; justify-content: space-between; gap: 10px; }
+        .historial .titulo { font-size: calc(11px * var(--esc)); font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 8px; }
+        .historial .item { font-size: calc(13px * var(--esc)); padding: 7px 0; border-bottom: 1px solid var(--borde-suave); display: flex; justify-content: space-between; gap: 10px; }
         .historial .item:last-child { border-bottom: none; }
 
         /* ===== ALERTA (toast) ===== */
         .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #111111;
-            color: #ffffff;
+            position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%);
+            background: var(--toast-fondo);
+            color: var(--toast-texto);
             padding: 12px 20px;
             border-radius: var(--radio);
-            font-size: 14px; font-weight: 700;
+            font-size: calc(14px * var(--esc)); font-weight: 700;
             max-width: 90%;
             z-index: 999;
             opacity: 0;
@@ -264,6 +350,7 @@
             text-align: center;
         }
         .toast.show { opacity: 1; }
+        .toast .ico { margin-right: 5px; vertical-align: -0.12em; }
 
         /* ===== MODALES ===== */
         .modal-overlay {
@@ -274,59 +361,59 @@
         }
         .modal-overlay.show { display: flex; }
         .modal {
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             border-radius: var(--radio);
             padding: 18px;
             max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto;
         }
-        .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--ink); }
-        .modal label { font-size: 12px; font-weight: 700; color: var(--ink-soft); display: block; margin: 12px 0 4px; }
+        .modal h2 { font-size: calc(18px * var(--esc)); font-weight: 700; margin-bottom: 14px; color: var(--ink); }
+        .modal label { font-size: calc(12px * var(--esc)); font-weight: 700; color: var(--ink-soft); display: block; margin: 12px 0 4px; }
         .modal input {
             width: 100%; padding: 11px 14px; border: var(--grosor) solid var(--borde); border-radius: var(--radio);
-            font-family: var(--fuente); font-weight: 700; font-size: 15px;
-            background: #ffffff; color: var(--ink);
+            font-family: var(--fuente); font-weight: 700; font-size: calc(15px * var(--esc));
+            background: var(--pista); color: var(--ink);
         }
-        .modal-hint { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.45; }
+        .modal-hint { font-size: calc(11px * var(--esc)); color: var(--ink-soft); margin-bottom: 6px; line-height: 1.45; }
         .btn-group-modal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-        .btn-modal-confirm { background: var(--accion); color: #ffffff; padding: 14px; border: var(--grosor) solid var(--accion-borde); border-radius: var(--radio); font-family: var(--fuente); font-size: 14px; font-weight: 700; cursor: pointer; }
-        .btn-modal-cancel { background: #ffffff; color: var(--ink); padding: 14px; border: var(--grosor) solid var(--borde); border-radius: var(--radio); font-family: var(--fuente); font-size: 14px; font-weight: 700; cursor: pointer; }
+        .btn-modal-confirm { background: var(--accion); color: var(--sobre-accion); padding: 14px; border: var(--grosor) solid var(--accion-borde); border-radius: var(--radio); font-family: var(--fuente); font-size: calc(14px * var(--esc)); font-weight: 700; cursor: pointer; }
+        .btn-modal-cancel { background: var(--pista); color: var(--ink); padding: 14px; border: var(--grosor) solid var(--borde); border-radius: var(--radio); font-family: var(--fuente); font-size: calc(14px * var(--esc)); font-weight: 700; cursor: pointer; }
         .btn-chip {
             display: inline-block; padding: 8px 13px; margin: 3px 3px 3px 0;
-            background: #ffffff; border: 2px solid var(--borde);
-            border-radius: var(--radio-chico); font-size: 13px; font-weight: 700; color: var(--ink);
+            background: var(--pista); border: 2px solid var(--borde);
+            border-radius: var(--radio-chico); font-size: calc(13px * var(--esc)); font-weight: 700; color: var(--ink);
             cursor: pointer;
         }
         .btn-chip.quitar { color: var(--alerta); }
-        .btn-chip.metodo-activo { background: var(--accion); border-color: var(--accion-borde); color: #ffffff; }
+        .btn-chip.metodo-activo { background: var(--accion); border-color: var(--accion-borde); color: var(--sobre-accion); }
         /* ===== ESTADÍSTICAS ===== */
         .header .resumen-linea {
-            font-size: 11px; color: var(--ink-soft); margin-top: 4px; font-weight: 700;
+            font-size: calc(11px * var(--esc)); color: var(--ink-soft); margin-top: 4px; font-weight: 700;
             cursor: pointer; line-height: 1.4;
         }
         .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         .tabs .btn-chip { margin: 0; text-align: center; width: 100%; }
-        .btn-chip.activo { background: var(--accion); border-color: var(--accion-borde); color: #ffffff; }
+        .btn-chip.activo { background: var(--accion); border-color: var(--accion-borde); color: var(--sobre-accion); }
         .periodo-linea {
             display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
-            margin: 12px 0 10px; font-size: 14px; font-weight: 700; color: var(--ink);
+            margin: 12px 0 10px; font-size: calc(14px * var(--esc)); font-weight: 700; color: var(--ink);
         }
         .link-mini {
             background: none; border: none; padding: 0; margin: 0; width: auto;
-            font-family: var(--fuente); font-size: 12px; font-weight: 700;
+            font-family: var(--fuente); font-size: calc(12px * var(--esc)); font-weight: 700;
             color: var(--accion-texto); text-decoration: underline; cursor: pointer;
         }
         .est-bloque {
             background: var(--pista); border-radius: var(--radio-chico);
             padding: 10px 11px; margin-bottom: 10px;
         }
-        .est-bloque h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 6px; }
-        .est-fila { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 3px 0; }
-        .est-fila.sub { padding-left: 14px; color: var(--ink-soft); font-size: 12px; }
+        .est-bloque h3 { font-size: calc(11px * var(--esc)); font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 6px; }
+        .est-fila { display: flex; justify-content: space-between; gap: 10px; font-size: calc(13px * var(--esc)); padding: 3px 0; }
+        .est-fila.sub { padding-left: 14px; color: var(--ink-soft); font-size: calc(12px * var(--esc)); }
         .est-fila b { font-weight: 700; }
         .est-fila.sube b { color: var(--ok); }
         .est-fila.baja b { color: var(--alerta); }
-        .est-nota { font-size: 10px; color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
+        .est-nota { font-size: calc(10px * var(--esc)); color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
         .est-bloques-2 { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 10px; }
         /* En la computadora el resumen se abre a lo ancho y en tres columnas */
         @media (min-width: 780px) {
@@ -340,16 +427,23 @@
 <body>
 
 <div id="app">
+    <button class="boton-noche" id="btnNoche" aria-label="Cambiar entre modo día y modo noche" title="Modo noche"></button>
+
     <div class="header">
         <img src="rescates-logo.png" alt="Rescate" id="headerIcono" style="width:72px;height:auto;display:block;margin:0 auto;">
         <h1>RESCATES RAMBLA</h1>
-        <div class="status" id="statusSync">⬇️ Enlazando...</div>
+        <div class="status" id="statusSync"><i class="ico" data-ico="bajar"></i> Enlazando...</div>
         <div class="resumen-linea" id="resumenHoy" title="Ver el cierre del día"></div>
+    </div>
+
+    <div class="aviso-pendiente" id="avisoPendiente" title="Reintentar ahora">
+        <i class="ico grande" data-ico="alerta"></i>
+        <span id="avisoPendienteTexto">Cambios sin subir</span>
     </div>
 
     <div class="search-wrap">
         <div class="search-box">
-            <span class="icon">🔍</span>
+            <span class="icon"><i class="ico" data-ico="lupa"></i></span>
             <input type="text" id="searchInput" placeholder="Buscar piloto: N° / nombre / alias..." autocomplete="off">
         </div>
         <div class="pilotos-list" id="pilotosList"></div>
@@ -357,7 +451,7 @@
 
     <div class="panel">
         <div class="selected-info" id="selectedInfo">
-            <span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>
+            <span style="color:var(--ink-soft);font-size: calc(13px * var(--esc));"><i class="ico" data-ico="lupa"></i> Buscá un piloto para verlo acá</span>
         </div>
     </div>
 
@@ -369,7 +463,7 @@
     <div class="panel contador">
         <button class="perilla" id="btnRestar" aria-label="Una persona menos">−</button>
         <div style="display:flex;flex-direction:column;align-items:center;">
-            <div class="etq">Subidas (personas)</div>
+            <div class="etq">Cantidad Pass</div>
             <span class="valor" id="pasajerosCount">1</span>
         </div>
         <button class="perilla" id="btnSumar" aria-label="Una persona más">+</button>
@@ -378,15 +472,15 @@
     <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar las subidas" title="Registrar las subidas"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
 
     <div class="accion-group">
-        <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación">↺ Deshacer</button>
+        <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación"><i class="ico" data-ico="deshacer"></i> Deshacer</button>
         <button class="btn-accion btn-fuel" id="btnCarga" aria-label="Cargar crédito" title="Cargar crédito">$ Cargar crédito</button>
-        <button class="btn-accion btn-pago" id="btnPago" aria-label="Pago rápido de la deuda" title="Pago rápido de la deuda">⚡ Pago rápido</button>
-        <button class="btn-accion btn-datos" id="btnDatos" aria-label="Menú de datos" title="Menú de datos">📁 Datos</button>
+        <button class="btn-accion btn-pago" id="btnPago" aria-label="Pago rápido de la deuda" title="Pago rápido de la deuda"><i class="ico" data-ico="rayo"></i> Pago rápido</button>
+        <button class="btn-accion btn-datos" id="btnDatos" aria-label="Menú de datos" title="Menú de datos"><i class="ico" data-ico="carpeta"></i> Datos</button>
     </div>
 
     <div class="panel historial" id="historial">
-        <div class="titulo">📋 Últimas subidas</div>
-        <div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>
+        <div class="titulo"><i class="ico" data-ico="lista"></i> Últimos Pass</div>
+        <div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin viajes registrados</div>
     </div>
 </div>
 
@@ -394,8 +488,8 @@
 
 <div class="modal-overlay" id="modalCarga">
     <div class="modal">
-        <h2>🪙 Cargar crédito</h2>
-        <div id="modalPilotoInfo" style="background:var(--cream);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--wood-dark);"></div>
+        <h2><i class="ico" data-ico="moneda"></i> Cargar crédito</h2>
+        <div id="modalPilotoInfo" style="background:var(--cream);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size: calc(14px * var(--esc));font-weight:700;color:var(--wood-dark);"></div>
         <label>Monto a cargar ($)</label>
         <div>
             <button type="button" class="btn-chip" data-monto="25000">$25.000</button>
@@ -408,13 +502,13 @@
         <input type="number" id="montoInput" placeholder="Otro monto..." min="0" step="1000">
         <div class="modal-hint" id="hintDeuda"></div>
 
-        <label style="margin-top:16px;">💳 Método de pago</label>
+        <label style="margin-top:16px;"><i class="ico" data-ico="tarjeta"></i> Método de pago</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button type="button" class="btn-chip metodo-carga metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;">💵 Efectivo</button>
-            <button type="button" class="btn-chip metodo-carga" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;">🏦 Transferencia</button>
+            <button type="button" class="btn-chip metodo-carga metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="dinero"></i> Efectivo</button>
+            <button type="button" class="btn-chip metodo-carga" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="banco"></i> Transferencia</button>
         </div>
 
-        <label style="margin-top:16px;">🎁 Subidas libres extra</label>
+        <label style="margin-top:16px;"><i class="ico" data-ico="regalo"></i> Pass libres extra</label>
         <div>
             <button type="button" class="btn-chip" data-libres="1">+1</button>
             <button type="button" class="btn-chip" data-libres="3">+3</button>
@@ -425,161 +519,168 @@
         <div class="modal-hint">Los botones de arriba SUMAN sobre lo que ya esté cargado.</div>
 
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnAplicarCarga">✅ Aplicar</button>
-            <button class="btn-modal-cancel" id="btnCancelarCarga">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnAplicarCarga"><i class="ico" data-ico="check"></i> Aplicar</button>
+            <button class="btn-modal-cancel" id="btnCancelarCarga"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalEditar">
     <div class="modal">
-        <h2>🥽 Ficha del piloto</h2>
-        <div id="modalEditarInfo" style="background:var(--cream);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--wood-dark);"></div>
+        <h2><i class="ico" data-ico="ficha"></i> Ficha del piloto</h2>
+        <div id="modalEditarInfo" style="background:var(--cream);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size: calc(14px * var(--esc));font-weight:700;color:var(--wood-dark);"></div>
 
         <label>Alias / apodo</label>
         <input type="text" id="aliasInput" placeholder="Ej: 'El Colo', 'Petiso'...">
 
-        <label style="margin-top:16px;">🎓 Categoría</label>
+        <label style="margin-top:16px;"><i class="ico" data-ico="birrete"></i> Categoría</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button type="button" class="btn-chip categoria-btn metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;">🧑‍✈️ Piloto</button>
-            <button type="button" class="btn-chip categoria-btn" data-categoria="alumno" style="width:100%;text-align:center;margin:0;">🎓 Alumno</button>
+            <button type="button" class="btn-chip categoria-btn metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="piloto"></i> Piloto</button>
+            <button type="button" class="btn-chip categoria-btn" data-categoria="alumno" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="birrete"></i> Alumno</button>
         </div>
         <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 subidas libres.</div>
 
-        <label style="margin-top:16px;">📅 Fecha de alta</label>
+        <label style="margin-top:16px;"><i class="ico" data-ico="calendario"></i> Fecha de alta</label>
         <input type="date" id="fechaAltaInput">
 
-        <label style="margin-top:16px;">🎯 Beneficio (descuento) personalizado</label>
+        <label style="margin-top:16px;"><i class="ico" data-ico="objetivo"></i> Beneficio (descuento) personalizado</label>
         <div class="modal-hint">Si lo completás, este % se usa siempre para este piloto en vez del tramo por lote.</div>
         <input type="number" id="descuentoManualInput" placeholder="Ej: 20" min="0" max="100" step="1">
         <button type="button" class="btn-chip quitar" id="btnQuitarManual" style="margin-top:8px;">Quitar personalizado</button>
 
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnGuardarEdicion">✅ Guardar</button>
-            <button class="btn-modal-cancel" id="btnCancelarEdicion">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnGuardarEdicion"><i class="ico" data-ico="check"></i> Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarEdicion"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalPin">
     <div class="modal">
-        <h2>🔐 Código de acceso</h2>
+        <h2><i class="ico" data-ico="candado"></i> Código de acceso</h2>
         <div class="modal-hint" id="pinMensaje"></div>
         <label>Tu código secreto</label>
         <input type="password" id="pinInput" autocomplete="current-password" placeholder="Código de la app">
         <div class="modal-hint">Queda guardado en este celular. Si lo cambiás en Apps Script, la app te lo vuelve a pedir.</div>
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnPinOk">✅ Entrar</button>
-            <button class="btn-modal-cancel" id="btnPinCancelar">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnPinOk"><i class="ico" data-ico="check"></i> Entrar</button>
+            <button class="btn-modal-cancel" id="btnPinCancelar"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalNuevoPiloto">
     <div class="modal">
-        <h2>➕ Nuevo piloto</h2>
+        <h2><i class="ico" data-ico="mas"></i> Nuevo piloto</h2>
         <label>Número</label>
         <input type="text" id="npNumero" inputmode="numeric" placeholder="Ej: 27">
         <label style="margin-top:12px;">Nombre y apellido</label>
         <input type="text" id="npNombre" placeholder="Como quiere figurar">
         <label style="margin-top:12px;">Alias / apodo (opcional)</label>
         <input type="text" id="npAlias" placeholder="Ej: 'El Colo'">
-        <label style="margin-top:12px;">🎓 Categoría</label>
+        <label style="margin-top:12px;"><i class="ico" data-ico="birrete"></i> Categoría</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button type="button" class="btn-chip np-categoria metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;">🧑‍✈️ Piloto</button>
-            <button type="button" class="btn-chip np-categoria" data-categoria="alumno" style="width:100%;text-align:center;margin:0;">🎓 Alumno</button>
+            <button type="button" class="btn-chip np-categoria metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="piloto"></i> Piloto</button>
+            <button type="button" class="btn-chip np-categoria" data-categoria="alumno" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="birrete"></i> Alumno</button>
         </div>
-        <label style="margin-top:12px;">📅 Fecha de alta</label>
+        <label style="margin-top:12px;"><i class="ico" data-ico="calendario"></i> Fecha de alta</label>
         <input type="date" id="npFechaAlta">
         <div class="modal-hint">Si arranca como "Alumno" se le asignan 10 subidas libres.</div>
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnCrearPiloto">✅ Crear</button>
-            <button class="btn-modal-cancel" id="btnCancelarNuevoPiloto">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnCrearPiloto"><i class="ico" data-ico="check"></i> Crear</button>
+            <button class="btn-modal-cancel" id="btnCancelarNuevoPiloto"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalConfirmarViaje">
     <div class="modal">
-        <h2>✅ Confirmar operación</h2>
-        <div id="modalConfirmarInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:6px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
+        <h2><i class="ico" data-ico="check"></i> Confirmar operación</h2>
+        <div id="modalConfirmarInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:6px;font-size: calc(15px * var(--esc));line-height:1.7;color:var(--ink);"></div>
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnConfirmarSi">✅ Confirmar</button>
-            <button class="btn-modal-cancel" id="btnConfirmarNo">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnConfirmarSi"><i class="ico" data-ico="check"></i> Confirmar</button>
+            <button class="btn-modal-cancel" id="btnConfirmarNo"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalPago">
     <div class="modal">
-        <h2>⚡ Pago rápido</h2>
-        <div id="modalPagoInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:12px;font-size:15px;line-height:1.7;color:var(--ink);"></div>
-        <label>💳 Método de pago</label>
+        <h2><i class="ico" data-ico="rayo"></i> Pago rápido</h2>
+        <div id="modalPagoInfo" style="background:var(--cream);padding:14px;border-radius:14px;margin-bottom:12px;font-size: calc(15px * var(--esc));line-height:1.7;color:var(--ink);"></div>
+        <label><i class="ico" data-ico="tarjeta"></i> Método de pago</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <button type="button" class="btn-chip metodo-rapido metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;">💵 Efectivo</button>
-            <button type="button" class="btn-chip metodo-rapido" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;">🏦 Transferencia</button>
+            <button type="button" class="btn-chip metodo-rapido metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="dinero"></i> Efectivo</button>
+            <button type="button" class="btn-chip metodo-rapido" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="banco"></i> Transferencia</button>
         </div>
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnPagoSi">✅ Confirmar pago</button>
-            <button class="btn-modal-cancel" id="btnPagoNo">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnPagoSi"><i class="ico" data-ico="check"></i> Confirmar pago</button>
+            <button class="btn-modal-cancel" id="btnPagoNo"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalDeudores">
     <div class="modal">
-        <h2>📋 Pilotos con deuda</h2>
+        <h2><i class="ico" data-ico="lista"></i> Pilotos con deuda</h2>
         <div id="listaDeudores" style="max-height:50vh;overflow-y:auto;"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarDeudores">✖ Cerrar</button>
+            <button class="btn-modal-cancel" id="btnCerrarDeudores"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalApartadas">
     <div class="modal">
-        <h2>⚠️ Cambios apartados</h2>
+        <h2><i class="ico" data-ico="alerta"></i> Cambios apartados</h2>
         <div class="modal-hint">Son cambios que la planilla rechazó (por ejemplo, si el piloto ya no existe ahí). No se pierden: quedan guardados en el celular. Reintentalos o cargalos a mano en la planilla, y después borrá la lista.</div>
         <div id="listaApartadas" style="max-height:45vh;overflow-y:auto;"></div>
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnReintentarApartadas">🔄 Reintentar</button>
-            <button class="btn-modal-cancel" id="btnCerrarApartadas">✖ Cerrar</button>
+            <button class="btn-modal-confirm" id="btnReintentarApartadas"><i class="ico" data-ico="girar"></i> Reintentar</button>
+            <button class="btn-modal-cancel" id="btnCerrarApartadas"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalDatos">
     <div class="modal">
-        <h2>📁 Datos</h2>
+        <h2><i class="ico" data-ico="carpeta"></i> Datos</h2>
         <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn-chip" id="btnAbrirPlanilla" style="padding:14px;text-align:left;width:100%;">🗺️ Planilla</button>
-            <button class="btn-chip" id="btnAbrirNuevoPiloto" style="padding:14px;text-align:left;width:100%;">➕ Nuevo piloto</button>
-            <button class="btn-chip" id="btnAbrirFicha" style="padding:14px;text-align:left;width:100%;">🥽 Ficha del piloto</button>
-            <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;">📋 Deudores</button>
-            <button class="btn-chip" id="btnAbrirApartadas" style="padding:14px;text-align:left;width:100%;">⚠️ Cambios apartados (<span id="contApartadas">0</span>)</button>
-            <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;">💲 Precios</button>
-            <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;">📊 Estadísticas</button>
+            <button class="btn-chip" id="btnAbrirPlanilla" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="mapa"></i> Planilla</button>
+            <button class="btn-chip" id="btnAbrirNuevoPiloto" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="mas"></i> Nuevo piloto</button>
+            <button class="btn-chip" id="btnAbrirFicha" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="ficha"></i> Ficha del piloto</button>
+            <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="lista"></i> Deudores</button>
+            <button class="btn-chip" id="btnAbrirApartadas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="alerta"></i> Cambios apartados (<span id="contApartadas">0</span>)</button>
+            <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="etiqueta"></i> Precios</button>
+            <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="grafico"></i> Estadísticas</button>
+            <div style="border-top:1px solid var(--borde-suave);margin:2px 0;"></div>
+            <div class="modal-hint" style="margin:0;">Tamaño de letra</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+                <button type="button" class="btn-chip letra-btn" data-letra="1" style="width:100%;text-align:center;margin:0;">Normal</button>
+                <button type="button" class="btn-chip letra-btn" data-letra="1.12" style="width:100%;text-align:center;margin:0;">Grande</button>
+                <button type="button" class="btn-chip letra-btn" data-letra="1.25" style="width:100%;text-align:center;margin:0;">Muy grande</button>
+            </div>
         </div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarDatos">✖ Cerrar</button>
+            <button class="btn-modal-cancel" id="btnCerrarDatos"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalPrecios">
     <div class="modal">
-        <h2>💲 Precios</h2>
+        <h2><i class="ico" data-ico="etiqueta"></i> Precios</h2>
         <label>Precio Escuela ($)</label>
         <input type="number" id="precioEscuelaInput" min="0" step="100">
         <label style="margin-top:12px;">Precio Pista ($)</label>
         <input type="number" id="precioPistaInput" min="0" step="100">
         <div class="modal-hint">Al guardar, se actualiza el precio vigente y queda una fila nueva en el historial con la fecha de hoy.</div>
         <div class="btn-group-modal">
-            <button class="btn-modal-confirm" id="btnGuardarPrecios">✅ Guardar</button>
-            <button class="btn-modal-cancel" id="btnCancelarPrecios">✖ Cancelar</button>
+            <button class="btn-modal-confirm" id="btnGuardarPrecios"><i class="ico" data-ico="check"></i> Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarPrecios"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
         <div style="margin-top:18px;">
-            <div class="historial-titulo">📈 Historial de precios</div>
+            <div class="historial-titulo"><i class="ico" data-ico="tendencia"></i> Historial de precios</div>
             <div id="listaHistorialPrecios" style="max-height:30vh;overflow-y:auto;"></div>
         </div>
     </div>
@@ -587,11 +688,11 @@
 
 <div class="modal-overlay" id="modalEstadisticas">
     <div class="modal modal-ancho">
-        <h2>📊 Estadísticas</h2>
+        <h2><i class="ico" data-ico="grafico"></i> Estadísticas</h2>
         <div class="tabs">
-            <button type="button" class="btn-chip tab-est" data-periodo="dia">📅 Día</button>
-            <button type="button" class="btn-chip tab-est" data-periodo="semana">🗓️ Semana</button>
-            <button type="button" class="btn-chip tab-est" data-periodo="mes">📆 Mes</button>
+            <button type="button" class="btn-chip tab-est" data-periodo="dia"><i class="ico" data-ico="calendario"></i> Día</button>
+            <button type="button" class="btn-chip tab-est" data-periodo="semana"><i class="ico" data-ico="calendario"></i> Semana</button>
+            <button type="button" class="btn-chip tab-est" data-periodo="mes"><i class="ico" data-ico="calendario"></i> Mes</button>
         </div>
         <div class="periodo-linea">
             <span id="estPeriodo"></span>
@@ -599,17 +700,17 @@
         </div>
         <div id="estContenido"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr; margin-top:14px;">
-            <button class="btn-modal-cancel" id="btnCerrarEstadisticas">✖ Cerrar</button>
+            <button class="btn-modal-cancel" id="btnCerrarEstadisticas"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modalElegirPeriodo">
     <div class="modal">
-        <h2 id="elegirPeriodoTitulo">📋 Elegí un día</h2>
+        <h2 id="elegirPeriodoTitulo"><i class="ico" data-ico="lista"></i> Elegí un día</h2>
         <div id="listaPeriodos" style="max-height:50vh;overflow-y:auto;"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
-            <button class="btn-modal-cancel" id="btnCerrarElegirPeriodo">✖ Cerrar</button>
+            <button class="btn-modal-cancel" id="btnCerrarElegirPeriodo"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
@@ -699,6 +800,126 @@ function esc(v) {
     return String(v === null || v === undefined ? '' : v)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ============================================================
+// ÍCONOS DIBUJADOS
+// En vez de emojis, que cambian de forma según el celular y a tamaño
+// chico se ven borrosos. Todos con el mismo grosor de línea.
+// ============================================================
+const ICONOS = {
+    lupa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></svg>',
+    deshacer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9a5 5 0 0 1 0 10H8"/><path d="M8 4 4 8l4 4"/></svg>',
+    dinero: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 10v4M18 10v4"/></svg>',
+    rayo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M13 2 5 13h6l-1 9 8-11h-6l1-9Z"/></svg>',
+    carpeta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.5h9A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"/></svg>',
+    lista: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>',
+    luna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>',
+    sol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></svg>',
+    alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21.5 20H2.5L12 3.5Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+    grafico: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+    tendencia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7h-5M21 7v5"/></svg>',
+    caja: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 8.5 12 3l9 5.5V19a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19V8.5Z"/><path d="M9 20v-6h6v6"/></svg>',
+    pasajero: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="7.5" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>',
+    regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M3 12h18M12 8v12M12 8C10 8 8 7 8 5.5A2.5 2.5 0 0 1 12 4a2.5 2.5 0 0 1 4 1.5C16 7 14 8 12 8Z"/></svg>',
+    tarjeta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 10h19M6 14.5h3"/></svg>',
+    objetivo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg>',
+    nube: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .4-8A5.5 5.5 0 0 0 6.6 10 4 4 0 0 0 7 18Z"/></svg>',
+    girar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4h-4"/></svg>',
+    reloj: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+    moneda: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.5h-4a1.8 1.8 0 0 0 0 3.6h3a1.8 1.8 0 0 1 0 3.6h-4"/></svg>',
+    ficha: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.5 16.5a4 4 0 0 1 7 0M15 10h4M15 13.5h3"/></svg>',
+    etiqueta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 12.5V5a2 2 0 0 1 2-2h7.5L21 11.5 12.5 20 3 12.5Z"/><path d="M7.5 7.5h.01"/></svg>',
+    mapa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4Z"/><path d="M9 4v13M15 6.5v13"/></svg>',
+    mas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    banco: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 20h18"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+    telefono: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
+    bajar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v13"/><path d="M6.5 12 12 17.5 17.5 12"/></svg>',
+    calendario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+    birrete: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 8.5 12 13l9.5-4.5L12 4Z"/><path d="M6 10.5V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-5.5"/></svg>',
+    piloto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/><path d="M6.5 9h11"/></svg>',
+    candado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>'
+};
+
+// Qué ícono reemplaza a cada emoji
+const EMOJI_A_ICONO = {
+    '⬇': 'bajar', '🔍': 'lupa', '↺': 'deshacer', '↩': 'deshacer', '⚡': 'rayo',
+    '📁': 'carpeta', '📋': 'lista', '💵': 'dinero', '🎁': 'regalo', '✅': 'check',
+    '💳': 'tarjeta', '🎯': 'objetivo', '🪂': 'pasajero', '📊': 'grafico',
+    '📈': 'tendencia', '☁': 'nube', '🔄': 'girar', '⏳': 'reloj', '⚠': 'alerta',
+    '🪙': 'moneda', '🥽': 'ficha', '💲': 'etiqueta', '🗺': 'mapa', '➕': 'mas',
+    '🏦': 'banco', '✖': 'x', '📱': 'telefono', '🛫': 'check', '👆': 'lupa',
+    '📅': 'calendario', '🗓': 'calendario', '📆': 'calendario',
+    '🎓': 'birrete', '🔐': 'candado'
+};
+
+function ico(nombre) {
+    return '<i class="ico">' + (ICONOS[nombre] || '') + '</i>';
+}
+
+/**
+ * Devuelve el texto listo para innerHTML: escapa lo que haga falta y cambia
+ * los emojis por íconos dibujados. Los emojis se buscan sin el selector de
+ * variación (U+FE0F) para que dé igual cómo estén escritos.
+ */
+function textoConIconos(t) {
+    let s = esc(String(t === null || t === undefined ? '' : t).replace(/\uFE0F/g, ''));
+    Object.keys(EMOJI_A_ICONO).forEach(e => {
+        if (s.indexOf(e) >= 0) s = s.split(e).join(ico(EMOJI_A_ICONO[e]));
+    });
+    return s;
+}
+
+/** Rellena los <i class="ico" data-ico="..."> que quedaron en el HTML. */
+function pintarIconos() {
+    document.querySelectorAll('.ico[data-ico]').forEach(el => {
+        const n = el.dataset.ico;
+        if (ICONOS[n]) { el.innerHTML = ICONOS[n]; el.removeAttribute('data-ico'); }
+    });
+}
+
+// ============================================================
+// PREFERENCIAS DEL CELULAR: modo noche y tamaño de letra
+// ============================================================
+function aplicarModoNoche(oscuro) {
+    document.body.classList.toggle('noche', oscuro);
+    document.documentElement.classList.toggle('noche', oscuro);
+    const b = document.getElementById('btnNoche');
+    if (b) {
+        // de día se muestra la luna (para pasar a la noche) y al revés
+        b.innerHTML = ICONOS[oscuro ? 'sol' : 'luna'];
+        b.title = oscuro ? 'Volver al modo día' : 'Pasar al modo noche';
+        b.setAttribute('aria-label', b.title);
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', oscuro ? '#101214' : '#f2ede1');
+    try { localStorage.setItem('modo_noche', oscuro ? '1' : '0'); } catch (e) {}
+}
+
+function aplicarLetra(escala) {
+    document.documentElement.style.setProperty('--esc', escala);
+    try { localStorage.setItem('letra', escala); } catch (e) {}
+    document.querySelectorAll('.letra-btn').forEach(b => {
+        b.classList.toggle('metodo-activo', Number(b.dataset.letra) === Number(escala));
+    });
+}
+
+// ============================================================
+// MONTOS CON SEPARADOR DE MILES
+// ============================================================
+function miles(n) {
+    return String(Math.round(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function plata(n) {
+    const v = Math.round(Number(n) || 0);
+    return (v < 0 ? '-$' : '$') + miles(Math.abs(v));
+}
+
+/** Aviso háptico (Android). En iPhone no existe y simplemente no pasa nada. */
+function vibrar(patron) {
+    try { if (navigator.vibrate) navigator.vibrate(patron || 35); } catch (e) {}
 }
 
 // ============================================================
@@ -883,8 +1104,8 @@ function resumenOperacion(op) {
         partes.push(`${op.viajes.length} subida(s) de ${v.Nombre} (N° ${v.Numero})`);
     }
     if (op.viajesBorrar && op.viajesBorrar.length) partes.push('deshacer de subidas');
-    if (op.lotesNuevos && op.lotesNuevos.length) partes.push(`carga de crédito de $${op.lotesNuevos[0].Monto_Cargado}`);
-    if (op.pagos && op.pagos.length) partes.push(`pago de $${op.pagos[0].Monto} (${op.pagos[0].Nombre})`);
+    if (op.lotesNuevos && op.lotesNuevos.length) partes.push(`carga de crédito de ${plata(op.lotesNuevos[0].Monto_Cargado)}`);
+    if (op.pagos && op.pagos.length) partes.push(`pago de ${plata(op.pagos[0].Monto)} (${op.pagos[0].Nombre})`);
     if (op.pilotoNuevo) partes.push(`alta del piloto N° ${op.piloto ? op.piloto.Numero : '?'}`);
     else if (op.piloto) partes.push(`ficha del piloto N° ${op.piloto.Numero}`);
     if (op.config) partes.push('cambio de precios');
@@ -895,12 +1116,12 @@ function resumenOperacion(op) {
 function abrirModalApartadas() {
     const cont = document.getElementById('listaApartadas');
     if (opsApartadas.length === 0) {
-        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">🎉 No hay ningún cambio apartado</div>`;
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">No hay ningún cambio apartado</div>`;
     } else {
         cont.innerHTML = opsApartadas.map((a, i) => `
             <div style="padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
-                <div style="font-weight:700;font-size:13px;">${esc(resumenOperacion(a.op))}</div>
-                <div style="font-size:11px;color:var(--ink-soft);">${esc(formatoFechaLinda(fechaSolo(a.fecha)))} — ${esc(a.motivo)}</div>
+                <div style="font-weight:700;font-size: calc(13px * var(--esc));">${esc(resumenOperacion(a.op))}</div>
+                <div style="font-size: calc(11px * var(--esc));color:var(--ink-soft);">${esc(formatoFechaLinda(fechaSolo(a.fecha)))} — ${esc(a.motivo)}</div>
             </div>
         `).join('');
     }
@@ -1103,8 +1324,21 @@ function actualizarEstadoSync(mensajeForzado, claseForzada) {
     }
     if (backendViejo) { msg = '⚠️ Backend viejo: hay que volver a pegar Code.gs'; clase = 'error'; }
     if (opsApartadas.length > 0) msg += ` · ⚠️${opsApartadas.length} apartado(s)`;
-    el.textContent = msg;
+    el.innerHTML = textoConIconos(msg);
     el.className = 'status ' + clase;
+
+    // Cartel rayado: aparece solo cuando hay cambios esperando subir
+    const hayPendientes = colaPendiente.length > 0;
+    document.body.classList.toggle('con-pendientes', hayPendientes);
+    if (hayPendientes) {
+        const t = document.getElementById('avisoPendienteTexto');
+        if (t) {
+            t.textContent = enviandoCola
+                ? `Subiendo ${colaPendiente.length} cambio(s)...`
+                : `${colaPendiente.length} cambio(s) sin subir — tocá para reintentar`;
+        }
+    }
+
     const contA = document.getElementById('contApartadas');
     if (contA) contA.textContent = opsApartadas.length;
     actualizarLineaHoy();
@@ -1204,7 +1438,7 @@ function renderPilotos(filter = '') {
     );
 
     if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty-state">Sin coincidencias 🔍</div>';
+        list.innerHTML = `<div class="empty-state">${textoConIconos('Sin coincidencias 🔍')}</div>`;
         return;
     }
 
@@ -1221,9 +1455,9 @@ function renderPilotos(filter = '') {
                     <span class="nombre">${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` <span class="detalle">"${esc(p.alias)}"</span>` : ''}</span>
                     <span>
                         ${p.categoria === 'alumno' ? `<span class="badge ${categoriaBadge}">alumno</span>` : ''}
-                        ${libres > 0 ? `<span class="badge badge-libres">🎁${libres}</span>` : ''}
-                        ${deuda > 0 ? `<span class="badge badge-deuda">💳$${deuda}</span>` : ''}
-                        ${tieneManual ? `<span class="badge badge-manual">🎯${esc(p.descuentoManual)}%</span>` : ''}
+                        ${libres > 0 ? `<span class="badge badge-libres">${ico('regalo')}${libres}</span>` : ''}
+                        ${deuda > 0 ? `<span class="badge badge-deuda">${ico('tarjeta')}${plata(deuda)}</span>` : ''}
+                        ${tieneManual ? `<span class="badge badge-manual">${ico('objetivo')}${esc(p.descuentoManual)}%</span>` : ''}
                     </span>
                 </div>
                 <div class="mini-tanque"><div class="relleno" style="width:${pct}%;background:${colorTanque(pct)};"></div></div>
@@ -1250,7 +1484,7 @@ function actualizarBotonConfirmar() {
     if (!t || !d) return;
 
     const n = cantidadSubidas;
-    t.textContent = `Subir ${n} persona${n === 1 ? '' : 's'}`;
+    t.textContent = `Subir ${n} Pass`;
 
     if (!selectedPiloto) { d.textContent = 'Elegí un piloto'; return; }
     if (!tipoViaje) { d.textContent = 'Elegí Escuela o Pista'; return; }
@@ -1265,9 +1499,9 @@ function actualizarBotonConfirmar() {
     }
     const origen = tipoViaje === 'escuela' ? 'Escuela' : 'Pista';
     if (aCobrar === 0) {
-        d.textContent = `${origen} · con subidas libres 🎁`;
+        d.textContent = `${origen} · con Pass libres 🎁`;
     } else {
-        d.textContent = `${origen} · $${aCobrar}${descuento > 0 ? ` (${descuento}% dto)` : ''}`;
+        d.textContent = `${origen} · ${plata(aCobrar)}${descuento > 0 ? ` (${descuento}% dto)` : ''}`;
     }
 }
 
@@ -1275,33 +1509,38 @@ function actualizarBotonConfirmar() {
 function actualizarPreciosBotones() {
     const pe = document.getElementById('precioEscuelaBtn');
     const pp = document.getElementById('precioPistaBtn');
-    if (pe) pe.textContent = '$' + (config.PrecioEscuela || 11000);
-    if (pp) pp.textContent = '$' + (config.PrecioPista || 6500);
+    if (pe) pe.textContent = plata(config.PrecioEscuela || 11000);
+    if (pp) pp.textContent = plata(config.PrecioPista || 6500);
 }
 
 function updateSelectedInfo() {
     const info = document.getElementById('selectedInfo');
     if (!selectedPiloto) {
-        info.innerHTML = `<span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>`;
+        info.innerHTML = `<span style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">${ico('lupa')} Buscá un piloto para verlo acá</span>`;
         actualizarBotonConfirmar();
         return;
     }
-    const saldo = getSaldo(selectedPiloto.numero);
+    const credito = getSaldo(selectedPiloto.numero);
     const deuda = selectedPiloto.deuda || 0;
+    const neto = credito - deuda;
     const libres = selectedPiloto.viajesLibres || 0;
     const descuento = getDescuentoVigente(selectedPiloto.numero);
     const pct = porcentajeTanque(selectedPiloto);
 
     const nota = [
         descuento > 0 ? `Crédito con ${descuento}% de descuento` : 'Sin descuento por lote',
-        libres > 0 ? `${libres} subida(s) libre(s)` : null
+        libres > 0 ? `${libres} Pass libre${libres === 1 ? '' : 's'}` : null
     ].filter(Boolean).join(' · ');
+
+    // El saldo es uno solo: crédito menos deuda. Si debe más de lo que tiene,
+    // el número va en rojo y con signo menos. El detalle queda en el title.
+    const detalle = deuda > 0 ? ` title="Crédito ${plata(credito)} menos deuda ${plata(deuda)}"` : '';
 
     info.innerHTML = `
         <div class="placa-nombre">${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}${selectedPiloto.alias ? ` "${esc(selectedPiloto.alias)}"` : ''}</div>
-        <div class="piloto-numeros">
-            <div class="num"><span class="etq">Saldo</span><b class="${saldo > 0 ? 'bueno' : ''}">$${saldo}</b></div>
-            <div class="num"><span class="etq">Deuda</span><b class="${deuda > 0 ? 'malo' : ''}">$${deuda}</b></div>
+        <div class="saldo-unico">
+            <span class="etq">Saldo</span>
+            <b class="${neto < 0 ? 'malo' : 'bueno'}"${detalle}>${plata(neto)}</b>
         </div>
         <div class="barra-credito"><i style="width:${pct}%;background:${colorTanque(pct)};"></i></div>
         <div class="mini-nota">${esc(nota)}</div>
@@ -1313,15 +1552,15 @@ function updateHistorial() {
     const container = document.getElementById('historial');
     const ultimos = viajes.slice(-5).reverse();
     if (ultimos.length === 0) {
-        container.innerHTML = `<div class="titulo">📋 Últimas subidas</div><div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>`;
+        container.innerHTML = `<div class="titulo">📋 Últimos Pass</div><div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin viajes registrados</div>`;
         return;
     }
     container.innerHTML = `
-        <div class="titulo">📋 Últimas subidas</div>
+        <div class="titulo">📋 Últimos Pass</div>
         ${ultimos.map(v => `
             <div class="item">
                 <span>${esc(v.socio)} - ${esc(v.nombre)}</span>
-                <span>${esc(v.tipo)} $${v.total} ${v.gratis ? '🎁' : ''}</span>
+                <span>${esc(v.tipo)} ${plata(v.total)} ${v.gratis ? ico('regalo') : ''}</span>
             </div>
         `).join('')}
     `;
@@ -1443,7 +1682,7 @@ function cobrarUnaSubida(piloto, tipo) {
 
 function pedirConfirmacionViaje() {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto'); return; }
-    if (!tipoViaje) { showToast('⚠️ Elegí E (Escuela) o P (Pista)'); return; }
+    if (!tipoViaje) { showToast('⚠️ Elegí Escuela o Pista'); return; }
 
     const precioLista = getPrecioLista(tipoViaje);
     const descuento = getDescuentoVigente(selectedPiloto.numero);
@@ -1461,10 +1700,10 @@ function pedirConfirmacionViaje() {
 
     detalle = `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>`;
     detalle += `Origen: ${tipoTexto}<br>`;
-    detalle += `Subidas: ${cantidadSubidas}<br>`;
-    if (gratisUsados > 0) detalle += `🎁 ${gratisUsados} subida(s) libre(s)<br>`;
+    detalle += `Pass: ${cantidadSubidas}<br>`;
+    if (gratisUsados > 0) detalle += `${ico('regalo')} ${gratisUsados} Pass libre(s)<br>`;
     const pagas = cantidadSubidas - gratisUsados;
-    if (pagas > 0) detalle += `A cobrar: ${pagas} subida(s) ≈ $${totalEstimado}${descuento > 0 ? ` (-${descuento}%)` : ''}`;
+    if (pagas > 0) detalle += `A cobrar: ${pagas} Pass ≈ ${plata(totalEstimado)}${descuento > 0 ? ` (-${descuento}%)` : ''}`;
 
     document.getElementById('modalConfirmarInfo').innerHTML = detalle;
     document.getElementById('modalConfirmarViaje').classList.add('show');
@@ -1503,7 +1742,8 @@ async function confirmarViaje() {
     });
     lastBatchOpId = op.opId;
 
-    showToast(`🛫 ${cantidadSubidas} subida(s) registradas para ${piloto.nombre}`);
+    vibrar(35);
+    showToast(`🛫 ${cantidadSubidas} Pass registrados para ${piloto.nombre}`);
     // El encabezado ya muestra si quedaron cambios sin subir. Este aviso aparece
     // recién cuando el dato llegó de verdad a la planilla (nunca antes).
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
@@ -1550,7 +1790,7 @@ async function anularUltimoViaje() {
         lotesSaldo: saldos
     });
 
-    showToast(`↩️ Se deshicieron ${anulados} subida(s)`);
+    showToast(`↩️ Se deshicieron ${anulados} Pass`);
 }
 
 // ============================================================
@@ -1565,7 +1805,7 @@ function abrirModalCarga() {
     document.querySelectorAll('.metodo-carga').forEach(b => b.classList.toggle('metodo-activo', b.dataset.metodo === 'efectivo'));
     const deuda = selectedPiloto.deuda || 0;
     document.getElementById('hintDeuda').textContent = deuda > 0
-        ? `Este piloto debe $${deuda}. Se descuenta primero de lo que cargues, y el resto arma el nuevo lote.`
+        ? `Este piloto debe ${plata(deuda)}. Se descuenta primero de lo que cargues, y el resto arma el nuevo lote.`
         : '';
     document.getElementById('modalCarga').classList.add('show');
 }
@@ -1578,7 +1818,7 @@ async function confirmarCarga() {
     const monto = Number(document.getElementById('montoInput').value) || 0;
     const libres = Number(document.getElementById('libresInput').value) || 0;
 
-    if (monto <= 0 && libres <= 0) { showToast('⚠️ Ingresá un monto o cantidad de subidas libres'); return; }
+    if (monto <= 0 && libres <= 0) { showToast('⚠️ Ingresá un monto o cantidad de Pass libres'); return; }
 
     const piloto = selectedPiloto;
     const pagosNuevos = [];
@@ -1611,15 +1851,15 @@ async function confirmarCarga() {
             lotes.push(lote);
             lotesNuevos.push(lote);
             detalle = pagoDeuda > 0
-                ? `$${pagoDeuda} a la deuda + lote nuevo de $${remanente} (${descuento}% dto)`
-                : `lote nuevo de $${remanente} (${descuento}% dto)`;
+                ? `${plata(pagoDeuda)} a la deuda + lote nuevo de ${plata(remanente)} (${descuento}% dto)`
+                : `lote nuevo de ${plata(remanente)} (${descuento}% dto)`;
         } else {
-            detalle = `$${pagoDeuda} aplicados a la deuda`;
+            detalle = `${plata(pagoDeuda)} aplicados a la deuda`;
         }
     }
     if (libres > 0) {
         piloto.viajesLibres = (piloto.viajesLibres || 0) + libres;
-        detalle += (detalle ? ' · ' : '') + `+${libres} subidas libres 🎁`;
+        detalle += (detalle ? ' · ' : '') + `+${libres} Pass libre(s) 🎁`;
     }
 
     pagosNuevos.forEach(p => pagos.push(p));
@@ -1669,7 +1909,7 @@ async function guardarEdicionPiloto() {
     let mensajeExtra = '';
     if (nuevaCategoria === 'alumno' && categoriaAnterior !== 'alumno') {
         selectedPiloto.viajesLibres = (selectedPiloto.viajesLibres || 0) + 10;
-        mensajeExtra = ' — se le asignaron 10 subidas libres 🎁';
+        mensajeExtra = ' — se le asignaron 10 Pass libres 🎁';
     }
     selectedPiloto.categoria = nuevaCategoria;
 
@@ -1693,7 +1933,7 @@ function abrirModalPago() {
     metodoPagoRapido = 'efectivo';
     document.querySelectorAll('.metodo-rapido').forEach(b => b.classList.toggle('metodo-activo', b.dataset.metodo === 'efectivo'));
     document.getElementById('modalPagoInfo').innerHTML =
-        `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>Deuda actual: <b>$${deuda}</b><br>Al confirmar, la deuda queda en $0.`;
+        `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>Deuda actual: <b>${plata(deuda)}</b><br>Al confirmar, la deuda queda en $0.`;
     document.getElementById('modalPago').classList.add('show');
 }
 function cerrarModalPago() {
@@ -1716,7 +1956,7 @@ async function confirmarPagoInmediato() {
         piloto: pilotoParaServidor(selectedPiloto, true)
     });
 
-    showToast(`⚡ Pago de $${monto} registrado — ${selectedPiloto.nombre}`);
+    showToast(`⚡ Pago de ${plata(monto)} registrado — ${selectedPiloto.nombre}`);
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
@@ -1737,7 +1977,7 @@ function abrirModalDeudores() {
     const deudores = pilotos.filter(p => (p.deuda || 0) > 0).sort((a, b) => b.deuda - a.deuda);
     const cont = document.getElementById('listaDeudores');
     if (deudores.length === 0) {
-        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">🎉 Nadie tiene deuda pendiente</div>`;
+        cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Nadie tiene deuda pendiente</div>`;
     } else {
         cont.innerHTML = deudores.map(p => {
             const desglose = contarSubidasAdeudadas(p.numero);
@@ -1745,8 +1985,8 @@ function abrirModalDeudores() {
             <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:2px dashed var(--parchment-dark);">
                 <span>${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` "${esc(p.alias)}"` : ''}</span>
                 <span style="text-align:right;">
-                    <b style="color:var(--coral-dark);display:block;">$${p.deuda}</b>
-                    ${desglose ? `<span style="font-size:11px;color:var(--ink-soft);">${esc(desglose)}</span>` : ''}
+                    <b style="color:var(--alerta-texto);display:block;">${plata(p.deuda)}</b>
+                    ${desglose ? `<span style="font-size: calc(11px * var(--esc));color:var(--ink-soft);">${esc(desglose)}</span>` : ''}
                 </span>
             </div>
         `;
@@ -1784,10 +2024,10 @@ function renderHistorialPrecios() {
     const cont = document.getElementById('listaHistorialPrecios');
     const ordenado = [...historialPrecios].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 10);
     if (ordenado.length === 0) {
-        cont.innerHTML = `<div style="color:var(--ink-soft);font-size:13px;">Sin cambios registrados todavía</div>`;
+        cont.innerHTML = `<div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin cambios registrados todavía</div>`;
     } else {
         cont.innerHTML = ordenado.map(h => `
-            <div class="historial-item"><span>${esc(formatoFechaLinda(h.fecha))}</span><span>Escuela $${h.precioEscuela} / Pista $${h.precioPista}</span></div>
+            <div class="historial-item"><span>${esc(formatoFechaLinda(h.fecha))}</span><span>Escuela ${plata(h.precioEscuela)} / Pista ${plata(h.precioPista)}</span></div>
         `).join('');
     }
 }
@@ -1987,42 +2227,42 @@ function renderEstadisticas() {
         return;
     }
 
-    let caja = filaEst('Ingresado', '$' + m.ingresado);
-    caja += filaEst('Efectivo', '$' + m.efectivo, 'sub');
-    caja += filaEst('Transferencia', '$' + m.transferencia, 'sub');
-    caja += filaEst('Cargas de crédito', '$' + m.cargas);
-    caja += filaEst('Cobros de deuda', '$' + m.cobrosDeuda);
+    let caja = filaEst('Ingresado', plata(m.ingresado));
+    caja += filaEst('Efectivo', plata(m.efectivo), 'sub');
+    caja += filaEst('Transferencia', plata(m.transferencia), 'sub');
+    caja += filaEst('Cargas de crédito', plata(m.cargas));
+    caja += filaEst('Cobros de deuda', plata(m.cobrosDeuda));
     caja += `<div class="est-nota">El efectivo es lo que deberías tener a mano de este período, según lo cargado en la app.</div>`;
 
-    let act = filaEst('Subidas (personas)', m.subidas);
+    let act = filaEst('Pass', m.subidas);
     act += filaEst('Desde Escuela', m.escuela, 'sub');
     act += filaEst('Desde Pista', m.pista, 'sub');
     act += filaEst('Cobradas', m.cobradas);
     act += filaEst('Gratis / con libres', m.gratis);
-    act += filaEst('Facturado', '$' + m.facturado);
-    act += filaEst('Precio promedio por subida', '$' + m.precioPromedio);
-    act += filaEst('Descuento otorgado', `$${m.descuentoOtorgado} (${m.descuentoPct}%)`);
+    act += filaEst('Facturado', plata(m.facturado));
+    act += filaEst('Precio promedio por Pass', plata(m.precioPromedio));
+    act += filaEst('Descuento otorgado', `${plata(m.descuentoOtorgado)} (${m.descuentoPct}%)`);
     act += filaEst('Pilotos que subieron', m.pilotos);
     if (m.gratis > 0) {
-        act += `<div class="est-nota">Las ${m.gratis} gratis equivalen a $${m.valorListaGratis} de precio de lista.</div>`;
+        act += `<div class="est-nota">Los ${m.gratis} gratis equivalen a ${plata(m.valorListaGratis)} de precio de lista.</div>`;
     }
 
     const esElFinal = r.hasta >= fechaSoloLocal();
-    let car = filaEst('Deuda generada', '$' + m.deudaGenerada);
-    car += filaEst(esElFinal ? 'Deuda pendiente' : 'Deuda pendiente al cierre', '$' + deudaPendienteAlCierre(r.hasta));
-    car += filaEst('Crédito sin consumir', '$' + saldoTotalPilotos());
-    car += filaEst('Subidas libres pendientes', libresTotalesPilotos());
-    car += `<div class="est-nota">El crédito y las subidas libres son el estado de ahora, no del período elegido.</div>`;
+    let car = filaEst('Deuda generada', plata(m.deudaGenerada));
+    car += filaEst(esElFinal ? 'Deuda pendiente' : 'Deuda pendiente al cierre', plata(deudaPendienteAlCierre(r.hasta)));
+    car += filaEst('Crédito sin consumir', plata(saldoTotalPilotos()));
+    car += filaEst('Pass libres pendientes', libresTotalesPilotos());
+    car += `<div class="est-nota">El crédito y los Pass libres son el estado de ahora, no del período elegido.</div>`;
 
     let extra = '';
     if (estPeriodo !== 'dia') {
         extra = `
             <div class="est-bloque">
-                <h3>🗓️ DÍAS</h3>
+                <h3>${ico('calendario')} DÍAS</h3>
                 ${filaEst('Días trabajados', m.diasTrabajados)}
-                ${filaEst('Facturado por día', '$' + (m.diasTrabajados ? Math.round(m.facturado / m.diasTrabajados) : 0))}
-                ${filaEst('Subidas por día', m.diasTrabajados ? (m.subidas / m.diasTrabajados).toFixed(1) : '0')}
-                ${m.mejorDia ? filaEst('Mejor día', `${formatoFechaLinda(m.mejorDia)} · $${m.mejorDiaMonto}`) : ''}
+                ${filaEst('Facturado por día', plata(m.diasTrabajados ? Math.round(m.facturado / m.diasTrabajados) : 0))}
+                ${filaEst('Pass por día', m.diasTrabajados ? (m.subidas / m.diasTrabajados).toFixed(1) : '0')}
+                ${m.mejorDia ? filaEst('Mejor día', `${formatoFechaLinda(m.mejorDia)} · ${plata(m.mejorDiaMonto)}`) : ''}
                 ${filaEst('Pilotos nuevos', m.nuevos)}
                 ${filaEst('Pilotos de siempre', m.recurrentes, 'sub')}
             </div>`;
@@ -2034,19 +2274,19 @@ function renderEstadisticas() {
     const dIng = delta(m.ingresado, ma.ingresado);
     const comp = `
         <div class="est-bloque">
-            <h3>📈 CONTRA ${etiquetaAnterior(estPeriodo).toUpperCase()}</h3>
+            <h3>${ico('tendencia')} CONTRA ${etiquetaAnterior(estPeriodo).toUpperCase()}</h3>
             <div class="est-fila ${dFac.clase}"><span>Facturado</span><b>${dFac.txt}</b></div>
-            <div class="est-fila ${dSub.clase}"><span>Subidas</span><b>${dSub.txt}</b></div>
+            <div class="est-fila ${dSub.clase}"><span>Pass</span><b>${dSub.txt}</b></div>
             <div class="est-fila ${dPre.clase}"><span>Precio promedio</span><b>${dPre.txt}</b></div>
             <div class="est-fila ${dIng.clase}"><span>Ingresado</span><b>${dIng.txt}</b></div>
-            <div class="est-nota">Si el facturado sube pero las subidas bajan, el aumento vino del precio y no de más trabajo.</div>
+            <div class="est-nota">Si el facturado sube pero los Pass bajan, el aumento vino del precio y no de más trabajo.</div>
         </div>`;
 
     cont.innerHTML = `
         <div class="est-bloques">
-            <div class="est-bloque"><h3>💵 CAJA</h3>${caja}</div>
-            <div class="est-bloque"><h3>🪂 ACTIVIDAD</h3>${act}</div>
-            <div class="est-bloque"><h3>📊 CARTERA</h3>${car}</div>
+            <div class="est-bloque"><h3>${ico('dinero')} CAJA</h3>${caja}</div>
+            <div class="est-bloque"><h3>${ico('pasajero')} ACTIVIDAD</h3>${act}</div>
+            <div class="est-bloque"><h3>${ico('grafico')} CARTERA</h3>${car}</div>
         </div>
         <div class="est-bloques-2">
             ${extra}
@@ -2064,7 +2304,7 @@ function actualizarLineaHoy() {
     if (m.subidas === 0 && m.ingresado === 0) {
         el.textContent = 'Hoy: sin movimientos todavía — tocá para ver el cierre';
     } else {
-        el.textContent = `Hoy: ${m.subidas} subida(s) · $${m.facturado} facturado · $${m.efectivo} en efectivo`;
+        el.textContent = `Hoy: ${m.subidas} Pass · ${plata(m.facturado)} facturado · ${plata(m.efectivo)} en efectivo`;
     }
 }
 
@@ -2094,17 +2334,17 @@ function abrirElegirPeriodo() {
     const cont = document.getElementById('listaPeriodos');
     let opciones = [];
     if (estPeriodo === 'dia') {
-        document.getElementById('elegirPeriodoTitulo').textContent = '📋 Elegí un día';
+        document.getElementById('elegirPeriodoTitulo').innerHTML = textoConIconos('📋 Elegí un día');
         opciones = obtenerFechasTrabajadas().slice(0, 15).map(f => ({
             valor: f, texto: `📅 ${formatoFechaLinda(f)}${f === fechaSoloLocal() ? ' (hoy)' : ''}`
         }));
     } else if (estPeriodo === 'semana') {
-        document.getElementById('elegirPeriodoTitulo').textContent = '📋 Elegí una semana';
+        document.getElementById('elegirPeriodoTitulo').innerHTML = textoConIconos('📋 Elegí una semana');
         opciones = obtenerSemanasTrabajadas().slice(0, 15).map(s => ({
             valor: s, texto: `🗓️ ${formatoRangoSemana(s)}`
         }));
     } else {
-        document.getElementById('elegirPeriodoTitulo').textContent = '📋 Elegí un mes';
+        document.getElementById('elegirPeriodoTitulo').innerHTML = textoConIconos('📋 Elegí un mes');
         opciones = obtenerMesesTrabajados().slice(0, 15).map(m => ({
             valor: m, texto: `📆 ${formatoMesLindo(m)}`
         }));
@@ -2114,7 +2354,7 @@ function abrirElegirPeriodo() {
         cont.innerHTML = `<div style="text-align:center;padding:20px;color:var(--ink-soft);">Todavía no hay actividad registrada</div>`;
     } else {
         cont.innerHTML = opciones.map(o => `
-            <button type="button" class="btn-chip periodo-item" data-valor="${esc(o.valor)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">${esc(o.texto)}</button>
+            <button type="button" class="btn-chip periodo-item" data-valor="${esc(o.valor)}" style="padding:12px;text-align:left;width:100%;margin-bottom:6px;">${textoConIconos(o.texto)}</button>
         `).join('');
         cont.querySelectorAll('.periodo-item').forEach(el => el.addEventListener('click', () => {
             estAncla = el.dataset.valor;
@@ -2215,7 +2455,7 @@ function crearPiloto() {
 
     mutar({ piloto: pilotoParaServidor(nuevo, true), pilotoNuevo: true });
 
-    showToast(`➕ ${nombre} agregado${categoria === 'alumno' ? ' con 10 subidas libres 🎁' : ''}`);
+    showToast(`➕ ${nombre} agregado${categoria === 'alumno' ? ' con 10 Pass libres 🎁' : ''}`);
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
@@ -2224,7 +2464,7 @@ function crearPiloto() {
 // ============================================================
 function showToast(msg) {
     const toast = document.getElementById('toast');
-    toast.textContent = msg;
+    toast.innerHTML = textoConIconos(msg);
     toast.classList.add('show');
     clearTimeout(toast._t);
     toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
@@ -2311,9 +2551,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.categoria-btn').forEach(x => x.classList.toggle('metodo-activo', x === b));
     }));
 
-    // El cartel de estado también sirve para reintentar a mano
-    document.getElementById('statusSync').addEventListener('click', () => {
-        flushCola().then(ok => showToast(ok ? '✅ Todo enlazado' : '📱 Sigue sin señal, se reintenta solo'));
+    // El cartel de estado y el aviso rayado sirven para reintentar a mano
+    const reintentar = () => flushCola().then(ok => showToast(ok ? '✅ Todo enlazado' : '📱 Sigue sin señal, se reintenta solo'));
+    document.getElementById('statusSync').addEventListener('click', reintentar);
+    document.getElementById('avisoPendiente').addEventListener('click', reintentar);
+
+    // Preferencias guardadas en este celular
+    pintarIconos();
+    aplicarLetra(localStorage.getItem('letra') || 1);
+    aplicarModoNoche(localStorage.getItem('modo_noche') === '1');
+    document.getElementById('btnNoche').addEventListener('click', () => {
+        vibrar(18);
+        aplicarModoNoche(!document.body.classList.contains('noche'));
+    });
+    document.querySelectorAll('.letra-btn').forEach(b => {
+        b.addEventListener('click', () => aplicarLetra(b.dataset.letra));
     });
 
     cargarColaGuardada();

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi cuenta — RESCATES RAMBLA</title>
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#f2ede1">
     <meta name="robots" content="noindex">
     <link rel="icon" href="favicon.ico?v=2" sizes="any">
     <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
@@ -15,16 +15,16 @@
            Tipografía del sistema, sin depender de internet. */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --fondo: #ffffff;
-            --pista: #f5f4f4;
+            --fondo: #f2ede1;
+            --pista: #f2ede1;
             --borde: #111111;
             --borde-suave: #d1d5db;
             --ink: #111111;
             --ink-soft: #4a4a4a;
             --accion: #e8590c;
             --accion-borde: #111111;
-            --accion-texto: #c2410c;
-            --ok: #15803d;
+            --accion-texto: #b8410b;
+            --ok: #146c33;
             --alerta-texto: #7f1d1d;
             --radio: 10px;
             --radio-chico: 6px;
@@ -117,6 +117,12 @@ function esc(v) {
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// Los montos van con separador de miles, igual que en la app
+function plata(n) {
+    const v = Math.round(Number(n) || 0);
+    return (v < 0 ? '-$' : '$') + String(Math.abs(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
 // La planilla puede devolver 'YYYY-MM-DD HH:mm:ss' o una fecha ISO en UTC.
 function fechaCorta(valor) {
     if (!valor) return '';
@@ -170,10 +176,10 @@ async function consultar() {
             `${data.numero} - ${data.nombre}${data.alias ? ` "${data.alias}"` : ''}`;
 
         const elSaldo = document.getElementById('rSaldo');
-        elSaldo.textContent = `$${saldo}`;
+        elSaldo.textContent = plata(saldo);
         elSaldo.className = saldo > 0 ? 'bueno' : '';
         const elDeuda = document.getElementById('rDeuda');
-        elDeuda.textContent = `$${deuda}`;
+        elDeuda.textContent = plata(deuda);
         elDeuda.className = deuda > 0 ? 'malo' : '';
         document.getElementById('rLibres').textContent = Number(data.viajesLibres) || 0;
 
@@ -182,7 +188,7 @@ async function consultar() {
             hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>';
         } else {
             hist.innerHTML = data.ultimosViajes.map(v => `
-                <div class="historial-item"><span>${esc(fechaCorta(v.fecha))}</span><span>${esc(v.origen)} $${Number(v.total) || 0} ${v.gratis === true || v.gratis === 'TRUE' ? '🎁' : ''}</span></div>
+                <div class="historial-item"><span>${esc(fechaCorta(v.fecha))}</span><span>${esc(v.origen)} ${plata(v.total)} ${v.gratis === true || v.gratis === 'TRUE' ? '🎁' : ''}</span></div>
             `).join('');
         }
 
