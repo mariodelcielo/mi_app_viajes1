@@ -4,64 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi cuenta — RESCATES RAMBLA</title>
-    <meta name="theme-color" content="#f4e9d8">
+    <meta name="theme-color" content="#ffffff">
     <meta name="robots" content="noindex">
     <link rel="icon" href="favicon.ico?v=2" sizes="any">
     <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Quicksand:wght@500;700&display=swap');
+        /* Mismo skin que la app: NEGRO = estructura, NARANJA = lo que se toca.
+           Tipografía del sistema, sin depender de internet. */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --parchment: #f4e9d8; --parchment-dark: #e9d9bd; --wood: #8b5e34; --wood-dark: #6b4423;
-            --brass: #d9a441; --brass-dark: #b8842e; --coral: #e17055; --coral-dark: #c2543b;
-            --sage: #7fa66b; --sage-dark: #5f8a4c; --ink: #4a3f35; --ink-soft: #8a7a68; --cream: #fffaf0;
+            --fondo: #ffffff;
+            --pista: #f5f4f4;
+            --borde: #111111;
+            --borde-suave: #d1d5db;
+            --ink: #111111;
+            --ink-soft: #4a4a4a;
+            --accion: #e8590c;
+            --accion-borde: #111111;
+            --accion-texto: #c2410c;
+            --ok: #15803d;
+            --alerta-texto: #7f1d1d;
+            --radio: 10px;
+            --radio-chico: 6px;
+            --grosor: 3px;
+            --fuente: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         body {
-            font-family: 'Quicksand', sans-serif; font-weight: 500;
-            background: radial-gradient(circle at 20% 0%, #fdf3e0 0%, var(--parchment) 45%, var(--parchment-dark) 100%);
-            color: var(--ink); padding: 20px; max-width: 440px; margin: 0 auto; min-height: 100vh;
+            font-family: var(--fuente); font-weight: 500;
+            background: var(--fondo); color: var(--ink);
+            padding: 20px; max-width: 440px; margin: 0 auto; min-height: 100vh;
         }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header img { width: 64px; }
-        .header h1 { font-family: 'Baloo 2', sans-serif; font-size: 22px; color: var(--wood-dark); margin-top: 6px; }
+        .header { text-align: center; margin-bottom: 18px; }
+        .header img { width: 84px; height: auto; }
+        .header h1 { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: 0.06em; margin-top: 8px; }
+        .header p { font-size: 14px; color: var(--ink-soft); margin-top: 2px; }
         .panel {
-            background: linear-gradient(170deg, var(--cream), var(--parchment));
-            border: 3px solid var(--wood); border-radius: 20px;
-            box-shadow: 0 4px 0 var(--wood-dark), 0 6px 14px rgba(107,68,35,0.25);
-            padding: 20px; margin-bottom: 14px;
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 16px; margin-bottom: 14px;
         }
         label { font-size: 13px; font-weight: 700; color: var(--ink-soft); display: block; margin: 12px 0 4px; }
         input {
-            width: 100%; padding: 13px 16px; border: 3px solid var(--brass); border-radius: 14px;
-            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 16px;
-            background: var(--cream); color: var(--ink);
+            width: 100%; padding: 13px 16px; border: var(--grosor) solid var(--borde); border-radius: var(--radio);
+            font-family: var(--fuente); font-weight: 700; font-size: 16px;
+            background: #ffffff; color: var(--ink);
         }
         button {
-            width: 100%; margin-top: 18px; padding: 15px; border: none; border-radius: 18px;
-            background: var(--sage); color: var(--cream); font-family: 'Baloo 2', sans-serif;
-            font-size: 17px; box-shadow: 0 4px 0 var(--sage-dark); cursor: pointer;
+            width: 100%; margin-top: 18px; padding: 17px; border: var(--grosor) solid var(--accion-borde);
+            border-radius: var(--radio);
+            background: var(--accion); color: #ffffff; font-family: var(--fuente);
+            font-size: 17px; font-weight: 700; cursor: pointer;
         }
-        button:active { transform: translateY(3px); box-shadow: none; }
+        button:active { transform: translateY(2px); }
         button[disabled] { opacity: 0.6; }
-        .hint { font-size: 11px; color: var(--ink-soft); margin-top: 6px; line-height: 1.4; }
+        .hint { font-size: 11px; color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
         .resultado { display: none; }
-        .nombre-resultado { font-family: 'Baloo 2', sans-serif; font-size: 19px; color: var(--wood-dark); text-align: center; margin-bottom: 14px; }
-        .dato { display: flex; justify-content: space-between; padding: 10px 4px; border-bottom: 2px dashed var(--parchment-dark); font-size: 15px; }
-        .dato b { font-family: 'Baloo 2', sans-serif; }
-        .saldo b { color: var(--sage-dark); }
-        .deuda b { color: var(--coral-dark); }
-        .historial-titulo { font-family: 'Baloo 2', sans-serif; font-size: 13px; color: var(--wood-dark); margin: 16px 0 6px; }
-        .historial-item { font-size: 13px; padding: 5px 0; border-bottom: 1px dashed var(--parchment-dark); display: flex; justify-content: space-between; gap: 10px; }
-        .msg { text-align: center; padding: 14px; color: var(--coral-dark); font-weight: 700; display: none; }
+        .nombre-resultado { font-size: 19px; font-weight: 700; color: var(--ink); text-align: center; margin-bottom: 14px; }
+        .numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .num { text-align: center; }
+        .num .etq { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px; }
+        .num b { display: block; font-size: 27px; font-weight: 700; line-height: 1.1; }
+        .num b.bueno { color: var(--ok); }
+        .num b.malo { color: var(--alerta-texto); }
+        .dato { display: flex; justify-content: space-between; padding: 10px 2px; border-bottom: 1px solid var(--borde-suave); font-size: 14px; }
+        .dato:last-child { border-bottom: none; }
+        .dato b { font-weight: 700; }
+        .historial-titulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin: 16px 0 6px; }
+        .historial-item { font-size: 13px; padding: 7px 2px; border-bottom: 1px solid var(--borde-suave); display: flex; justify-content: space-between; gap: 10px; }
+        .historial-item:last-child { border-bottom: none; }
+        .msg { text-align: center; padding: 14px; color: var(--alerta-texto); font-weight: 700; display: none; }
     </style>
 </head>
 <body>
     <div class="header">
-        <img src="rescates-logo.png" alt="Rescate" style="width:110px;">
+        <img src="rescates-logo.png" alt="Rescate">
         <h1>RESCATES RAMBLA</h1>
-        <p style="font-size:14px;color:var(--ink-soft);margin-top:2px;">Consultá tu cuenta</p>
+        <p>Consultá tu cuenta</p>
     </div>
 
     <div class="panel">
@@ -70,16 +91,18 @@
         <label>Tu nombre completo</label>
         <input type="text" id="nombreInput" autocomplete="name" placeholder="Como figura registrado">
         <div class="hint">Escribí tu nombre y apellido tal como está anotado en la escuela (o tu alias, si tenés uno).</div>
-        <button id="btnConsultar">🔍 Ver mi cuenta</button>
+        <button id="btnConsultar">Buscar mi cuenta</button>
     </div>
 
     <div class="msg" id="msgError"></div>
 
     <div class="panel resultado" id="resultado">
         <div class="nombre-resultado" id="nombreResultado"></div>
-        <div class="dato saldo"><span>💰 Crédito disponible</span><b id="rSaldo"></b></div>
-        <div class="dato deuda"><span>💳 Deuda</span><b id="rDeuda"></b></div>
-        <div class="dato"><span>🎁 Subidas libres</span><b id="rLibres"></b></div>
+        <div class="numeros">
+            <div class="num"><span class="etq">Crédito</span><b id="rSaldo"></b></div>
+            <div class="num"><span class="etq">Deuda</span><b id="rDeuda"></b></div>
+        </div>
+        <div class="dato" style="margin-top:12px;"><span>🎁 Subidas libres</span><b id="rLibres"></b></div>
         <div class="historial-titulo">📋 Últimas subidas</div>
         <div id="rHistorial"></div>
     </div>
@@ -141,10 +164,17 @@ async function consultar() {
             return;
         }
 
+        const saldo = Number(data.saldo) || 0;
+        const deuda = Number(data.deuda) || 0;
         document.getElementById('nombreResultado').textContent =
             `${data.numero} - ${data.nombre}${data.alias ? ` "${data.alias}"` : ''}`;
-        document.getElementById('rSaldo').textContent = `$${Number(data.saldo) || 0}`;
-        document.getElementById('rDeuda').textContent = `$${Number(data.deuda) || 0}`;
+
+        const elSaldo = document.getElementById('rSaldo');
+        elSaldo.textContent = `$${saldo}`;
+        elSaldo.className = saldo > 0 ? 'bueno' : '';
+        const elDeuda = document.getElementById('rDeuda');
+        elDeuda.textContent = `$${deuda}`;
+        elDeuda.className = deuda > 0 ? 'malo' : '';
         document.getElementById('rLibres').textContent = Number(data.viajesLibres) || 0;
 
         const hist = document.getElementById('rHistorial');
@@ -162,7 +192,7 @@ async function consultar() {
         msg.style.display = 'block';
     } finally {
         btn.disabled = false;
-        btn.textContent = '🔍 Ver mi cuenta';
+        btn.textContent = 'Buscar mi cuenta';
     }
 }
 

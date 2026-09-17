@@ -9,32 +9,57 @@
     <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-    <meta name="theme-color" content="#f4e9d8">
+    <meta name="theme-color" content="#ffffff">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Quicksand:wght@500;700&display=swap');
-
+        /* ============================================================
+           SKIN "SEÑALÉTICA" — alto contraste, sin adornos.
+           Regla: NEGRO = estructura · NARANJA = lo que se toca.
+           Sin texturas, sin degradados, sin sombras decorativas.
+           Tipografía del sistema: carga instantánea, no depende de internet.
+           Contrastes verificados: texto 18,9:1 · texto chico 8,9:1 ·
+           naranja con blanco encima 5,0:1 (mínimo recomendado 4,5:1).
+           ============================================================ */
         :root {
-            --parchment: #f4e9d8;
-            --parchment-dark: #e9d9bd;
-            --wood: #8b5e34;
-            --wood-dark: #6b4423;
-            --brass: #d9a441;
-            --brass-dark: #b8842e;
-            --sky: #7ec8e3;
-            --sky-dark: #4f9bc0;
-            --coral: #e17055;
-            --coral-dark: #c2543b;
-            --sage: #7fa66b;
-            --sage-dark: #5f8a4c;
-            --ink: #4a3f35;
-            --ink-soft: #8a7a68;
-            --cream: #fffaf0;
+            /* Los nombres viejos se conservan para no reescribir cada regla,
+               pero ahora apuntan todos a la paleta nueva. */
+            --parchment: #ffffff;
+            --parchment-dark: #d1d5db;
+            --wood: #111111;
+            --wood-dark: #111111;
+            --brass: #111111;
+            --brass-dark: #111111;
+            --sky: #e8590c;
+            --sky-dark: #b8430a;
+            --coral: #b91c1c;
+            --coral-dark: #7f1d1d;
+            --sage: #e8590c;
+            --sage-dark: #b8430a;
+            --ink: #111111;
+            --ink-soft: #4a4a4a;
+            --cream: #ffffff;
+
+            /* Paleta nueva */
+            --fondo: #ffffff;
+            --pista: #f5f4f4;
+            --borde: #111111;
+            --borde-suave: #d1d5db;
+            --accion: #e8590c;        /* relleno naranja */
+            --accion-borde: #111111;  /* el mismo borde negro que todo lo demás */
+            --accion-texto: #c2410c;  /* naranja más oscuro, para texto */
+            --ok: #15803d;
+            --alerta: #b91c1c;
+            --alerta-texto: #7f1d1d;
+
+            --radio: 10px;
+            --radio-chico: 6px;
+            --grosor: 3px;
+            --fuente: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: 'Quicksand', sans-serif;
+            font-family: var(--fuente);
             font-weight: 500;
-            background: radial-gradient(circle at 20% 0%, #fdf3e0 0%, var(--parchment) 45%, var(--parchment-dark) 100%);
+            background: var(--fondo);
             color: var(--ink);
             padding: 14px;
             padding-bottom: 90px;
@@ -42,64 +67,40 @@
             margin: 0 auto;
             min-height: 100vh;
             touch-action: manipulation;
-            position: relative;
-            overflow-x: hidden;
         }
-        /* nubes pintadas de fondo, decorativas */
-        body::before, body::after {
-            content: '';
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(18px);
-            opacity: 0.5;
-            z-index: -1;
-        }
-        body::before { width: 180px; height: 90px; background: #fff; top: 40px; left: -40px; }
-        body::after { width: 220px; height: 100px; background: #fff; bottom: 60px; right: -50px; }
 
         .panel {
-            background: linear-gradient(170deg, var(--cream), var(--parchment));
-            border: 3px solid var(--wood);
-            border-radius: 20px;
-            box-shadow: 0 4px 0 var(--wood-dark), 0 6px 14px rgba(107,68,35,0.25);
-            padding: 14px 16px;
-            margin-bottom: 12px;
-        }
-        .placa {
-            font-family: 'Baloo 2', sans-serif;
-            font-size: 12px;
-            color: var(--wood-dark);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 12px 14px;
+            margin-bottom: 11px;
         }
 
-        .header { text-align: center; margin-bottom: 8px; }
+        .header { text-align: center; margin-bottom: 10px; }
         .header h1 {
-            font-family: 'Baloo 2', sans-serif;
-            font-size: 13px;
-            color: var(--wood-dark);
-            letter-spacing: 0.5px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: 0.06em;
         }
         .header .status {
-            font-size: 10px;
-            color: var(--sage-dark);
-            margin-top: 2px;
+            font-size: 11px;
+            color: var(--ok);
+            margin-top: 3px;
             font-weight: 700;
         }
-        .header .status.offline { color: var(--brass-dark); }
-        .header .status.error { color: var(--coral-dark); }
-        .header .status.pendiente { color: var(--brass-dark); cursor: pointer; text-decoration: underline dotted; }
+        .header .status.offline { color: var(--accion-texto); }
+        .header .status.error { color: var(--alerta); }
+        .header .status.pendiente { color: var(--accion-texto); cursor: pointer; text-decoration: underline dotted; }
 
         /* ===== BUSCADOR ===== */
-        .search-wrap { position: relative; margin-bottom: 12px; }
+        .search-wrap { position: relative; margin-bottom: 11px; }
         .search-box {
-            background: var(--cream);
-            border: 3px solid var(--brass);
-            border-radius: 30px;
-            box-shadow: inset 0 2px 4px rgba(107,68,35,0.15), 0 3px 0 var(--brass-dark);
-            padding: 10px 18px;
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 11px 14px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -108,7 +109,7 @@
         .search-box input {
             border: none;
             outline: none;
-            font-family: 'Quicksand', sans-serif;
+            font-family: var(--fuente);
             font-weight: 700;
             font-size: 16px;
             width: 100%;
@@ -121,10 +122,10 @@
             position: absolute;
             top: calc(100% + 6px);
             left: 0; right: 0;
-            background: var(--cream);
-            border: 3px solid var(--brass);
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(107,68,35,0.3);
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
             overflow: hidden;
             max-height: 280px;
             overflow-y: auto;
@@ -133,124 +134,127 @@
         }
         .pilotos-list.show { display: block; }
         .piloto-item {
-            padding: 10px 14px;
-            border-bottom: 2px dashed var(--parchment-dark);
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--borde-suave);
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
             cursor: pointer;
         }
-        .piloto-item:active { background: var(--parchment); }
-        .piloto-item .info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+        .piloto-item:last-child { border-bottom: none; }
+        .piloto-item:active { background: var(--pista); }
+        .piloto-item .info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
         .piloto-item .nombre { font-weight: 700; font-size: 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .piloto-item .detalle { font-size: 11px; color: var(--ink-soft); font-style: italic; }
-        .mini-tanque { width: 60px; height: 9px; background: var(--parchment-dark); border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
-        .mini-tanque .relleno { height: 100%; border-radius: 6px; transition: width 0.3s; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-right: 4px; }
-        .badge-alumno { background: #e6d9f5; color: #6b4a99; }
-        .badge-libres { background: #dcecd4; color: var(--sage-dark); }
-        .badge-deuda { background: #fbdbd2; color: var(--coral-dark); }
-        .badge-manual { background: #fbeecb; color: var(--brass-dark); }
+        .piloto-item .detalle { font-size: 11px; color: var(--ink-soft); }
+        .mini-tanque { width: 60px; height: 10px; background: var(--pista); border: 2px solid var(--borde); border-radius: var(--radio-chico); overflow: hidden; }
+        .mini-tanque .relleno { height: 100%; transition: width 0.3s; }
+        .badge { display: inline-block; padding: 1px 7px; border-radius: var(--radio-chico); font-size: 10px; font-weight: 700; margin-right: 4px; background: #ffffff; border: 2px solid var(--borde); }
+        .badge-alumno { color: #6b4a99; }
+        .badge-libres { color: var(--ok); }
+        .badge-deuda { color: var(--alerta-texto); }
+        .badge-manual { color: var(--accion-texto); }
         .empty-state { text-align: center; padding: 20px; color: var(--ink-soft); font-size: 13px; }
 
-        /* ===== INSTRUMENTO DE CRÉDITO ===== */
+        /* ===== FICHA DEL PILOTO SELECCIONADO =====
+           Antes era un medidor con aguja que ocupaba media pantalla.
+           Ahora: saldo y deuda como dos números grandes y una barra fina. */
         .selected-info { text-align: center; }
-        .selected-info .placa-nombre { font-family: 'Baloo 2', sans-serif; font-size: 16px; color: var(--wood-dark); margin-bottom: 10px; }
-        .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
-        .gauge-case {
-            width: 176px; padding: 10px 10px 4px;
-            background: radial-gradient(circle at 50% 20%, #fffaf0, var(--parchment-dark) 85%);
-            border: 4px solid var(--brass);
-            border-radius: 14px;
-            box-shadow: inset 0 0 10px rgba(107,68,35,0.2), 0 3px 0 var(--brass-dark);
+        .selected-info .placa-nombre { font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+        .piloto-numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .piloto-numeros .num { text-align: center; }
+        .piloto-numeros .etq {
+            display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px;
         }
-        .zona-roja { stroke: #f3a58e; stroke-width: 16; fill: none; }
-        .zona-ambar { stroke: #f7cf7a; stroke-width: 16; fill: none; }
-        .zona-verde { stroke: #a9cf95; stroke-width: 16; fill: none; }
-        .tick { stroke: var(--wood); stroke-width: 3; }
-        .aguja { stroke: var(--wood-dark); stroke-width: 5; stroke-linecap: round; }
-        .eje { fill: var(--brass); stroke: var(--wood-dark); stroke-width: 2; }
-        svg.gauge-vacio .aguja { stroke: var(--coral-dark); }
-        svg.gauge-vacio { animation: parpadeo 1.1s infinite; }
-        @keyframes parpadeo { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
-        .gauge-labels { display: flex; justify-content: space-between; width: 156px; margin: 2px auto 0; font-size: 12px; color: var(--ink-soft); font-weight: 700; }
-        .gauge-lectura { font-family: 'Baloo 2', sans-serif; font-size: 22px; color: var(--wood-dark); margin-top: 8px; }
-        .lamparas { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
-        .lampara { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 12px; }
-        .lampara.roja { background: #fbdbd2; color: var(--coral-dark); }
-        .lampara.verde { background: #dcecd4; color: var(--sage-dark); }
+        .piloto-numeros b { display: block; font-size: 27px; font-weight: 700; line-height: 1.1; }
+        .piloto-numeros b.bueno { color: var(--ok); }
+        .piloto-numeros b.malo { color: var(--alerta-texto); }
+        .barra-credito {
+            height: 10px; background: var(--pista); border: 2px solid var(--borde);
+            border-radius: var(--radio-chico); overflow: hidden; margin-top: 12px;
+        }
+        .barra-credito i { display: block; height: 100%; transition: width 0.3s; }
+        .mini-nota { font-size: 11px; color: var(--ink-soft); margin-top: 8px; text-align: center; }
 
-        /* ===== INTERRUPTORES ESCUELA/PISTA ===== */
-        .switches { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        /* ===== ORIGEN: ESCUELA / PISTA =====
+           Con la palabra completa y el precio, no la inicial. */
+        .switches { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 11px; }
         .switch-btn {
-            background: var(--cream);
-            border: 3px solid var(--parchment-dark);
-            border-radius: 16px;
-            box-shadow: 0 3px 0 var(--parchment-dark);
-            padding: 16px 8px;
-            font-family: 'Baloo 2', sans-serif;
-            font-size: 36px;
-            color: var(--ink-soft);
-            display: flex; align-items: center; justify-content: center;
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 14px 6px;
+            font-family: var(--fuente);
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink);
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
             cursor: pointer;
         }
-        .switch-btn.active { color: var(--wood-dark); border-color: var(--sky); box-shadow: 0 3px 0 var(--sky-dark); background: #eaf6fb; }
-        .switch-btn:active { transform: translateY(2px); box-shadow: none; }
+        .switch-btn .precio { font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
+        .switch-btn.active { background: var(--accion); border-color: var(--accion-borde); color: #ffffff; }
+        .switch-btn.active .precio { color: #ffffff; }
+        .switch-btn:active { transform: translateY(2px); }
 
         /* ===== CONTADOR ===== */
-        .contador { display: flex; align-items: center; justify-content: center; gap: 18px; }
+        .contador { display: flex; align-items: center; justify-content: center; gap: 22px; }
         .perilla {
-            width: 42px; height: 42px; border-radius: 50%;
-            background: var(--brass);
-            border: 3px solid var(--brass-dark);
-            box-shadow: 0 3px 0 var(--brass-dark);
-            font-family: 'Baloo 2', sans-serif;
-            font-size: 20px; color: var(--cream);
+            width: 56px; height: 56px; border-radius: 50%;
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            font-family: var(--fuente);
+            font-size: 26px; font-weight: 700; color: var(--ink);
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
         }
-        .perilla:active { transform: translateY(2px); box-shadow: none; }
-        .contador span.valor { font-family: 'Baloo 2', sans-serif; font-size: 26px; color: var(--wood-dark); width: 34px; text-align: center; display: inline-block; }
-        .contador .etq { font-size: 11px; color: var(--ink-soft); text-align: center; font-weight: 700; }
+        .perilla:active { transform: translateY(2px); }
+        .contador span.valor { font-size: 38px; font-weight: 700; color: var(--ink); width: 46px; text-align: center; display: inline-block; line-height: 1.05; }
+        .contador .etq { font-size: 10px; color: var(--ink-soft); text-align: center; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 
-        /* ===== BOTONERA ===== */
-        .accion-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+        /* ===== BOTONERA =====
+           Todos los botones llevan el MISMO borde negro. El naranja es solo
+           relleno, y solo en el botón principal y en el origen elegido. */
+        .accion-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 11px; }
         .btn-accion {
-            border: none;
-            border-radius: 18px;
-            padding: 18px 8px;
-            font-family: 'Baloo 2', sans-serif;
-            font-size: 20px;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 14px 8px;
+            font-family: var(--fuente);
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
-            color: var(--cream);
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: #ffffff;
+            color: var(--ink);
         }
-        .btn-accion:active { transform: translateY(3px); }
-        .btn-accion .icono { font-size: 44px; }
-        .btn-despegar { background: var(--sage); box-shadow: 0 4px 0 var(--sage-dark); }
-        .btn-despegar:active { box-shadow: 0 1px 0 var(--sage-dark); }
-        .btn-deshacer { background: var(--coral); box-shadow: 0 4px 0 var(--coral-dark); }
-        .btn-deshacer:active { box-shadow: 0 1px 0 var(--coral-dark); }
-        .btn-fuel { background: var(--brass); box-shadow: 0 4px 0 var(--brass-dark); }
-        .btn-fuel:active { box-shadow: 0 1px 0 var(--brass-dark); }
-        .btn-datos { background: var(--wood); box-shadow: 0 4px 0 var(--wood-dark); }
-        .btn-pago { background: #6b9b6b; box-shadow: 0 4px 0 #4f7a4f; }
-        .btn-pago:active { box-shadow: 0 1px 0 #4f7a4f; }
-        .btn-datos:active { box-shadow: 0 1px 0 var(--wood-dark); }
+        .btn-accion:active { transform: translateY(2px); }
+        .btn-accion .icono { font-size: 17px; }
+        .btn-despegar {
+            width: 100%;
+            background: var(--accion); color: #ffffff; border-color: var(--accion-borde);
+            flex-direction: column; gap: 2px;
+            padding: 20px 12px; font-size: 20px; letter-spacing: 0.03em;
+            margin-bottom: 11px;
+        }
+        .btn-despegar small { font-size: 13px; font-weight: 500; letter-spacing: 0; opacity: 0.95; }
+        .btn-deshacer { color: var(--alerta); }
         .full-width { grid-column: 1 / -1; }
 
         /* ===== BITÁCORA ===== */
-        .historial .titulo { font-family: 'Baloo 2', sans-serif; font-size: 13px; color: var(--wood-dark); margin-bottom: 8px; }
-        .historial .item { font-size: 13px; padding: 6px 0; border-bottom: 2px dashed var(--parchment-dark); display: flex; justify-content: space-between; }
+        .historial .titulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 8px; }
+        .historial .item { font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--borde-suave); display: flex; justify-content: space-between; gap: 10px; }
+        .historial .item:last-child { border-bottom: none; }
 
         /* ===== ALERTA (toast) ===== */
         .toast {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: var(--wood-dark);
-            color: var(--cream);
-            padding: 11px 22px;
-            border-radius: 20px;
+            background: #111111;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: var(--radio);
             font-size: 14px; font-weight: 700;
             max-width: 90%;
             z-index: 999;
@@ -258,73 +262,71 @@
             transition: opacity 0.3s;
             pointer-events: none;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
         .toast.show { opacity: 1; }
 
         /* ===== MODALES ===== */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(74,63,53,0.5);
+            background: rgba(17,17,17,0.55);
             display: none; align-items: center; justify-content: center;
             z-index: 1000; padding: 20px;
         }
         .modal-overlay.show { display: flex; }
         .modal {
-            background: var(--parchment);
-            border: 4px solid var(--wood);
-            border-radius: 24px;
-            padding: 22px;
+            background: #ffffff;
+            border: var(--grosor) solid var(--borde);
+            border-radius: var(--radio);
+            padding: 18px;
             max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto;
-            box-shadow: 0 8px 0 var(--wood-dark);
         }
-        .modal h2 { font-family: 'Baloo 2', sans-serif; font-size: 18px; margin-bottom: 14px; color: var(--wood-dark); }
+        .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: var(--ink); }
         .modal label { font-size: 12px; font-weight: 700; color: var(--ink-soft); display: block; margin: 12px 0 4px; }
         .modal input {
-            width: 100%; padding: 11px 14px; border: 3px solid var(--brass); border-radius: 14px;
-            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 15px;
-            background: var(--cream); color: var(--ink);
+            width: 100%; padding: 11px 14px; border: var(--grosor) solid var(--borde); border-radius: var(--radio);
+            font-family: var(--fuente); font-weight: 700; font-size: 15px;
+            background: #ffffff; color: var(--ink);
         }
-        .modal-hint { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; }
+        .modal-hint { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.45; }
         .btn-group-modal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-        .btn-modal-confirm { background: var(--sage); color: var(--cream); padding: 13px; border: none; border-radius: 16px; font-family: 'Baloo 2', sans-serif; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 var(--sage-dark); }
-        .btn-modal-cancel { background: var(--coral); color: var(--cream); padding: 13px; border: none; border-radius: 16px; font-family: 'Baloo 2', sans-serif; font-size: 14px; cursor: pointer; box-shadow: 0 3px 0 var(--coral-dark); }
+        .btn-modal-confirm { background: var(--accion); color: #ffffff; padding: 14px; border: var(--grosor) solid var(--accion-borde); border-radius: var(--radio); font-family: var(--fuente); font-size: 14px; font-weight: 700; cursor: pointer; }
+        .btn-modal-cancel { background: #ffffff; color: var(--ink); padding: 14px; border: var(--grosor) solid var(--borde); border-radius: var(--radio); font-family: var(--fuente); font-size: 14px; font-weight: 700; cursor: pointer; }
         .btn-chip {
-            display: inline-block; padding: 8px 14px; margin: 3px 3px 3px 0;
-            background: var(--cream); border: 2px solid var(--brass);
-            border-radius: 14px; font-size: 13px; font-weight: 700; color: var(--wood-dark);
+            display: inline-block; padding: 8px 13px; margin: 3px 3px 3px 0;
+            background: #ffffff; border: 2px solid var(--borde);
+            border-radius: var(--radio-chico); font-size: 13px; font-weight: 700; color: var(--ink);
             cursor: pointer;
         }
-        .btn-chip.quitar { border-color: var(--coral); color: var(--coral-dark); }
-        .btn-chip.metodo-activo { background: var(--sky); border-color: var(--sky-dark); color: var(--wood-dark); }
+        .btn-chip.quitar { color: var(--alerta); }
+        .btn-chip.metodo-activo { background: var(--accion); border-color: var(--accion-borde); color: #ffffff; }
         /* ===== ESTADÍSTICAS ===== */
         .header .resumen-linea {
-            font-size: 11px; color: var(--ink-soft); margin-top: 3px; font-weight: 700;
+            font-size: 11px; color: var(--ink-soft); margin-top: 4px; font-weight: 700;
             cursor: pointer; line-height: 1.4;
         }
         .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         .tabs .btn-chip { margin: 0; text-align: center; width: 100%; }
-        .btn-chip.activo { background: var(--wood); border-color: var(--wood-dark); color: var(--cream); }
+        .btn-chip.activo { background: var(--accion); border-color: var(--accion-borde); color: #ffffff; }
         .periodo-linea {
             display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
-            margin: 12px 0 10px; font-family: 'Baloo 2', sans-serif; font-size: 14px; color: var(--wood-dark);
+            margin: 12px 0 10px; font-size: 14px; font-weight: 700; color: var(--ink);
         }
         .link-mini {
             background: none; border: none; padding: 0; margin: 0; width: auto;
-            font-family: 'Quicksand', sans-serif; font-size: 11px; font-weight: 700;
-            color: var(--sky-dark); text-decoration: underline; cursor: pointer;
+            font-family: var(--fuente); font-size: 12px; font-weight: 700;
+            color: var(--accion-texto); text-decoration: underline; cursor: pointer;
         }
         .est-bloque {
-            background: var(--cream); border: 2px solid var(--parchment-dark); border-radius: 14px;
-            padding: 10px 12px; margin-bottom: 10px;
+            background: var(--pista); border-radius: var(--radio-chico);
+            padding: 10px 11px; margin-bottom: 10px;
         }
-        .est-bloque h3 { font-family: 'Baloo 2', sans-serif; font-size: 13px; color: var(--wood-dark); margin-bottom: 6px; }
+        .est-bloque h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 6px; }
         .est-fila { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 3px 0; }
         .est-fila.sub { padding-left: 14px; color: var(--ink-soft); font-size: 12px; }
-        .est-fila b { font-family: 'Baloo 2', sans-serif; }
-        .est-fila.sube b { color: var(--sage-dark); }
-        .est-fila.baja b { color: var(--coral-dark); }
-        .est-nota { font-size: 10px; color: var(--ink-soft); margin-top: 6px; line-height: 1.4; }
+        .est-fila b { font-weight: 700; }
+        .est-fila.sube b { color: var(--ok); }
+        .est-fila.baja b { color: var(--alerta); }
+        .est-nota { font-size: 10px; color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
         .est-bloques-2 { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 10px; }
         /* En la computadora el resumen se abre a lo ancho y en tres columnas */
         @media (min-width: 780px) {
@@ -339,7 +341,7 @@
 
 <div id="app">
     <div class="header">
-        <img src="rescates-logo.png" alt="Rescate" id="headerIcono" style="width:65px;height:auto;display:block;margin:0 auto;">
+        <img src="rescates-logo.png" alt="Rescate" id="headerIcono" style="width:72px;height:auto;display:block;margin:0 auto;">
         <h1>RESCATES RAMBLA</h1>
         <div class="status" id="statusSync">⬇️ Enlazando...</div>
         <div class="resumen-linea" id="resumenHoy" title="Ver el cierre del día"></div>
@@ -354,38 +356,32 @@
     </div>
 
     <div class="panel">
-        <div class="placa">⛽</div>
         <div class="selected-info" id="selectedInfo">
             <span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>
         </div>
     </div>
 
     <div class="switches">
-        <button class="switch-btn" id="btnEscuela" aria-label="Subida de Escuela" title="Escuela">E</button>
-        <button class="switch-btn" id="btnPista" aria-label="Subida de Pista" title="Pista">P</button>
+        <button class="switch-btn" id="btnEscuela" aria-label="Subida desde la Escuela" title="Escuela">Escuela<span class="precio" id="precioEscuelaBtn"></span></button>
+        <button class="switch-btn" id="btnPista" aria-label="Subida desde la Pista" title="Pista">Pista<span class="precio" id="precioPistaBtn"></span></button>
     </div>
 
     <div class="panel contador">
-        <button class="perilla" id="btnRestar">−</button>
+        <button class="perilla" id="btnRestar" aria-label="Una persona menos">−</button>
         <div style="display:flex;flex-direction:column;align-items:center;">
-            <div class="etq">SUBIDAS</div>
+            <div class="etq">Subidas (personas)</div>
             <span class="valor" id="pasajerosCount">1</span>
         </div>
-        <button class="perilla" id="btnSumar">+</button>
+        <button class="perilla" id="btnSumar" aria-label="Una persona más">+</button>
     </div>
 
-    <div class="accion-group">
-        <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar las subidas" title="Registrar las subidas">Enter</button>
-        <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación"><span class="icono">↺</span></button>
-    </div>
+    <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar las subidas" title="Registrar las subidas"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
 
     <div class="accion-group">
-        <button class="btn-accion btn-fuel" id="btnCarga" aria-label="Cargar crédito" title="Cargar crédito"><span class="icono">$</span></button>
-        <button class="btn-accion btn-pago" id="btnPago" aria-label="Pago rápido de la deuda" title="Pago rápido de la deuda"><span class="icono">⚡</span>PAGO RÁPIDO</button>
-    </div>
-
-    <div class="accion-group">
-        <button class="btn-accion btn-datos full-width" id="btnDatos" aria-label="Menú de datos" title="Menú de datos"><span class="icono">📁</span>DATOS</button>
+        <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación">↺ Deshacer</button>
+        <button class="btn-accion btn-fuel" id="btnCarga" aria-label="Cargar crédito" title="Cargar crédito">$ Cargar crédito</button>
+        <button class="btn-accion btn-pago" id="btnPago" aria-label="Pago rápido de la deuda" title="Pago rápido de la deuda">⚡ Pago rápido</button>
+        <button class="btn-accion btn-datos" id="btnDatos" aria-label="Menú de datos" title="Menú de datos">📁 Datos</button>
     </div>
 
     <div class="panel historial" id="historial">
@@ -1112,6 +1108,8 @@ function actualizarEstadoSync(mensajeForzado, claseForzada) {
     const contA = document.getElementById('contApartadas');
     if (contA) contA.textContent = opsApartadas.length;
     actualizarLineaHoy();
+    actualizarPreciosBotones();
+    actualizarBotonConfirmar();
 }
 
 // ============================================================
@@ -1186,9 +1184,9 @@ function porcentajeTanque(piloto) {
     return Math.max(0, Math.min(100, Math.round((saldo / ref) * 100)));
 }
 function colorTanque(pct) {
-    if (pct <= 15) return '#e17055';
-    if (pct <= 32) return '#e0ab3f';
-    return '#7fa66b';
+    if (pct <= 15) return '#b91c1c';
+    if (pct <= 32) return '#b45309';
+    return '#15803d';
 }
 
 // ============================================================
@@ -1242,27 +1240,50 @@ function getSaldo(numero) {
     return lotes.filter(l => l.socio === numero).reduce((acc, l) => acc + (l.saldo || 0), 0);
 }
 
-function svgGauge(pct, vacio) {
-    const angle = -75 + (pct / 100) * 150;
-    return `
-        <svg viewBox="0 0 200 110" width="156" height="86" class="${vacio ? 'gauge-vacio' : ''}">
-            <path d="M10,100 A90,90 0 0,1 20,59" class="zona-roja"/>
-            <path d="M20,59 A90,90 0 0,1 52,24" class="zona-ambar"/>
-            <path d="M52,24 A90,90 0 0,1 190,100" class="zona-verde"/>
-            <line x1="2" y1="100" x2="16" y2="100" class="tick"/>
-            <line x1="31" y1="31" x2="41" y2="41" class="tick"/>
-            <line x1="100" y1="2" x2="100" y2="16" class="tick"/>
-            <line x1="169" y1="31" x2="159" y2="41" class="tick"/>
-            <line x1="198" y1="100" x2="184" y2="100" class="tick"/>
-            <line x1="100" y1="100" x2="100" y2="24" class="aguja" transform="rotate(${angle} 100 100)"/>
-            <circle cx="100" cy="100" r="9" class="eje"/>
-        </svg>`;
+// El medidor con aguja se retiró: ahora saldo y deuda son dos números grandes
+// y una barra fina (ver .piloto-numeros y .barra-credito).
+
+/** Texto del botón principal: cuántas personas y cuánto sale. */
+function actualizarBotonConfirmar() {
+    const t = document.getElementById('textoConfirmar');
+    const d = document.getElementById('detalleConfirmar');
+    if (!t || !d) return;
+
+    const n = cantidadSubidas;
+    t.textContent = `Subir ${n} persona${n === 1 ? '' : 's'}`;
+
+    if (!selectedPiloto) { d.textContent = 'Elegí un piloto'; return; }
+    if (!tipoViaje) { d.textContent = 'Elegí Escuela o Pista'; return; }
+
+    const precio = getPrecioLista(tipoViaje);
+    const descuento = getDescuentoVigente(selectedPiloto.numero);
+    let libres = selectedPiloto.viajesLibres || 0;
+    let aCobrar = 0;
+    for (let i = 0; i < n; i++) {
+        if (libres > 0) libres--;
+        else aCobrar += Math.round(precio * (1 - descuento / 100));
+    }
+    const origen = tipoViaje === 'escuela' ? 'Escuela' : 'Pista';
+    if (aCobrar === 0) {
+        d.textContent = `${origen} · con subidas libres 🎁`;
+    } else {
+        d.textContent = `${origen} · $${aCobrar}${descuento > 0 ? ` (${descuento}% dto)` : ''}`;
+    }
+}
+
+/** Los precios vigentes, mostrados en los botones Escuela y Pista. */
+function actualizarPreciosBotones() {
+    const pe = document.getElementById('precioEscuelaBtn');
+    const pp = document.getElementById('precioPistaBtn');
+    if (pe) pe.textContent = '$' + (config.PrecioEscuela || 11000);
+    if (pp) pp.textContent = '$' + (config.PrecioPista || 6500);
 }
 
 function updateSelectedInfo() {
     const info = document.getElementById('selectedInfo');
     if (!selectedPiloto) {
         info.innerHTML = `<span style="color:var(--ink-soft);font-size:13px;">👆 Buscá un piloto para verlo acá</span>`;
+        actualizarBotonConfirmar();
         return;
     }
     const saldo = getSaldo(selectedPiloto.numero);
@@ -1270,22 +1291,22 @@ function updateSelectedInfo() {
     const libres = selectedPiloto.viajesLibres || 0;
     const descuento = getDescuentoVigente(selectedPiloto.numero);
     const pct = porcentajeTanque(selectedPiloto);
-    const vacio = saldo <= 0;
+
+    const nota = [
+        descuento > 0 ? `Crédito con ${descuento}% de descuento` : 'Sin descuento por lote',
+        libres > 0 ? `${libres} subida(s) libre(s)` : null
+    ].filter(Boolean).join(' · ');
 
     info.innerHTML = `
         <div class="placa-nombre">${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}${selectedPiloto.alias ? ` "${esc(selectedPiloto.alias)}"` : ''}</div>
-        <div class="gauge-wrap">
-            <div class="gauge-case">
-                ${svgGauge(pct, vacio)}
-                <div class="gauge-labels"><span>E</span><span>F</span></div>
-            </div>
-            <div class="gauge-lectura">$${saldo}${descuento > 0 ? ` (-${descuento}%)` : ''}</div>
+        <div class="piloto-numeros">
+            <div class="num"><span class="etq">Saldo</span><b class="${saldo > 0 ? 'bueno' : ''}">$${saldo}</b></div>
+            <div class="num"><span class="etq">Deuda</span><b class="${deuda > 0 ? 'malo' : ''}">$${deuda}</b></div>
         </div>
-        <div class="lamparas">
-            ${deuda > 0 ? `<span class="lampara roja">💳 Deuda $${deuda}</span>` : ''}
-            ${libres > 0 ? `<span class="lampara verde">🎁 ${libres} libres</span>` : ''}
-        </div>
+        <div class="barra-credito"><i style="width:${pct}%;background:${colorTanque(pct)};"></i></div>
+        <div class="mini-nota">${esc(nota)}</div>
     `;
+    actualizarBotonConfirmar();
 }
 
 function updateHistorial() {
@@ -1352,6 +1373,7 @@ function selectPiloto(numero) {
         tipoViaje = null;
         document.getElementById('btnEscuela').classList.remove('active');
         document.getElementById('btnPista').classList.remove('active');
+        actualizarBotonConfirmar();
     }
 }
 
@@ -1360,11 +1382,13 @@ function setTipoViaje(tipo) {
     tipoViaje = tipo;
     document.getElementById('btnEscuela').classList.toggle('active', tipo === 'escuela');
     document.getElementById('btnPista').classList.toggle('active', tipo === 'pista');
+    actualizarBotonConfirmar();
 }
 
 function cambiarCantidad(delta) {
     cantidadSubidas = Math.max(1, Math.min(9, cantidadSubidas + delta)); // un solo dígito
     document.getElementById('pasajerosCount').textContent = cantidadSubidas;
+    actualizarBotonConfirmar();
 }
 
 // ============================================================
