@@ -63,12 +63,14 @@
         .hint { font-size: 11px; color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
         .resultado { display: none; }
         .nombre-resultado { font-size: 19px; font-weight: 700; color: var(--ink); text-align: center; margin-bottom: 14px; }
-        .numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .num { text-align: center; }
-        .num .etq { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px; }
-        .num b { display: block; font-size: 27px; font-weight: 700; line-height: 1.1; }
-        .num b.bueno { color: var(--ok); }
-        .num b.malo { color: var(--alerta-texto); }
+        /* Un solo saldo: crédito menos deuda */
+        .saldo-unico { text-align: center; }
+        .saldo-unico .etq { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px; }
+        .saldo-unico b { display: block; font-size: 40px; font-weight: 700; line-height: 1.15; }
+        .saldo-unico b.bueno { color: var(--ok); }
+        .saldo-unico b.malo { color: var(--alerta-texto); }
+        .ico { display: inline-flex; align-items: center; justify-content: center; vertical-align: -0.16em; }
+        .ico svg { width: 1.05em; height: 1.05em; display: block; }
         .dato { display: flex; justify-content: space-between; padding: 10px 2px; border-bottom: 1px solid var(--borde-suave); font-size: 14px; }
         .dato:last-child { border-bottom: none; }
         .dato b { font-weight: 700; }
@@ -91,19 +93,19 @@
         <label>Tu nombre completo</label>
         <input type="text" id="nombreInput" autocomplete="name" placeholder="Como figura registrado">
         <div class="hint">Escribí tu nombre y apellido tal como está anotado en la escuela (o tu alias, si tenés uno).</div>
-        <button id="btnConsultar">Buscar mi cuenta</button>
+        <button id="btnConsultar"><i class="ico" data-ico="lupa"></i> Buscar mi cuenta</button>
     </div>
 
     <div class="msg" id="msgError"></div>
 
     <div class="panel resultado" id="resultado">
         <div class="nombre-resultado" id="nombreResultado"></div>
-        <div class="numeros">
-            <div class="num"><span class="etq">Crédito</span><b id="rSaldo"></b></div>
-            <div class="num"><span class="etq">Deuda</span><b id="rDeuda"></b></div>
+        <div class="saldo-unico">
+            <span class="etq">Saldo</span>
+            <b id="rSaldo"></b>
         </div>
-        <div class="dato" style="margin-top:12px;"><span>🎁 Subidas libres</span><b id="rLibres"></b></div>
-        <div class="historial-titulo">📋 Últimas subidas</div>
+        <div class="dato" style="margin-top:12px;"><span><i class="ico" data-ico="regalo"></i> Pass libres</span><b id="rLibres"></b></div>
+        <div class="historial-titulo"><i class="ico" data-ico="lista"></i> Últimos Pass</div>
         <div id="rHistorial"></div>
     </div>
 
@@ -121,6 +123,37 @@ function esc(v) {
 function plata(n) {
     const v = Math.round(Number(n) || 0);
     return (v < 0 ? '-$' : '$') + String(Math.abs(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Íconos dibujados, los mismos que usa la app (así no cambian según el celular)
+const ICONOS = {
+    lista: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01"/></svg>',
+    regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M3 12h18M12 8v12M12 8C10 8 8 7 8 5.5A2.5 2.5 0 0 1 12 4a2.5 2.5 0 0 1 4 1.5C16 7 14 8 12 8Z"/></svg>',
+    alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21.5 20H2.5L12 3.5Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+    reloj: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+    lupa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></svg>'
+};
+const EMOJI_A_ICONO = { '🎁': 'regalo', '📋': 'lista', '⚠': 'alerta', '⏳': 'reloj', '🔍': 'lupa' };
+
+function ico(nombre) {
+    return '<i class="ico">' + (ICONOS[nombre] || '') + '</i>';
+}
+
+/** Escapa el texto y cambia los emojis por íconos dibujados (para innerHTML). */
+function textoConIconos(t) {
+    let s = esc(String(t === null || t === undefined ? '' : t).replace(/\uFE0F/g, ''));
+    Object.keys(EMOJI_A_ICONO).forEach(e => {
+        if (s.indexOf(e) >= 0) s = s.split(e).join(ico(EMOJI_A_ICONO[e]));
+    });
+    return s;
+}
+
+/** Rellena los <i class="ico" data-ico="..."> que quedaron en el HTML. */
+function pintarIconos() {
+    document.querySelectorAll('.ico[data-ico]').forEach(el => {
+        const n = el.dataset.ico;
+        if (ICONOS[n]) { el.innerHTML = ICONOS[n]; el.removeAttribute('data-ico'); }
+    });
 }
 
 // La planilla puede devolver 'YYYY-MM-DD HH:mm:ss' o una fecha ISO en UTC.
@@ -152,56 +185,57 @@ async function consultar() {
     resultado.style.display = 'none';
 
     if (!numero || !nombre) {
-        msg.textContent = '⚠️ Completá tu número y tu nombre completo';
+        msg.innerHTML = textoConIconos('⚠️ Completá tu número y tu nombre completo');
         msg.style.display = 'block';
         return;
     }
 
     btn.disabled = true;
-    btn.textContent = '⏳ Buscando...';
+    btn.innerHTML = textoConIconos('⏳ Buscando...');
     try {
         const url = `${APPS_SCRIPT_URL}?action=consultaPiloto&numero=${encodeURIComponent(numero)}&nombre=${encodeURIComponent(nombre)}`;
         const resp = await fetch(url, { cache: 'no-store' });
         const data = await resp.json();
 
         if (data.error) {
-            msg.textContent = '⚠️ ' + data.error;
+            msg.innerHTML = textoConIconos('⚠️ ' + data.error);
             msg.style.display = 'block';
             return;
         }
 
         const saldo = Number(data.saldo) || 0;
         const deuda = Number(data.deuda) || 0;
+        const neto = saldo - deuda;
         document.getElementById('nombreResultado').textContent =
             `${data.numero} - ${data.nombre}${data.alias ? ` "${data.alias}"` : ''}`;
 
+        // Un solo saldo: positivo si tiene crédito, en negativo si debe
         const elSaldo = document.getElementById('rSaldo');
-        elSaldo.textContent = plata(saldo);
-        elSaldo.className = saldo > 0 ? 'bueno' : '';
-        const elDeuda = document.getElementById('rDeuda');
-        elDeuda.textContent = plata(deuda);
-        elDeuda.className = deuda > 0 ? 'malo' : '';
+        elSaldo.textContent = plata(neto);
+        elSaldo.className = neto < 0 ? 'malo' : 'bueno';
+        if (deuda > 0) elSaldo.title = `Crédito ${plata(saldo)} menos deuda ${plata(deuda)}`;
         document.getElementById('rLibres').textContent = Number(data.viajesLibres) || 0;
 
         const hist = document.getElementById('rHistorial');
         if (!data.ultimosViajes || data.ultimosViajes.length === 0) {
-            hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin viajes registrados</div>';
+            hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin Pass registrados</div>';
         } else {
             hist.innerHTML = data.ultimosViajes.map(v => `
-                <div class="historial-item"><span>${esc(fechaCorta(v.fecha))}</span><span>${esc(v.origen)} ${plata(v.total)} ${v.gratis === true || v.gratis === 'TRUE' ? '🎁' : ''}</span></div>
+                <div class="historial-item"><span>${esc(fechaCorta(v.fecha))}</span><span>${esc(v.origen)} ${plata(v.total)} ${v.gratis === true || v.gratis === 'TRUE' ? ico('regalo') : ''}</span></div>
             `).join('');
         }
 
         resultado.style.display = 'block';
     } catch (e) {
-        msg.textContent = '⚠️ No se pudo conectar. Fijate si tenés internet y probá de nuevo.';
+        msg.innerHTML = textoConIconos('⚠️ No se pudo conectar. Fijate si tenés internet y probá de nuevo.');
         msg.style.display = 'block';
     } finally {
         btn.disabled = false;
-        btn.textContent = 'Buscar mi cuenta';
+        btn.innerHTML = ico('lupa') + ' Buscar mi cuenta';
     }
 }
 
+pintarIconos();
 btn.addEventListener('click', consultar);
 document.getElementById('nombreInput').addEventListener('keydown', e => { if (e.key === 'Enter') consultar(); });
 </script>

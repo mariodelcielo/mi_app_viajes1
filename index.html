@@ -456,8 +456,8 @@
     </div>
 
     <div class="switches">
-        <button class="switch-btn" id="btnEscuela" aria-label="Subida desde la Escuela" title="Escuela">Escuela<span class="precio" id="precioEscuelaBtn"></span></button>
-        <button class="switch-btn" id="btnPista" aria-label="Subida desde la Pista" title="Pista">Pista<span class="precio" id="precioPistaBtn"></span></button>
+        <button class="switch-btn" id="btnEscuela" aria-label="Pass desde la Escuela" title="Escuela">Escuela<span class="precio" id="precioEscuelaBtn"></span></button>
+        <button class="switch-btn" id="btnPista" aria-label="Pass desde la Pista" title="Pista">Pista<span class="precio" id="precioPistaBtn"></span></button>
     </div>
 
     <div class="panel contador">
@@ -469,7 +469,7 @@
         <button class="perilla" id="btnSumar" aria-label="Una persona más">+</button>
     </div>
 
-    <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar las subidas" title="Registrar las subidas"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
+    <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar los Pass" title="Registrar los Pass"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
 
     <div class="accion-group">
         <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación"><i class="ico" data-ico="deshacer"></i> Deshacer</button>
@@ -480,7 +480,7 @@
 
     <div class="panel historial" id="historial">
         <div class="titulo"><i class="ico" data-ico="lista"></i> Últimos Pass</div>
-        <div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin viajes registrados</div>
+        <div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin Pass registrados</div>
     </div>
 </div>
 
@@ -538,7 +538,7 @@
             <button type="button" class="btn-chip categoria-btn metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="piloto"></i> Piloto</button>
             <button type="button" class="btn-chip categoria-btn" data-categoria="alumno" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="birrete"></i> Alumno</button>
         </div>
-        <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 subidas libres.</div>
+        <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 Pass libres.</div>
 
         <label style="margin-top:16px;"><i class="ico" data-ico="calendario"></i> Fecha de alta</label>
         <input type="date" id="fechaAltaInput">
@@ -585,7 +585,7 @@
         </div>
         <label style="margin-top:12px;"><i class="ico" data-ico="calendario"></i> Fecha de alta</label>
         <input type="date" id="npFechaAlta">
-        <div class="modal-hint">Si arranca como "Alumno" se le asignan 10 subidas libres.</div>
+        <div class="modal-hint">Si arranca como "Alumno" se le asignan 10 Pass libres.</div>
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnCrearPiloto"><i class="ico" data-ico="check"></i> Crear</button>
             <button class="btn-modal-cancel" id="btnCancelarNuevoPiloto"><i class="ico" data-ico="x"></i> Cancelar</button>
@@ -1101,7 +1101,7 @@ function resumenOperacion(op) {
     const partes = [];
     if (op.viajes && op.viajes.length) {
         const v = op.viajes[0];
-        partes.push(`${op.viajes.length} subida(s) de ${v.Nombre} (N° ${v.Numero})`);
+        partes.push(`${op.viajes.length} Pass de ${v.Nombre} (N° ${v.Numero})`);
     }
     if (op.viajesBorrar && op.viajesBorrar.length) partes.push('deshacer de subidas');
     if (op.lotesNuevos && op.lotesNuevos.length) partes.push(`carga de crédito de ${plata(op.lotesNuevos[0].Monto_Cargado)}`);
@@ -1552,11 +1552,11 @@ function updateHistorial() {
     const container = document.getElementById('historial');
     const ultimos = viajes.slice(-5).reverse();
     if (ultimos.length === 0) {
-        container.innerHTML = `<div class="titulo">📋 Últimos Pass</div><div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin viajes registrados</div>`;
+        container.innerHTML = `<div class="titulo">${ico('lista')} Últimos Pass</div><div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin Pass registrados</div>`;
         return;
     }
     container.innerHTML = `
-        <div class="titulo">📋 Últimos Pass</div>
+        <div class="titulo">${ico('lista')} Últimos Pass</div>
         ${ultimos.map(v => `
             <div class="item">
                 <span>${esc(v.socio)} - ${esc(v.nombre)}</span>
