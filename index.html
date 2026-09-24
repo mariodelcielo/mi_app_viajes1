@@ -413,6 +413,8 @@
         .est-fila b { font-weight: 700; }
         .est-fila.sube b { color: var(--ok); }
         .est-fila.baja b { color: var(--alerta); }
+        .est-fila.fuerte { border-top: 1px solid var(--borde-suave); margin-top: 5px; padding-top: 7px; }
+        .est-fila.fuerte b { font-size: calc(16px * var(--esc)); }
         .est-nota { font-size: calc(10px * var(--esc)); color: var(--ink-soft); margin-top: 6px; line-height: 1.45; }
         .est-bloques-2 { display: grid; gap: 10px; grid-template-columns: 1fr; margin-top: 10px; }
         /* En la computadora el resumen se abre a lo ancho y en tres columnas */
@@ -652,6 +654,7 @@
             <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="lista"></i> Deudores</button>
             <button class="btn-chip" id="btnAbrirApartadas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="alerta"></i> Cambios apartados (<span id="contApartadas">0</span>)</button>
             <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="etiqueta"></i> Precios</button>
+            <button class="btn-chip" id="btnAbrirGastos" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="gasto"></i> Gastos</button>
             <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="grafico"></i> Estadísticas</button>
             <div style="border-top:1px solid var(--borde-suave);margin:2px 0;"></div>
             <div class="modal-hint" style="margin:0;">Tamaño de letra</div>
@@ -682,6 +685,59 @@
         <div style="margin-top:18px;">
             <div class="historial-titulo"><i class="ico" data-ico="tendencia"></i> Historial de precios</div>
             <div id="listaHistorialPrecios" style="max-height:30vh;overflow-y:auto;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalGastos">
+    <div class="modal">
+        <h2><i class="ico" data-ico="gasto"></i> Gastos</h2>
+        <div id="resumenGastos" style="background:var(--pista);border-radius:var(--radio-chico);padding:12px 14px;margin-bottom:12px;"></div>
+        <div id="listaGastos" style="max-height:34vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-confirm" id="btnNuevoGasto"><i class="ico" data-ico="mas"></i> Cargar un gasto</button>
+            <button class="btn-modal-cancel" id="btnCerrarGastos"><i class="ico" data-ico="x"></i> Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalNuevoGasto">
+    <div class="modal">
+        <h2><i class="ico" data-ico="gasto"></i> Nuevo gasto</h2>
+
+        <label>Monto ($)</label>
+        <input type="number" id="gastoMonto" inputmode="numeric" placeholder="Ej: 45000" min="0" step="100">
+        <div>
+            <button type="button" class="btn-chip" data-gasto-monto="20000">$20.000</button>
+            <button type="button" class="btn-chip" data-gasto-monto="30000">$30.000</button>
+            <button type="button" class="btn-chip" data-gasto-monto="50000">$50.000</button>
+        </div>
+
+        <label>Concepto</label>
+        <input type="text" id="gastoConcepto" placeholder="Ej: Nafta, cambio de aceite..." list="conceptosUsados" autocomplete="off">
+        <datalist id="conceptosUsados"></datalist>
+        <div class="modal-hint">Si lo dejás vacío, se usa el nombre de la categoría.</div>
+
+        <label>Categoría</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip gasto-cat metodo-activo" data-cat="Combustible" style="width:100%;text-align:center;margin:0;">Combustible</button>
+            <button type="button" class="btn-chip gasto-cat" data-cat="Mantenimiento" style="width:100%;text-align:center;margin:0;">Mantenimiento</button>
+            <button type="button" class="btn-chip gasto-cat" data-cat="Seguro" style="width:100%;text-align:center;margin:0;">Seguro</button>
+            <button type="button" class="btn-chip gasto-cat" data-cat="Otros" style="width:100%;text-align:center;margin:0;">Otros</button>
+        </div>
+
+        <label>Fecha</label>
+        <input type="date" id="gastoFecha">
+
+        <label>Forma de pago</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip gasto-pago metodo-activo" data-pago="efectivo" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="dinero"></i> Efectivo</button>
+            <button type="button" class="btn-chip gasto-pago" data-pago="transferencia" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="banco"></i> Transferencia</button>
+        </div>
+
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarGasto"><i class="ico" data-ico="check"></i> Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarGasto"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
@@ -723,13 +779,16 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 2;
+const VERSION_BACKEND = 3;
 
 const TRAMOS_POR_DEFECTO = [
     { minimo: 25000, porcentaje: 5 }, { minimo: 50000, porcentaje: 10 },
     { minimo: 100000, porcentaje: 15 }, { minimo: 150000, porcentaje: 20 },
     { minimo: 200000, porcentaje: 30 }
 ];
+
+// Categorías de gasto: fijas, para que el cierre pueda agruparlas
+const CATEGORIAS_GASTO = ['Combustible', 'Mantenimiento', 'Seguro', 'Otros'];
 
 // ============================================================
 // ESTADO GLOBAL
@@ -738,6 +797,7 @@ let pilotos = [];
 let lotes = [];
 let viajes = [];
 let pagos = [];
+let gastos = [];
 let config = {};
 let tramos = []; // [{minimo, porcentaje}], ordenado ascendente por minimo
 let historialPrecios = []; // [{fecha, precioEscuela, precioPista}]
@@ -840,7 +900,8 @@ const ICONOS = {
     calendario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
     birrete: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 8.5 12 13l9.5-4.5L12 4Z"/><path d="M6 10.5V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-5.5"/></svg>',
     piloto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/><path d="M6.5 9h11"/></svg>',
-    candado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>'
+    candado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>',
+    gasto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14v17l-2.3-1.6-2.35 1.6L12 19l-2.35 1.5L7.3 18.9 5 20.5v-17Z"/><path d="M9 8.5h6M9 12.5h4"/></svg>'
 };
 
 // Qué ícono reemplaza a cada emoji
@@ -1254,6 +1315,14 @@ function aplicarDatosDelServidor(data) {
         metodoPago: p.Metodo_Pago || 'efectivo'
     }));
 
+    gastos = (data.gastos || []).map(g => ({
+        fecha: aFechaLocal(g.Fecha, false) || fechaSoloLocal(),
+        concepto: g.Concepto || '',
+        categoria: g.Categoria || 'Otros',
+        monto: Number(g.Monto) || 0,
+        metodoPago: g.Metodo_Pago || 'efectivo'
+    }));
+
     historialPrecios = (data.historialPrecios || []).map(h => ({
         fecha: aFechaLocal(h.Fecha_Vigencia, false),
         precioEscuela: Number(h.PrecioEscuela) || 0,
@@ -1282,6 +1351,7 @@ function usarDatosLocales() {
         }));
         viajes = (s.viajes || []).map(v => Object.assign({}, v, { fecha: aFechaLocal(v.fecha, true) || fechaHoraLocal() }));
         pagos = (s.pagos || []).map(p => Object.assign({}, p, { fecha: aFechaLocal(p.fecha, true) || fechaHoraLocal() }));
+        gastos = (s.gastos || []).map(g => Object.assign({}, g, { fecha: aFechaLocal(g.fecha, false) || fechaSoloLocal() }));
         historialPrecios = (s.historialPrecios || []).map(h => Object.assign({}, h, { fecha: aFechaLocal(h.fecha, false) }));
         config = s.config || {};
         tramos = (s.tramos && s.tramos.length) ? s.tramos : TRAMOS_POR_DEFECTO.slice();
@@ -1299,7 +1369,7 @@ function usarDatosLocales() {
 
 function guardarEnLocal() {
     try {
-        localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos, historialPrecios }));
+        localStorage.setItem('estado_app', JSON.stringify({ pilotos, lotes, viajes, config, tramos, pagos, gastos, historialPrecios }));
     } catch (e) {}
 }
 
@@ -1367,6 +1437,12 @@ function pagoParaServidor(p) {
     return {
         Fecha: p.fecha, Numero: p.socio, Nombre: p.nombre, Monto: p.monto,
         Metodo_Pago: p.metodoPago || 'efectivo'
+    };
+}
+function gastoParaServidor(g) {
+    return {
+        Fecha: g.fecha, Concepto: g.concepto, Categoria: g.categoria,
+        Monto: g.monto, Metodo_Pago: g.metodoPago || 'efectivo'
     };
 }
 function pilotoParaServidor(p, incluirNumero) {
@@ -2127,6 +2203,7 @@ function calcularMetricas(desde, hasta) {
     const vP = viajes.filter(v => enRango(v.fecha));
     const lP = lotes.filter(l => enRango(l.fecha));
     const pP = pagos.filter(p => enRango(p.fecha));
+    const gP = gastos.filter(g => enRango(g.fecha));
 
     const cobradas = vP.filter(v => !v.gratis);
     const gratis = vP.filter(v => v.gratis);
@@ -2141,6 +2218,15 @@ function calcularMetricas(desde, hasta) {
     const esEfectivo = x => (x.metodoPago || 'efectivo') === 'efectivo';
     const efectivo = lP.filter(esEfectivo).reduce((a, l) => a + (l.monto || 0), 0)
         + pP.filter(esEfectivo).reduce((a, p) => a + (p.monto || 0), 0);
+
+    // Gastos del período, separados por forma de pago y por categoría
+    const gastosTotal = gP.reduce((a, g) => a + (g.monto || 0), 0);
+    const gastosEfectivo = gP.filter(esEfectivo).reduce((a, g) => a + (g.monto || 0), 0);
+    const gastosPorCategoria = {};
+    gP.forEach(g => {
+        const c = g.categoria || 'Otros';
+        gastosPorCategoria[c] = (gastosPorCategoria[c] || 0) + (g.monto || 0);
+    });
 
     const porDia = {};
     vP.forEach(v => {
@@ -2172,6 +2258,12 @@ function calcularMetricas(desde, hasta) {
         transferencia: (sumaLotes + sumaPagos) - efectivo,
         cargas: sumaLotes,
         cobrosDeuda: sumaPagos,
+        gastos: gastosTotal,
+        gastosEfectivo: gastosEfectivo,
+        gastosTransferencia: gastosTotal - gastosEfectivo,
+        gastosPorCategoria: gastosPorCategoria,
+        ganancia: facturado - gastosTotal,
+        efectivoNeto: efectivo - gastosEfectivo,
         deudaGenerada: vP.reduce((a, v) => a + (v.deuda || 0), 0),
         diasTrabajados: Object.keys(porDia).length,
         mejorDia: mejorDia,
@@ -2222,7 +2314,7 @@ function renderEstadisticas() {
     document.querySelectorAll('.tab-est').forEach(b => b.classList.toggle('activo', b.dataset.periodo === estPeriodo));
 
     const cont = document.getElementById('estContenido');
-    if (m.subidas === 0 && m.ingresado === 0) {
+    if (m.subidas === 0 && m.ingresado === 0 && m.gastos === 0) {
         cont.innerHTML = `<div style="text-align:center;color:var(--ink-soft);padding:24px 0;">Todavía no hay actividad en este período</div>`;
         return;
     }
@@ -2232,7 +2324,11 @@ function renderEstadisticas() {
     caja += filaEst('Transferencia', plata(m.transferencia), 'sub');
     caja += filaEst('Cargas de crédito', plata(m.cargas));
     caja += filaEst('Cobros de deuda', plata(m.cobrosDeuda));
-    caja += `<div class="est-nota">El efectivo es lo que deberías tener a mano de este período, según lo cargado en la app.</div>`;
+    if (m.gastosEfectivo > 0) {
+        caja += filaEst('Gastos en efectivo', '−' + plata(m.gastosEfectivo));
+        caja += filaEst('Efectivo neto', plata(m.efectivoNeto), 'fuerte');
+    }
+    caja += `<div class="est-nota">Efectivo es lo que entró. El efectivo neto es lo que te queda después de los gastos pagados en efectivo.</div>`;
 
     let act = filaEst('Pass', m.subidas);
     act += filaEst('Desde Escuela', m.escuela, 'sub');
@@ -2254,6 +2350,18 @@ function renderEstadisticas() {
     car += filaEst('Pass libres pendientes', libresTotalesPilotos());
     car += `<div class="est-nota">El crédito y los Pass libres son el estado de ahora, no del período elegido.</div>`;
 
+    // Gastos del período, con el resultado al final
+    let gas = filaEst('Total de gastos', plata(m.gastos));
+    CATEGORIAS_GASTO.forEach(c => {
+        const v = m.gastosPorCategoria[c] || 0;
+        if (v > 0) gas += filaEst(c, plata(v), 'sub');
+    });
+    if (m.gastosTransferencia > 0) {
+        gas += filaEst('Pagados por transferencia', plata(m.gastosTransferencia), 'sub');
+    }
+    gas += filaEst('Ganancia', plata(m.ganancia), 'fuerte');
+    gas += `<div class="est-nota">Ganancia = facturado menos gastos del período. Es plata, no rinde: no descuenta tu trabajo ni el desgaste del vehículo.</div>`;
+
     let extra = '';
     if (estPeriodo !== 'dia') {
         extra = `
@@ -2272,10 +2380,12 @@ function renderEstadisticas() {
     const dSub = delta(m.subidas, ma.subidas);
     const dPre = delta(m.precioPromedio, ma.precioPromedio);
     const dIng = delta(m.ingresado, ma.ingresado);
+    const dGan = delta(m.ganancia, ma.ganancia);
     const comp = `
         <div class="est-bloque">
             <h3>${ico('tendencia')} CONTRA ${etiquetaAnterior(estPeriodo).toUpperCase()}</h3>
             <div class="est-fila ${dFac.clase}"><span>Facturado</span><b>${dFac.txt}</b></div>
+            <div class="est-fila ${dGan.clase}"><span>Ganancia</span><b>${dGan.txt}</b></div>
             <div class="est-fila ${dSub.clase}"><span>Pass</span><b>${dSub.txt}</b></div>
             <div class="est-fila ${dPre.clase}"><span>Precio promedio</span><b>${dPre.txt}</b></div>
             <div class="est-fila ${dIng.clase}"><span>Ingresado</span><b>${dIng.txt}</b></div>
@@ -2286,6 +2396,7 @@ function renderEstadisticas() {
         <div class="est-bloques">
             <div class="est-bloque"><h3>${ico('dinero')} CAJA</h3>${caja}</div>
             <div class="est-bloque"><h3>${ico('pasajero')} ACTIVIDAD</h3>${act}</div>
+            <div class="est-bloque"><h3>${ico('gasto')} GASTOS</h3>${gas}</div>
             <div class="est-bloque"><h3>${ico('grafico')} CARTERA</h3>${car}</div>
         </div>
         <div class="est-bloques-2">
@@ -2306,6 +2417,107 @@ function actualizarLineaHoy() {
     } else {
         el.textContent = `Hoy: ${m.subidas} Pass · ${plata(m.facturado)} facturado · ${plata(m.efectivo)} en efectivo`;
     }
+}
+
+// ============================================================
+// GASTOS (combustible, mantenimiento, seguro, otros)
+// ============================================================
+let gastoCategoria = 'Combustible';
+let gastoPago = 'efectivo';
+
+function marcarChipsGasto(sel, atributo, valor) {
+    document.querySelectorAll(sel).forEach(b => b.classList.toggle('metodo-activo', b.dataset[atributo] === valor));
+}
+
+function gastosDelMes() {
+    const mes = fechaSoloLocal().slice(0, 7);
+    return gastos.filter(g => fechaSolo(g.fecha).startsWith(mes));
+}
+
+function renderGastos() {
+    const delMes = gastosDelMes();
+    const total = delMes.reduce((a, g) => a + (g.monto || 0), 0);
+    const porCat = {};
+    delMes.forEach(g => { porCat[g.categoria] = (porCat[g.categoria] || 0) + (g.monto || 0); });
+    const detalle = CATEGORIAS_GASTO.filter(c => porCat[c] > 0).map(c => `${c} ${plata(porCat[c])}`).join(' · ');
+
+    document.getElementById('resumenGastos').innerHTML = `
+        <div style="font-size:calc(11px * var(--esc));font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);">Este mes</div>
+        <div style="font-size:calc(26px * var(--esc));font-weight:700;line-height:1.25;">${plata(total)}</div>
+        <div style="font-size:calc(11px * var(--esc));color:var(--ink-soft);">${delMes.length} gasto(s)${detalle ? ' · ' + esc(detalle) : ''}</div>`;
+
+    const cont = document.getElementById('listaGastos');
+    const ultimos = [...gastos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha))).slice(0, 20);
+    if (ultimos.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:18px;color:var(--ink-soft);font-size:calc(13px * var(--esc));">Todavía no cargaste ningún gasto</div>`;
+        return;
+    }
+    cont.innerHTML = ultimos.map(g => `
+        <div class="historial-item">
+            <span>${esc(formatoFechaLinda(g.fecha))} · ${esc(g.concepto || g.categoria)}</span>
+            <span>${plata(g.monto)}${g.metodoPago === 'efectivo' ? '' : ' · transf.'}</span>
+        </div>`).join('');
+}
+
+function abrirModalGastos() {
+    renderGastos();
+    document.getElementById('modalGastos').classList.add('show');
+}
+
+function cerrarModalGastos() {
+    document.getElementById('modalGastos').classList.remove('show');
+}
+
+function abrirModalNuevoGasto() {
+    // Con el backend viejo el servidor no conoce la hoja Gastos: el gasto se
+    // perdería en silencio, así que directamente no se puede cargar.
+    if (backendViejo) {
+        showToast('⚠️ Los gastos necesitan el backend nuevo: republicá Code.gs en Apps Script');
+        return;
+    }
+    document.getElementById('gastoMonto').value = '';
+    document.getElementById('gastoConcepto').value = '';
+    document.getElementById('gastoFecha').value = fechaSoloLocal();
+    gastoCategoria = 'Combustible';
+    gastoPago = 'efectivo';
+    marcarChipsGasto('.gasto-cat', 'cat', gastoCategoria);
+    marcarChipsGasto('.gasto-pago', 'pago', gastoPago);
+
+    // Sugerencias con los conceptos ya usados (para no volver a escribirlos)
+    const usados = [...new Set(gastos.map(g => g.concepto).filter(Boolean))].slice(-25);
+    document.getElementById('conceptosUsados').innerHTML = usados.map(c => `<option value="${esc(c)}"></option>`).join('');
+
+    document.getElementById('modalNuevoGasto').classList.add('show');
+    setTimeout(() => { try { document.getElementById('gastoMonto').focus(); } catch (e) {} }, 120);
+}
+
+function cerrarModalNuevoGasto() {
+    document.getElementById('modalNuevoGasto').classList.remove('show');
+}
+
+function guardarGasto() {
+    if (backendViejo) {
+        showToast('⚠️ Los gastos necesitan el backend nuevo: republicá Code.gs en Apps Script');
+        return;
+    }
+    const monto = Number(document.getElementById('gastoMonto').value) || 0;
+    if (monto <= 0) { showToast('⚠️ Ingresá el monto del gasto'); return; }
+
+    const gasto = {
+        fecha: document.getElementById('gastoFecha').value || fechaSoloLocal(),
+        concepto: document.getElementById('gastoConcepto').value.trim() || gastoCategoria,
+        categoria: gastoCategoria,
+        monto: monto,
+        metodoPago: gastoPago
+    };
+    gastos.push(gasto);
+
+    cerrarModalNuevoGasto();
+    renderGastos();
+    vibrar(35);
+    mutar({ gastos: [gastoParaServidor(gasto)] });
+    showToast(`💸 Gasto de ${plata(monto)} cargado`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -2505,6 +2717,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnAbrirApartadas').addEventListener('click', () => { cerrarModalDatos(); abrirModalApartadas(); });
     document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirEstadisticas('dia'); });
     document.getElementById('btnAbrirPrecios').addEventListener('click', () => { cerrarModalDatos(); abrirModalPrecios(); });
+    document.getElementById('btnAbrirGastos').addEventListener('click', () => { cerrarModalDatos(); abrirModalGastos(); });
+
+    // Gastos
+    document.getElementById('btnCerrarGastos').addEventListener('click', cerrarModalGastos);
+    document.getElementById('btnNuevoGasto').addEventListener('click', abrirModalNuevoGasto);
+    document.getElementById('btnGuardarGasto').addEventListener('click', guardarGasto);
+    document.getElementById('btnCancelarGasto').addEventListener('click', cerrarModalNuevoGasto);
+    document.querySelectorAll('[data-gasto-monto]').forEach(b => b.addEventListener('click', () => {
+        document.getElementById('gastoMonto').value = b.dataset.gastoMonto;
+    }));
+    document.querySelectorAll('.gasto-cat').forEach(b => b.addEventListener('click', () => {
+        gastoCategoria = b.dataset.cat;
+        marcarChipsGasto('.gasto-cat', 'cat', gastoCategoria);
+    }));
+    document.querySelectorAll('.gasto-pago').forEach(b => b.addEventListener('click', () => {
+        gastoPago = b.dataset.pago;
+        marcarChipsGasto('.gasto-pago', 'pago', gastoPago);
+    }));
     document.getElementById('btnGuardarPrecios').addEventListener('click', guardarPrecios);
     document.getElementById('btnCancelarPrecios').addEventListener('click', cerrarModalPrecios);
 
