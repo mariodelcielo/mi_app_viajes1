@@ -104,8 +104,10 @@
             <span class="etq">Saldo</span>
             <b id="rSaldo"></b>
         </div>
-        <div class="dato" style="margin-top:12px;"><span><i class="ico" data-ico="regalo"></i> Pass libres</span><b id="rLibres"></b></div>
-        <div class="historial-titulo"><i class="ico" data-ico="lista"></i> Últimos Pass</div>
+        <div class="dato" id="filaDeuda" style="display:none;margin-top:12px;"><span><i class="ico" data-ico="alerta"></i> Debe</span><b id="rDebe"></b></div>
+        <div class="hint" id="pistaDeuda" style="display:none;">Debés subidas, no pesos: si cambia el precio de la subida, el monto se actualiza solo y la cantidad que debés sigue siendo la misma.</div>
+        <div class="dato"><span><i class="ico" data-ico="regalo"></i> Subidas libres</span><b id="rLibres"></b></div>
+        <div class="historial-titulo"><i class="ico" data-ico="lista"></i> Últimas subidas</div>
         <div id="rHistorial"></div>
     </div>
 
@@ -123,6 +125,28 @@ function esc(v) {
 function plata(n) {
     const v = Math.round(Number(n) || 0);
     return (v < 0 ? '-$' : '$') + String(Math.abs(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+/** 2 → "2"; 1,2857 → "1,29" (el piloto puede deber una subida a medias) */
+function cantidadSubidas(n) {
+    const v = Math.abs(Number(n) || 0);
+    const r = Math.round(v * 100) / 100;
+    if (Math.abs(r - Math.round(r)) < 0.005) return String(Math.round(r));
+    if (r < 0.01) return 'menos de 0,01';
+    return r.toFixed(2).replace('.', ',');
+}
+
+/** "2 subidas de pista", "1 subida de escuela y 1,29 subidas de pista" */
+function textoSubidas(escuela, pista) {
+    const partes = [];
+    const agrega = (cant, donde) => {
+        if (cant <= 0) return;
+        const c = cantidadSubidas(cant);
+        partes.push(`${c} ${c === '1' ? 'subida' : 'subidas'} de ${donde}`);
+    };
+    agrega(escuela, 'escuela');
+    agrega(pista, 'pista');
+    return partes.join(' y ');
 }
 
 // Íconos dibujados, los mismos que usa la app (así no cambian según el celular)
@@ -214,11 +238,26 @@ async function consultar() {
         elSaldo.textContent = plata(neto);
         elSaldo.className = neto < 0 ? 'malo' : 'bueno';
         if (deuda > 0) elSaldo.title = `Crédito ${plata(saldo)} menos deuda ${plata(deuda)}`;
+
+        // Cuántas subidas debe, además del monto: la cantidad es lo que no cambia
+        // cuando cambia el precio de la subida.
+        const cantidad = textoSubidas(Number(data.deudaEscuela) || 0, Number(data.deudaPista) || 0);
+        const filaDeuda = document.getElementById('filaDeuda');
+        const pistaDeuda = document.getElementById('pistaDeuda');
+        if (deuda > 0) {
+            document.getElementById('rDebe').textContent = plata(deuda) + (cantidad ? ` (${cantidad})` : '');
+            filaDeuda.style.display = 'flex';
+            pistaDeuda.style.display = cantidad ? 'block' : 'none';
+        } else {
+            filaDeuda.style.display = 'none';
+            pistaDeuda.style.display = 'none';
+        }
+
         document.getElementById('rLibres').textContent = Number(data.viajesLibres) || 0;
 
         const hist = document.getElementById('rHistorial');
         if (!data.ultimosViajes || data.ultimosViajes.length === 0) {
-            hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin Pass registrados</div>';
+            hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin subidas registradas</div>';
         } else {
             hist.innerHTML = data.ultimosViajes.map(v => `
                 <div class="historial-item"><span>${esc(fechaCorta(v.fecha))}</span><span>${esc(v.origen)} ${plata(v.total)} ${v.gratis === true || v.gratis === 'TRUE' ? ico('regalo') : ''}</span></div>
