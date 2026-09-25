@@ -237,6 +237,10 @@
         .badge-alumno { color: var(--morado); }
         .badge-libres { color: var(--ok); }
         .badge-deuda { color: var(--alerta-texto); }
+        .rec-titulo {
+            padding: 9px 10px 4px; font-size: calc(11px * var(--esc)); font-weight: 700;
+            letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft);
+        }
         .badge-manual { color: var(--accion-texto); }
         .empty-state { text-align: center; padding: 20px; color: var(--ink-soft); font-size: calc(13px * var(--esc)); }
 
@@ -456,20 +460,20 @@
     </div>
 
     <div class="switches">
-        <button class="switch-btn" id="btnEscuela" aria-label="Pass desde la Escuela" title="Escuela">Escuela<span class="precio" id="precioEscuelaBtn"></span></button>
-        <button class="switch-btn" id="btnPista" aria-label="Pass desde la Pista" title="Pista">Pista<span class="precio" id="precioPistaBtn"></span></button>
+        <button class="switch-btn" id="btnEscuela" aria-label="PAX desde la Escuela" title="Escuela">Escuela<span class="precio" id="precioEscuelaBtn"></span></button>
+        <button class="switch-btn" id="btnPista" aria-label="PAX desde la Pista" title="Pista">Pista<span class="precio" id="precioPistaBtn"></span></button>
     </div>
 
     <div class="panel contador">
         <button class="perilla" id="btnRestar" aria-label="Una persona menos">−</button>
         <div style="display:flex;flex-direction:column;align-items:center;">
-            <div class="etq">Cantidad Pass</div>
+            <div class="etq">Cantidad PAX</div>
             <span class="valor" id="pasajerosCount">1</span>
         </div>
         <button class="perilla" id="btnSumar" aria-label="Una persona más">+</button>
     </div>
 
-    <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar los Pass" title="Registrar los Pass"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
+    <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar los PAX" title="Registrar los PAX"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
 
     <div class="accion-group">
         <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación"><i class="ico" data-ico="deshacer"></i> Deshacer</button>
@@ -479,8 +483,8 @@
     </div>
 
     <div class="panel historial" id="historial">
-        <div class="titulo"><i class="ico" data-ico="lista"></i> Últimos Pass</div>
-        <div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin Pass registrados</div>
+        <div class="titulo"><i class="ico" data-ico="lista"></i> Últimos PAX</div>
+        <div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin PAX registrados</div>
     </div>
 </div>
 
@@ -502,13 +506,20 @@
         <input type="number" id="montoInput" placeholder="Otro monto..." min="0" step="1000">
         <div class="modal-hint" id="hintDeuda"></div>
 
+        <label style="margin-top:16px;"><i class="ico" data-ico="calendario"></i> Fecha de la carga</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <input type="date" id="fechaCargaInput" style="flex:1;">
+            <button type="button" class="btn-chip" id="btnFechaCargaHoy" style="margin:0;white-space:nowrap;">Hoy</button>
+        </div>
+        <div class="modal-hint" id="fechaCargaHint">Es de hoy.</div>
+
         <label style="margin-top:16px;"><i class="ico" data-ico="tarjeta"></i> Método de pago</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <button type="button" class="btn-chip metodo-carga metodo-activo" data-metodo="efectivo" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="dinero"></i> Efectivo</button>
             <button type="button" class="btn-chip metodo-carga" data-metodo="transferencia" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="banco"></i> Transferencia</button>
         </div>
 
-        <label style="margin-top:16px;"><i class="ico" data-ico="regalo"></i> Pass libres extra</label>
+        <label style="margin-top:16px;"><i class="ico" data-ico="regalo"></i> PAX libres extra</label>
         <div>
             <button type="button" class="btn-chip" data-libres="1">+1</button>
             <button type="button" class="btn-chip" data-libres="3">+3</button>
@@ -538,7 +549,7 @@
             <button type="button" class="btn-chip categoria-btn metodo-activo" data-categoria="piloto" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="piloto"></i> Piloto</button>
             <button type="button" class="btn-chip categoria-btn" data-categoria="alumno" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="birrete"></i> Alumno</button>
         </div>
-        <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 Pass libres.</div>
+        <div class="modal-hint">Al pasar a "Alumno" se le asignan automáticamente 10 PAX libres.</div>
 
         <label style="margin-top:16px;"><i class="ico" data-ico="calendario"></i> Fecha de alta</label>
         <input type="date" id="fechaAltaInput">
@@ -547,6 +558,13 @@
         <div class="modal-hint">Si lo completás, este % se usa siempre para este piloto en vez del tramo por lote.</div>
         <input type="number" id="descuentoManualInput" placeholder="Ej: 20" min="0" max="100" step="1">
         <button type="button" class="btn-chip quitar" id="btnQuitarManual" style="margin-top:8px;">Quitar personalizado</button>
+
+        <label style="margin-top:18px;"><i class="ico" data-ico="girar"></i> Corregir</label>
+        <div class="modal-hint">Para arreglar algo que se cargó mal. Queda anotado en la hoja Ajustes, con el motivo.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button type="button" class="btn-chip" id="btnAnularSubida" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="girar"></i> Anular subida</button>
+            <button type="button" class="btn-chip" id="btnAjustarDeuda" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="objetivo"></i> Ajustar deuda</button>
+        </div>
 
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnGuardarEdicion"><i class="ico" data-ico="check"></i> Guardar</button>
@@ -585,7 +603,7 @@
         </div>
         <label style="margin-top:12px;"><i class="ico" data-ico="calendario"></i> Fecha de alta</label>
         <input type="date" id="npFechaAlta">
-        <div class="modal-hint">Si arranca como "Alumno" se le asignan 10 Pass libres.</div>
+        <div class="modal-hint">Si arranca como "Alumno" se le asignan 10 PAX libres.</div>
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnCrearPiloto"><i class="ico" data-ico="check"></i> Crear</button>
             <button class="btn-modal-cancel" id="btnCancelarNuevoPiloto"><i class="ico" data-ico="x"></i> Cancelar</button>
@@ -597,6 +615,12 @@
     <div class="modal">
         <h2><i class="ico" data-ico="check"></i> Confirmar operación</h2>
         <div id="modalConfirmarInfo" style="background:var(--pista);padding:14px;border-radius:14px;margin-bottom:6px;font-size: calc(15px * var(--esc));line-height:1.7;color:var(--ink);"></div>
+        <label style="margin-top:14px;"><i class="ico" data-ico="calendario"></i> Subidas del</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <input type="date" id="fechaSubidasInput" style="flex:1;">
+            <button type="button" class="btn-chip" id="btnFechaHoy" style="margin:0;white-space:nowrap;">Hoy</button>
+        </div>
+        <div class="modal-hint" id="fechaSubidasHint"></div>
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnConfirmarSi"><i class="ico" data-ico="check"></i> Confirmar</button>
             <button class="btn-modal-cancel" id="btnConfirmarNo"><i class="ico" data-ico="x"></i> Cancelar</button>
@@ -647,11 +671,53 @@
 
 <div class="modal-overlay" id="modalMigracion">
     <div class="modal">
-        <h2><i class="ico" data-ico="etiqueta"></i> La deuda ahora se mide en Pass</h2>
+        <h2><i class="ico" data-ico="etiqueta"></i> La deuda ahora se mide en PAX</h2>
         <div id="migracionInfo" style="background:var(--pista);padding:14px;border-radius:14px;margin-bottom:10px;font-size: calc(14px * var(--esc));line-height:1.7;color:var(--ink);"></div>
         <div class="modal-hint">De acá en adelante, si cambiás el precio de Escuela o Pista, la deuda pendiente se actualiza sola. La cantidad de subidas que debe cada piloto no cambia.</div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-confirm" id="btnCerrarMigracion"><i class="ico" data-ico="check"></i> Entendido</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalAnularSubida">
+    <div class="modal">
+        <h2><i class="ico" data-ico="girar"></i> Anular una subida</h2>
+        <div class="modal-hint" id="anularSubidaInfo"></div>
+        <div class="modal-hint">Al anularla, la plata vuelve al lote que la pagó y la cantidad de PAX vuelve a la deuda del piloto. Es como el deshacer, pero para cualquier subida. Queda anotado en la hoja Ajustes.</div>
+        <div id="listaSubidasPiloto" style="max-height:45vh;overflow-y:auto;"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarAnularSubida"><i class="ico" data-ico="x"></i> Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalAjustarDeuda">
+    <div class="modal">
+        <h2><i class="ico" data-ico="objetivo"></i> Ajustar la deuda</h2>
+        <div id="ajusteDeudaInfo" style="background:var(--pista);padding:14px;border-radius:14px;margin-bottom:10px;font-size: calc(14px * var(--esc));line-height:1.7;color:var(--ink);"></div>
+        <div class="modal-hint">Sirve para condonar una deuda (por ejemplo, si le perdonás una subida). <b>La caja no se toca</b>: esto no es un pago, es decir "debe menos".</div>
+        <label><i class="ico" data-ico="dinero"></i> PAX de escuela que debe</label>
+        <input type="number" id="ajusteEscuela" min="0" step="0.01" placeholder="0">
+        <label><i class="ico" data-ico="dinero"></i> PAX de pista que debe</label>
+        <input type="number" id="ajustePista" min="0" step="0.01" placeholder="0">
+        <label><i class="ico" data-ico="etiqueta"></i> Por qué (queda anotado)</label>
+        <input type="text" id="ajusteMotivo" placeholder="Ej: le perdoné la subida">
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarAjuste"><i class="ico" data-ico="check"></i> Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarAjuste"><i class="ico" data-ico="x"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalBorrarGasto">
+    <div class="modal">
+        <h2><i class="ico" data-ico="gasto"></i> Borrar este gasto</h2>
+        <div id="borrarGastoInfo" style="background:var(--pista);padding:14px;border-radius:14px;margin-bottom:10px;font-size: calc(14px * var(--esc));line-height:1.7;color:var(--ink);"></div>
+        <div class="modal-hint">Se borra de la planilla y deja de contar en el cierre. Queda anotado en la hoja Ajustes.</div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnBorrarGastoSi"><i class="ico" data-ico="check"></i> Borrar</button>
+            <button class="btn-modal-cancel" id="btnBorrarGastoNo"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
@@ -791,7 +857,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 4;
+const VERSION_BACKEND = 5;
 
 const TRAMOS_POR_DEFECTO = [
     { minimo: 25000, porcentaje: 5 }, { minimo: 50000, porcentaje: 10 },
@@ -816,10 +882,12 @@ let historialPrecios = []; // [{fecha, precioEscuela, precioPista}]
 let selectedPiloto = null;
 let tipoViaje = null;
 let cantidadSubidas = 1;
+let fechaSubidas = ''; // día de las subidas que se están por confirmar (por defecto, hoy)
+let fechaCarga = '';   // día de la carga de crédito (por defecto, hoy)
 let lastBatch = [];           // viajes de la última confirmación (para deshacer)
 let lastBatchLotesAntes = []; // saldos de los lotes antes de esa confirmación
 let lastBatchDeudaAntes = null; // {escuela, pista}: la deuda antes de esa confirmación
-let avisoMigracionDeuda = null; // resumen de la migración a Pass, para avisar una vez
+let avisoMigracionDeuda = null; // resumen de la migración a PAX, para avisar una vez
 let lastBatchLibresAntes = 0;
 let lastBatchOpId = '';       // operación que creó esas subidas (permite borrarlas)
 let colaPendiente = [];       // cambios ya aplicados en el celular, sin subir
@@ -1175,7 +1243,7 @@ function resumenOperacion(op) {
     const partes = [];
     if (op.viajes && op.viajes.length) {
         const v = op.viajes[0];
-        partes.push(`${op.viajes.length} Pass de ${v.Nombre} (N° ${v.Numero})`);
+        partes.push(`${op.viajes.length} PAX de ${v.Nombre} (N° ${v.Numero})`);
     }
     if (op.viajesBorrar && op.viajesBorrar.length) partes.push('deshacer de subidas');
     if (op.lotesNuevos && op.lotesNuevos.length) partes.push(`carga de crédito de ${plata(op.lotesNuevos[0].Monto_Cargado)}`);
@@ -1321,7 +1389,8 @@ function aplicarDatosDelServidor(data, desdeServidor) {
         descuento: Number(v.Dto_Aplicado) || 0,
         lote: v.Lote_Usado || '',
         deuda: Number(v.Deuda_Generada) || 0,
-        gratis: v.Gratis === true || String(v.Gratis).toUpperCase() === 'TRUE' || String(v.Gratis).toUpperCase() === 'SI'
+        gratis: v.Gratis === true || String(v.Gratis).toUpperCase() === 'TRUE' || String(v.Gratis).toUpperCase() === 'SI',
+        opId: v._Op_ID || ''
     }));
 
     pagos = (data.pagos || []).map(p => ({
@@ -1337,7 +1406,8 @@ function aplicarDatosDelServidor(data, desdeServidor) {
         concepto: g.Concepto || '',
         categoria: g.Categoria || 'Otros',
         monto: Number(g.Monto) || 0,
-        metodoPago: g.Metodo_Pago || 'efectivo'
+        metodoPago: g.Metodo_Pago || 'efectivo',
+        opId: g._Op_ID || ''
     }));
 
     historialPrecios = (data.historialPrecios || []).map(h => ({
@@ -1349,7 +1419,7 @@ function aplicarDatosDelServidor(data, desdeServidor) {
     // Si el backend todavía es el viejo, devuelve las fechas en UTC: avisamos.
     backendViejo = Number(data.version || 1) < VERSION_BACKEND;
 
-    // La deuda se mide en Pass: acá se migra la de los datos viejos (una vez) y
+    // La deuda se mide en PAX: acá se migra la de los datos viejos (una vez) y
     // se re-valúa todo al precio de hoy.
     const migracion = normalizarDeudas(desdeServidor !== false);
 
@@ -1447,11 +1517,15 @@ function actualizarEstadoSync(mensajeForzado, claseForzada) {
 // ARMADO DE LO QUE SE MANDA AL SERVIDOR (solo lo que cambió)
 // ============================================================
 function viajeParaServidor(v) {
-    return {
+    const o = {
         Fecha: v.fecha, Numero: v.socio, Nombre: v.nombre, Origen: v.tipo,
         Precio_Unitario: v.precioLista, Total: v.total, Dto_Aplicado: v.descuento,
         Lote_Usado: v.lote, Deuda_Generada: v.deuda, Gratis: v.gratis === true
     };
+    // Cada subida viaja con su propio número de operación: así se puede anular
+    // una sola de una tanda, y no la tanda entera.
+    if (v.opId) o._Op_ID = v.opId;
+    return o;
 }
 function loteParaServidor(l) {
     return {
@@ -1467,10 +1541,12 @@ function pagoParaServidor(p) {
     };
 }
 function gastoParaServidor(g) {
-    return {
+    const o = {
         Fecha: g.fecha, Concepto: g.concepto, Categoria: g.categoria,
         Monto: g.monto, Metodo_Pago: g.metodoPago || 'efectivo'
     };
+    if (g.opId) o._Op_ID = g.opId;
+    return o;
 }
 function pilotoParaServidor(p, incluirNumero) {
     const o = {
@@ -1531,6 +1607,37 @@ function colorTanque(pct) {
 // ============================================================
 // RENDERIZADO
 // ============================================================
+/** Una fila de la lista de pilotos (la misma para la búsqueda y para los recientes). */
+function filaPilotoHTML(p) {
+    const deuda = p.deuda || 0;
+    const libres = p.viajesLibres || 0;
+    const tieneManual = p.descuentoManual !== null && p.descuentoManual !== undefined;
+    const pct = porcentajeTanque(p);
+    const categoriaBadge = p.categoria === 'alumno' ? 'badge-alumno' : '';
+
+    return `
+        <div class="piloto-item" data-numero="${esc(p.numero)}">
+            <div class="info">
+                <span class="nombre">${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` <span class="detalle">"${esc(p.alias)}"</span>` : ''}</span>
+                <span>
+                    ${p.categoria === 'alumno' ? `<span class="badge ${categoriaBadge}">alumno</span>` : ''}
+                    ${libres > 0 ? `<span class="badge badge-libres">${ico('regalo')}${libres}</span>` : ''}
+                    ${deuda > 0 ? `<span class="badge badge-deuda">${ico('tarjeta')}${plata(deuda)}</span>` : ''}
+                    ${tieneManual ? `<span class="badge badge-manual">${ico('objetivo')}${esc(p.descuentoManual)}%</span>` : ''}
+                </span>
+            </div>
+            <div class="mini-tanque"><div class="relleno" style="width:${pct}%;background:${colorTanque(pct)};"></div></div>
+        </div>
+    `;
+}
+
+/** Enchufa el toque de cada fila de la lista. */
+function engancharFilasPiloto(list) {
+    list.querySelectorAll('.piloto-item').forEach(el => {
+        el.addEventListener('click', () => selectPiloto(el.dataset.numero));
+    });
+}
+
 function renderPilotos(filter = '') {
     const list = document.getElementById('pilotosList');
     const search = filter.toLowerCase().trim();
@@ -1547,32 +1654,47 @@ function renderPilotos(filter = '') {
         return;
     }
 
-    list.innerHTML = filtered.map(p => {
-        const deuda = p.deuda || 0;
-        const libres = p.viajesLibres || 0;
-        const tieneManual = p.descuentoManual !== null && p.descuentoManual !== undefined;
-        const pct = porcentajeTanque(p);
-        const categoriaBadge = p.categoria === 'alumno' ? 'badge-alumno' : '';
+    list.innerHTML = filtered.map(filaPilotoHTML).join('');
+    engancharFilasPiloto(list);
+}
 
-        return `
-            <div class="piloto-item" data-numero="${esc(p.numero)}">
-                <div class="info">
-                    <span class="nombre">${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` <span class="detalle">"${esc(p.alias)}"</span>` : ''}</span>
-                    <span>
-                        ${p.categoria === 'alumno' ? `<span class="badge ${categoriaBadge}">alumno</span>` : ''}
-                        ${libres > 0 ? `<span class="badge badge-libres">${ico('regalo')}${libres}</span>` : ''}
-                        ${deuda > 0 ? `<span class="badge badge-deuda">${ico('tarjeta')}${plata(deuda)}</span>` : ''}
-                        ${tieneManual ? `<span class="badge badge-manual">${ico('objetivo')}${esc(p.descuentoManual)}%</span>` : ''}
-                    </span>
-                </div>
-                <div class="mini-tanque"><div class="relleno" style="width:${pct}%;background:${colorTanque(pct)};"></div></div>
-            </div>
-        `;
-    }).join('');
-
-    list.querySelectorAll('.piloto-item').forEach(el => {
-        el.addEventListener('click', () => selectPiloto(el.dataset.numero));
+// ============================================================
+// PILOTOS RECIENTES (para no tipear el nombre en un día de 50)
+// ============================================================
+/**
+ * Los últimos pilotos a los que les cargaste una subida, del más reciente al más
+ * viejo. Es lo que aparece al tocar el buscador con el campo vacío.
+ */
+function calcularRecientes(cantidad) {
+    const tope = cantidad || 8;
+    const ultima = new Map();
+    viajes.forEach(v => {
+        const f = String(v.fecha || '');
+        if (!f) return;
+        const antes = ultima.get(v.socio);
+        if (!antes || f > antes) ultima.set(v.socio, f);
     });
+    return [...ultima.entries()]
+        .sort((a, b) => b[1].localeCompare(a[1]))
+        .slice(0, tope)
+        .map(x => pilotos.find(p => p.numero === x[0]))
+        .filter(Boolean);
+}
+
+/** Muestra los recientes en la lista del buscador (solo si el campo está vacío). */
+function mostrarRecientes() {
+    const list = document.getElementById('pilotosList');
+    const recientes = calcularRecientes(8);
+
+    if (recientes.length === 0) {
+        list.classList.remove('show');
+        list.innerHTML = '';
+        return;
+    }
+    list.classList.add('show');
+    list.innerHTML = `<div class="rec-titulo">Últimos que cargaste</div>` +
+        recientes.map(filaPilotoHTML).join('');
+    engancharFilasPiloto(list);
 }
 
 function getSaldo(numero) {
@@ -1589,7 +1711,7 @@ function actualizarBotonConfirmar() {
     if (!t || !d) return;
 
     const n = cantidadSubidas;
-    t.textContent = `Subir ${n} Pass`;
+    t.textContent = `Subir ${n} PAX`;
 
     if (!selectedPiloto) { d.textContent = 'Elegí un piloto'; return; }
     if (!tipoViaje) { d.textContent = 'Elegí Escuela o Pista'; return; }
@@ -1604,7 +1726,7 @@ function actualizarBotonConfirmar() {
     }
     const origen = tipoViaje === 'escuela' ? 'Escuela' : 'Pista';
     if (aCobrar === 0) {
-        d.textContent = `${origen} · con Pass libres 🎁`;
+        d.textContent = `${origen} · con PAX libres 🎁`;
     } else {
         d.textContent = `${origen} · ${plata(aCobrar)}${descuento > 0 ? ` (${descuento}% dto)` : ''}`;
     }
@@ -1634,7 +1756,7 @@ function updateSelectedInfo() {
 
     const nota = [
         descuento > 0 ? `Crédito con ${descuento}% de descuento` : 'Sin descuento por lote',
-        libres > 0 ? `${libres} Pass libre${libres === 1 ? '' : 's'}` : null
+        libres > 0 ? `${libres} PAX libre${libres === 1 ? '' : 's'}` : null
     ].filter(Boolean).join(' · ');
 
     // Si debe, se muestra también la CANTIDAD: es el número que no cambia
@@ -1642,7 +1764,7 @@ function updateSelectedInfo() {
     let cantidadDeuda = '';
     if (deuda > 0) {
         asegurarFracciones(selectedPiloto);
-        cantidadDeuda = textoPassDeuda(selectedPiloto);
+        cantidadDeuda = textoPaxDeuda(selectedPiloto);
     }
 
     // El saldo es uno solo: crédito menos deuda. Si debe más de lo que tiene,
@@ -1668,11 +1790,11 @@ function updateHistorial() {
     const container = document.getElementById('historial');
     const ultimos = viajes.slice(-5).reverse();
     if (ultimos.length === 0) {
-        container.innerHTML = `<div class="titulo">${ico('lista')} Últimos Pass</div><div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin Pass registrados</div>`;
+        container.innerHTML = `<div class="titulo">${ico('lista')} Últimos PAX</div><div style="color:var(--ink-soft);font-size: calc(13px * var(--esc));">Sin PAX registrados</div>`;
         return;
     }
     container.innerHTML = `
-        <div class="titulo">${ico('lista')} Últimos Pass</div>
+        <div class="titulo">${ico('lista')} Últimos PAX</div>
         ${ultimos.map(v => `
             <div class="item">
                 <span>${esc(v.socio)} - ${esc(v.nombre)}</span>
@@ -1716,15 +1838,37 @@ function getPrecioLista(tipo) {
     return tipo === 'escuela' ? (config.PrecioEscuela || 11000) : (config.PrecioPista || 6500);
 }
 
+/**
+ * Precio que le corresponde a una subida. Si es de HOY manda la Configuración
+ * (por si alguien la cambió a mano en la planilla y el historial quedó atrás);
+ * si es de un día pasado, el precio que regía ese día según el historial.
+ * Es lo que permite cargar una subida de ayer cobrándola a precio de ayer.
+ */
+function precioDeLaFecha(tipo, fecha) {
+    const dia = fechaSolo(fecha || fechaSoloLocal());
+    if (!dia || dia >= fechaSoloLocal()) return getPrecioLista(tipo);
+    return precioEnFecha(tipo, dia);
+}
+
+/**
+ * Fecha y hora con la que se guarda una operación: el día que elegiste (o hoy, si
+ * no elegiste ninguno) y la hora del momento en que la cargás. La hora sirve para
+ * saber cuándo se escribió la fila; lo que calcula la app usa solo el día.
+ */
+function fechaHoraDeCarga(dia) {
+    if (!dia || dia === fechaSoloLocal()) return fechaHoraLocal();
+    return `${dia} ${fechaHoraLocal().slice(11)}`;
+}
+
 // ============================================================
-// LA DEUDA SE MIDE EN PASS, NO EN PESOS
+// LA DEUDA SE MIDE EN PAX, NO EN PESOS
 // ============================================================
 // El piloto debe SUBIDAS. Manda la cantidad y los pesos se calculan con el
 // precio de hoy: si cambiás el precio, la deuda pendiente se re-valúa sola.
 // (Antes se guardaba en pesos, congelados al precio del día en que se generó,
 // así que un aumento de precio dejaba la deuda vieja para siempre.)
 //
-// Ejemplo: debe 2 Pass de pista. Con la pista a $6.500 son $13.000; si subís el
+// Ejemplo: debe 2 PAX de pista. Con la pista a $6.500 son $13.000; si subís el
 // precio a $7.000 pasa a deber $14.000, sin tocar nada. La cantidad (2) es el
 // número firme; los pesos son la consecuencia.
 
@@ -1756,7 +1900,7 @@ function asegurarFracciones(p, tipoPreferido) {
     redondearFracciones(p);
 }
 
-/** La deuda en pesos: cantidad de Pass pendientes × precio de hoy. */
+/** La deuda en pesos: cantidad de PAX pendientes × precio de hoy. */
 function deudaEnPesos(p) {
     return Math.round((Number(p.debeEscuela) || 0) * getPrecioLista('escuela') +
         (Number(p.debePista) || 0) * getPrecioLista('pista'));
@@ -1775,15 +1919,18 @@ function recalcularTodasLasDeudas() {
     });
 }
 
-/** Suma (o resta, con monto negativo) deuda expresada en pesos, al precio de hoy. */
-function sumarDeudaEnPesos(p, tipo, montoPesos) {
+/** Suma (o resta, con monto negativo) deuda expresada en pesos, al precio indicado. */
+function sumarDeudaEnPesos(p, tipo, montoPesos, precio) {
     const monto = Number(montoPesos) || 0;
     if (monto === 0) return;
     asegurarFracciones(p, tipo);
-    const precio = getPrecioLista(tipo) || 0;
-    if (precio <= 0) return;
-    if (tipo === 'pista') p.debePista = (Number(p.debePista) || 0) + monto / precio;
-    else p.debeEscuela = (Number(p.debeEscuela) || 0) + monto / precio;
+    // El precio con el que se convierte a cantidad de PAX tiene que ser el de la
+    // subida (para una subida de ayer, el de ayer): si no, la cantidad que queda
+    // debiendo saldría mal.
+    const precioUsado = Number(precio) || getPrecioLista(tipo) || 0;
+    if (precioUsado <= 0) return;
+    if (tipo === 'pista') p.debePista = (Number(p.debePista) || 0) + monto / precioUsado;
+    else p.debeEscuela = (Number(p.debeEscuela) || 0) + monto / precioUsado;
     redondearFracciones(p);
     recalcularDeuda(p);
 }
@@ -1821,7 +1968,7 @@ function aplicarPago(p, montoPesos) {
 }
 
 /** 2 → "2"; 1,2857 → "1,29"; 0,004 → "<0,01" */
-function cantidadPass(n) {
+function cantidadPax(n) {
     const v = Math.abs(Number(n) || 0);
     if (v > 0 && v < 0.005) return '<0,01';
     const r = Math.round(v * 100) / 100;
@@ -1829,16 +1976,16 @@ function cantidadPass(n) {
     return r.toFixed(2).replace('.', ',');
 }
 
-/** "2 Pass de pista", "1,29 Pass de escuela", "1 Pass de escuela y 2 Pass de pista" */
-function textoPassDeuda(p) {
+/** "2 PAX de pista", "1,29 PAX de escuela", "1 PAX de escuela y 2 PAX de pista" */
+function textoPaxDeuda(p) {
     const partes = [];
-    if ((Number(p.debeEscuela) || 0) > 0) partes.push(`${cantidadPass(p.debeEscuela)} Pass de escuela`);
-    if ((Number(p.debePista) || 0) > 0) partes.push(`${cantidadPass(p.debePista)} Pass de pista`);
+    if ((Number(p.debeEscuela) || 0) > 0) partes.push(`${cantidadPax(p.debeEscuela)} PAX de escuela`);
+    if ((Number(p.debePista) || 0) > 0) partes.push(`${cantidadPax(p.debePista)} PAX de pista`);
     return partes.join(' y ');
 }
 
 /**
- * Convierte la deuda vieja (guardada en pesos) a cantidad de Pass. Es exacta:
+ * Convierte la deuda vieja (guardada en pesos) a cantidad de PAX. Es exacta:
  * cada subida impaga se conoce por su viaje (Deuda_Generada) y por el precio de
  * lista de ese día (Precio_Unitario), y los pagos ya hechos se reparten en
  * proporción. Devuelve el resumen del antes/después, o null si no había nada
@@ -1887,7 +2034,7 @@ function migrarDeudasSiHaceFalta() {
         resumen.despues += p.deuda;
         resumen.filas.push({
             numero: p.numero, nombre: p.nombre,
-            antes: antes, despues: p.deuda, cantidad: textoPassDeuda(p)
+            antes: antes, despues: p.deuda, cantidad: textoPaxDeuda(p)
         });
     });
 
@@ -1908,7 +2055,7 @@ function normalizarDeudas(desdeServidor) {
     return resumen;
 }
 
-/** Aviso único: cuánto pasó la deuda al empezar a medirse en Pass. */
+/** Aviso único: cuánto pasó la deuda al empezar a medirse en PAX. */
 function avisarMigracionDeuda(resumen) {
     avisoMigracionDeuda = resumen || avisoMigracionDeuda;
     if (!avisoMigracionDeuda || avisoMigracionDeuda.pilotos === 0) return;
@@ -1922,7 +2069,7 @@ function avisarMigracionDeuda(resumen) {
     const cont = document.getElementById('migracionInfo');
     if (!cont) return;
     cont.innerHTML = `
-        <div>La deuda ahora se mide en <b>cantidad de Pass</b> y el monto se calcula con el precio de hoy.</div>
+        <div>La deuda ahora se mide en <b>cantidad de PAX</b> y el monto se calcula con el precio de hoy.</div>
         <div style="margin-top:10px;">Pilotos con deuda: <b>${r.pilotos}</b></div>
         <div>Deuda total antes: <b>${plata(r.antes)}</b></div>
         <div>Deuda total ahora: <b>${plata(r.despues)}</b></div>
@@ -1975,14 +2122,16 @@ function cambiarCantidad(delta) {
 // ============================================================
 // COBRAR UNA SUBIDA (regla completa: libres -> lote más viejo -> cascada -> deuda)
 // ============================================================
-function cobrarUnaSubida(piloto, tipo) {
-    const precioLista = getPrecioLista(tipo);
+function cobrarUnaSubida(piloto, tipo, fecha) {
+    // El DÍA puede ser otro (una subida de ayer que quedó sin cargar).
+    const fechaSubida = fechaHoraDeCarga(fecha);
+    const precioLista = precioDeLaFecha(tipo, fechaSubida);
 
     // 1. viajes libres primero
     if ((piloto.viajesLibres || 0) > 0) {
         piloto.viajesLibres -= 1;
         const viaje = {
-            fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
+            fecha: fechaSubida, socio: piloto.numero, nombre: piloto.nombre,
             tipo, precioLista: precioLista, total: 0, descuento: 100, lote: 'GRATIS', deuda: 0, gratis: true
         };
         viajes.push(viaje);
@@ -2007,13 +2156,14 @@ function cobrarUnaSubida(piloto, tipo) {
         detalleLotes.push({ loteId: lote.loteId, usar: usar });
     }
 
-    // 3. lo que sobra queda como deuda (en Pass de ese origen)
+    // 3. lo que sobra queda como deuda (en cantidad de PAX de ese origen, al
+    //    precio de la subida: si es de ayer, al de ayer)
     if (restante > 0) {
-        sumarDeudaEnPesos(piloto, tipo, restante);
+        sumarDeudaEnPesos(piloto, tipo, restante, precioLista);
     }
 
     const viaje = {
-        fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
+        fecha: fechaSubida, socio: piloto.numero, nombre: piloto.nombre,
         tipo, precioLista: precioLista, total: montoNecesario,
         descuento: descuento, lote: lotesUsados.length ? lotesUsados.join(', ') : 'SIN LOTE',
         deuda: restante, gratis: false, _lotesUsados: detalleLotes
@@ -2026,12 +2176,27 @@ function pedirConfirmacionViaje() {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto'); return; }
     if (!tipoViaje) { showToast('⚠️ Elegí Escuela o Pista'); return; }
 
-    const precioLista = getPrecioLista(tipoViaje);
+    // Siempre arranca en hoy: el día solo se toca cuando hace falta.
+    fechaSubidas = fechaSoloLocal();
+    const input = document.getElementById('fechaSubidasInput');
+    input.value = fechaSubidas;
+    input.max = fechaSoloLocal();
+
+    actualizarInfoConfirmacion();
+    document.getElementById('modalConfirmarViaje').classList.add('show');
+}
+
+/** Se rehace cada vez que cambia la cantidad, el origen o el DÍA de las subidas. */
+function actualizarInfoConfirmacion() {
+    if (!selectedPiloto || !tipoViaje) return;
+    if (!fechaSubidas) fechaSubidas = fechaSoloLocal();
+
+    const esHoy = fechaSubidas === fechaSoloLocal();
+    const precioLista = precioDeLaFecha(tipoViaje, fechaSubidas);
     const descuento = getDescuentoVigente(selectedPiloto.numero);
     const libres = selectedPiloto.viajesLibres || 0;
     const tipoTexto = tipoViaje === 'escuela' ? 'Escuela' : 'Pista';
 
-    let detalle = '';
     let restanteLibre = libres;
     let totalEstimado = 0;
     for (let i = 0; i < cantidadSubidas; i++) {
@@ -2040,15 +2205,29 @@ function pedirConfirmacionViaje() {
     }
     const gratisUsados = Math.min(libres, cantidadSubidas);
 
-    detalle = `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>`;
+    let detalle = `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>`;
     detalle += `Origen: ${tipoTexto}<br>`;
-    detalle += `Pass: ${cantidadSubidas}<br>`;
-    if (gratisUsados > 0) detalle += `${ico('regalo')} ${gratisUsados} Pass libre(s)<br>`;
+    detalle += `PAX: ${cantidadSubidas}<br>`;
+    if (!esHoy) {
+        detalle += `Fecha: <b>${formatoFechaLinda(fechaSubidas)}</b> (al precio de ese día)<br>`;
+    }
+    if (gratisUsados > 0) detalle += `${ico('regalo')} ${gratisUsados} PAX libre(s)<br>`;
     const pagas = cantidadSubidas - gratisUsados;
-    if (pagas > 0) detalle += `A cobrar: ${pagas} Pass ≈ ${plata(totalEstimado)}${descuento > 0 ? ` (-${descuento}%)` : ''}`;
+    if (pagas > 0) detalle += `A cobrar: ${pagas} PAX ≈ ${plata(totalEstimado)}${descuento > 0 ? ` (-${descuento}%)` : ''}`;
 
     document.getElementById('modalConfirmarInfo').innerHTML = detalle;
-    document.getElementById('modalConfirmarViaje').classList.add('show');
+    document.getElementById('fechaSubidasHint').textContent = esHoy
+        ? 'Es de hoy: se guarda con la fecha de hoy.'
+        : `Estas ${cantidadSubidas} PAX van a quedar con fecha ${formatoFechaLinda(fechaSubidas)}, ` +
+          `al precio de ese día (hoy la ${tipoTexto} está ${plata(getPrecioLista(tipoViaje))}).`;
+}
+
+function cambiarFechaSubidas(dia) {
+    const hoy = fechaSoloLocal();
+    fechaSubidas = (!dia || dia > hoy) ? hoy : dia;
+    const input = document.getElementById('fechaSubidasInput');
+    if (input) input.value = fechaSubidas;
+    actualizarInfoConfirmacion();
 }
 
 function cerrarModalConfirmarViaje() {
@@ -2058,14 +2237,17 @@ function cerrarModalConfirmarViaje() {
 async function confirmarViaje() {
     cerrarModalConfirmarViaje();
     const piloto = selectedPiloto;
+    const dia = fechaSubidas || fechaSoloLocal();
     lastBatch = [];
     lastBatchLotesAntes = lotes.filter(l => l.socio === piloto.numero).map(l => ({ loteId: l.loteId, saldo: l.saldo }));
     lastBatchDeudaAntes = { escuela: Number(piloto.debeEscuela) || 0, pista: Number(piloto.debePista) || 0 };
     lastBatchLibresAntes = piloto.viajesLibres || 0;
 
     const lotesTocados = new Set();
+    const baseId = nuevoOpId(); // cada subida de la tanda lleva su propio número
     for (let i = 0; i < cantidadSubidas; i++) {
-        const viaje = cobrarUnaSubida(piloto, tipoViaje);
+        const viaje = cobrarUnaSubida(piloto, tipoViaje, dia);
+        viaje.opId = `${baseId}-${i + 1}`;
         lastBatch.push(viaje);
         (viaje._lotesUsados || []).forEach(u => lotesTocados.add(u.loteId));
     }
@@ -2085,7 +2267,10 @@ async function confirmarViaje() {
     lastBatchOpId = op.opId;
 
     vibrar(35);
-    showToast(`🛫 ${cantidadSubidas} Pass registrados para ${piloto.nombre}`);
+    const esHoy = dia === fechaSoloLocal();
+    showToast(esHoy
+        ? `🛫 ${cantidadSubidas} PAX registrados para ${piloto.nombre}`
+        : `🛫 ${cantidadSubidas} PAX del ${formatoFechaLinda(dia)} registrados para ${piloto.nombre}`);
     // El encabezado ya muestra si quedaron cambios sin subir. Este aviso aparece
     // recién cuando el dato llegó de verdad a la planilla (nunca antes).
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
@@ -2119,6 +2304,9 @@ async function anularUltimoViaje() {
     });
 
     const saldos = lastBatchLotesAntes.map(snap => ({ Lote_ID: snap.loteId, Saldo_Disponible: snap.saldo }));
+    // Se borran las filas por el número de operación de CADA subida de la tanda
+    // (las viejas, anteriores a la v2, no tienen número: se usa el de la operación).
+    const ids = lastBatch.map(v => v.opId).filter(Boolean);
     const opIdAnulado = lastBatchOpId;
     lastBatch = [];
     lastBatchLotesAntes = [];
@@ -2131,12 +2319,225 @@ async function anularUltimoViaje() {
     // En la planilla las subidas se borran por su _Op_ID (nunca se reescribe la
     // hoja entera), y el piloto y sus lotes vuelven a los valores de antes.
     mutar({
-        viajesBorrar: opIdAnulado ? [opIdAnulado] : [],
+        viajesBorrar: ids.length ? ids : (opIdAnulado ? [opIdAnulado] : []),
         piloto: pilotoParaServidor(piloto, true),
         lotesSaldo: saldos
     });
 
-    showToast(`↩️ Se deshicieron ${anulados} Pass`);
+    showToast(`↩️ Se deshicieron ${anulados} PAX`);
+}
+
+// ============================================================
+// CORREGIR: anular una subida, ajustar una deuda, borrar un gasto
+// ============================================================
+// El deshacer solo alcanza a la última operación. Para todo lo demás (una subida
+// cargada al piloto equivocado, una cantidad mal, un gasto duplicado) están estas
+// tres correcciones. Cada una deja rastro en la hoja Ajustes.
+
+/** Las correcciones necesitan el backend v5 (borra la fila justa y deja rastro). */
+function correccionesDisponibles() {
+    if (backendViejo) {
+        showToast('⚠️ Para corregir hace falta el backend nuevo: republicá Code.gs en Apps Script');
+        return false;
+    }
+    return true;
+}
+
+/** Los lotes que pagaron una subida, para devolverles la plata. */
+function lotesQuePagaron(viaje) {
+    const texto = String(viaje.lote || '');
+    if (!texto || texto === 'GRATIS' || texto === 'SIN LOTE') return [];
+    return texto.split(',').map(parte => {
+        const trozos = String(parte).trim().split(':');
+        const loteId = (trozos[0] || '').trim();
+        const monto = Number(String(trozos[1] || '').replace('$', '').trim()) || 0;
+        return { loteId: loteId, monto: monto };
+    }).filter(x => x.loteId && x.monto > 0);
+}
+
+/** Cómo se identifica una subida en la planilla: por su número de operación o, si es vieja, por sus datos. */
+function referenciaDeViaje(v) {
+    if (v.opId) return { por: 'opId', valor: v.opId };
+    return {
+        por: 'datos',
+        valor: {
+            Fecha: v.fecha, Numero: v.socio, Origen: v.tipo,
+            Total: v.total, Deuda_Generada: v.deuda
+        }
+    };
+}
+
+/** Una fila para la hoja Ajustes: qué se corrigió, de quién y por qué. */
+function ajusteParaServidor(piloto, que, motivo) {
+    return {
+        Fecha: fechaHoraLocal(),
+        Numero: piloto ? piloto.numero : '',
+        Nombre: piloto ? piloto.nombre : '',
+        Que: que,
+        Motivo: motivo || ''
+    };
+}
+
+// ---------- 1. Anular una subida puntual ----------
+function abrirModalAnularSubida() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
+    if (!correccionesDisponibles()) return;
+
+    const suyas = viajes.filter(v => v.socio === selectedPiloto.numero).slice(-15).reverse();
+    document.getElementById('anularSubidaInfo').textContent =
+        `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
+    const cont = document.getElementById('listaSubidasPiloto');
+
+    if (suyas.length === 0) {
+        cont.innerHTML = `<div style="text-align:center;padding:16px;color:var(--ink-soft);font-size:calc(13px * var(--esc));">Este piloto no tiene subidas cargadas</div>`;
+    } else {
+        cont.innerHTML = suyas.map((v, i) => `
+            <div class="historial-item" style="align-items:center;gap:10px;">
+                <span>${esc(formatoFechaLinda(fechaSolo(v.fecha)))} · ${esc(v.tipo)} · ${v.gratis ? 'PAX libre' : plata(v.total)}${Number(v.deuda) > 0 ? ` · debe ${plata(v.deuda)}` : ''}</span>
+                <button type="button" class="btn-chip" data-anular="${i}">Anular</button>
+            </div>`).join('');
+        cont.querySelectorAll('[data-anular]').forEach(b => {
+            b.addEventListener('click', () => anularSubida(suyas[Number(b.dataset.anular)]));
+        });
+    }
+    document.getElementById('modalAnularSubida').classList.add('show');
+}
+
+function cerrarModalAnularSubida() {
+    document.getElementById('modalAnularSubida').classList.remove('show');
+}
+
+async function anularSubida(viaje) {
+    if (!selectedPiloto || !viaje) return;
+    const piloto = selectedPiloto;
+
+    // 1) La plata vuelve a los lotes que la pagaron
+    const saldos = [];
+    lotesQuePagaron(viaje).forEach(x => {
+        const lote = lotes.find(l => l.socio === piloto.numero && l.loteId === x.loteId);
+        if (!lote) return;
+        lote.saldo = (Number(lote.saldo) || 0) + x.monto;
+        saldos.push({ Lote_ID: lote.loteId, Saldo_Disponible: lote.saldo });
+    });
+
+    // 2) La cantidad de PAX que había quedado como deuda vuelve atrás
+    if (Number(viaje.deuda) > 0 && Number(viaje.precioLista) > 0) {
+        const campo = viaje.tipo === 'pista' ? 'debePista' : 'debeEscuela';
+        piloto[campo] = Math.max(0, (Number(piloto[campo]) || 0) - viaje.deuda / viaje.precioLista);
+        redondearFracciones(piloto);
+        recalcularDeuda(piloto);
+    }
+
+    // 3) Se va de la lista del celular
+    const idx = viajes.indexOf(viaje);
+    if (idx !== -1) viajes.splice(idx, 1);
+
+    cerrarModalAnularSubida();
+    invalidarDeshacer();
+    updateSelectedInfo();
+    renderPilotos('');
+    updateHistorial();
+
+    const ref = referenciaDeViaje(viaje);
+    const op = {
+        piloto: pilotoParaServidor(piloto, true),
+        ajustes: [ajusteParaServidor(piloto, 'Anuló una subida',
+            `${viaje.tipo} del ${formatoFechaLinda(fechaSolo(viaje.fecha))} por ${plata(viaje.total)}`)]
+    };
+    if (ref.por === 'opId') op.viajesBorrar = [ref.valor];
+    else op.viajesBorrarFila = [ref.valor];
+    if (saldos.length) op.lotesSaldo = saldos;
+    mutar(op);
+
+    showToast(`↩️ Subida anulada — ${piloto.nombre}`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
+}
+
+// ---------- 2. Ajustar (condonar) una deuda ----------
+function abrirModalAjustarDeuda() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
+    if (!correccionesDisponibles()) return;
+
+    asegurarFracciones(selectedPiloto);
+    document.getElementById('ajusteDeudaInfo').innerHTML =
+        `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>` +
+        `Debe ahora: <b>${plata(selectedPiloto.deuda)}</b>` +
+        `${textoPaxDeuda(selectedPiloto) ? ` (${esc(textoPaxDeuda(selectedPiloto))})` : ''}`;
+    document.getElementById('ajusteEscuela').value = Number(selectedPiloto.debeEscuela) || 0;
+    document.getElementById('ajustePista').value = Number(selectedPiloto.debePista) || 0;
+    document.getElementById('ajusteMotivo').value = '';
+    document.getElementById('modalAjustarDeuda').classList.add('show');
+}
+
+function cerrarModalAjustarDeuda() {
+    document.getElementById('modalAjustarDeuda').classList.remove('show');
+}
+
+async function guardarAjusteDeuda() {
+    if (!selectedPiloto) return;
+    const motivo = document.getElementById('ajusteMotivo').value.trim();
+    if (!motivo) { showToast('⚠️ Escribí por qué lo ajustás: queda anotado'); return; }
+
+    const piloto = selectedPiloto;
+    const antes = Number(piloto.deuda) || 0;
+    piloto.debeEscuela = Math.max(0, Number(document.getElementById('ajusteEscuela').value) || 0);
+    piloto.debePista = Math.max(0, Number(document.getElementById('ajustePista').value) || 0);
+    redondearFracciones(piloto);
+    recalcularDeuda(piloto);
+
+    cerrarModalAjustarDeuda();
+    invalidarDeshacer();
+    updateSelectedInfo();
+    renderPilotos('');
+
+    mutar({
+        piloto: pilotoParaServidor(piloto, true),
+        ajustes: [ajusteParaServidor(piloto, 'Ajustó la deuda',
+            `de ${plata(antes)} a ${plata(piloto.deuda)} — ${motivo}`)]
+    });
+
+    showToast(`✏️ Deuda ajustada: ${plata(antes)} → ${plata(piloto.deuda)}`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
+}
+
+// ---------- 3. Borrar un gasto mal cargado ----------
+let gastoAEliminar = null;
+
+function abrirModalBorrarGasto(gasto) {
+    if (!correccionesDisponibles()) return;
+    gastoAEliminar = gasto;
+    document.getElementById('borrarGastoInfo').innerHTML =
+        `<b>${esc(gasto.concepto || gasto.categoria)}</b><br>` +
+        `${esc(formatoFechaLinda(gasto.fecha))} · ${esc(gasto.categoria)} · <b>${plata(gasto.monto)}</b>` +
+        `<br>${gasto.metodoPago === 'efectivo' ? 'Efectivo' : 'Transferencia'}`;
+    document.getElementById('modalBorrarGasto').classList.add('show');
+}
+
+function cerrarModalBorrarGasto() {
+    document.getElementById('modalBorrarGasto').classList.remove('show');
+    gastoAEliminar = null;
+}
+
+async function borrarGastoConfirmado() {
+    const g = gastoAEliminar;
+    if (!g) return;
+    gastoAEliminar = null;
+    cerrarModalBorrarGasto();
+
+    const idx = gastos.indexOf(g);
+    if (idx !== -1) gastos.splice(idx, 1);
+    renderGastos();
+
+    const op = {
+        ajustes: [ajusteParaServidor(null, 'Borró un gasto',
+            `${g.concepto || g.categoria} del ${formatoFechaLinda(g.fecha)} por ${plata(g.monto)}`)]
+    };
+    if (g.opId) op.gastosBorrar = [g.opId];
+    else op.gastosBorrarFila = [{ Fecha: g.fecha, Concepto: g.concepto, Monto: g.monto }];
+    mutar(op);
+
+    showToast('🗑️ Gasto borrado');
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -2147,14 +2548,32 @@ function abrirModalCarga() {
     document.getElementById('modalPilotoInfo').textContent = `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
     document.getElementById('montoInput').value = '';
     document.getElementById('libresInput').value = '';
+    // La carga es de hoy salvo que la cambies (si la estás cargando al otro día).
+    fechaCarga = fechaSoloLocal();
+    const inputFecha = document.getElementById('fechaCargaInput');
+    inputFecha.value = fechaCarga;
+    inputFecha.max = fechaSoloLocal();
     metodoPagoCarga = 'efectivo';
     document.querySelectorAll('.metodo-carga').forEach(b => b.classList.toggle('metodo-activo', b.dataset.metodo === 'efectivo'));
     const deuda = selectedPiloto.deuda || 0;
-    const cantidad = deuda > 0 ? textoPassDeuda(selectedPiloto) : '';
+    const cantidad = deuda > 0 ? textoPaxDeuda(selectedPiloto) : '';
     document.getElementById('hintDeuda').textContent = deuda > 0
         ? `Este piloto debe ${plata(deuda)}${cantidad ? ` (${cantidad})` : ''}. Se descuenta primero de lo que cargues, y el resto arma el nuevo lote.`
         : '';
     document.getElementById('modalCarga').classList.add('show');
+}
+
+function cambiarFechaCarga(dia) {
+    const hoy = fechaSoloLocal();
+    fechaCarga = (!dia || dia > hoy) ? hoy : dia;
+    const input = document.getElementById('fechaCargaInput');
+    if (input) input.value = fechaCarga;
+    const hint = document.getElementById('fechaCargaHint');
+    if (hint) {
+        hint.textContent = fechaCarga === hoy
+            ? 'Es de hoy.'
+            : `La carga y el pago quedan con fecha ${formatoFechaLinda(fechaCarga)}, y el lote se consume antes que los más nuevos.`;
+    }
 }
 function cerrarModal() {
     document.getElementById('modalCarga').classList.remove('show');
@@ -2165,7 +2584,7 @@ async function confirmarCarga() {
     const monto = Number(document.getElementById('montoInput').value) || 0;
     const libres = Number(document.getElementById('libresInput').value) || 0;
 
-    if (monto <= 0 && libres <= 0) { showToast('⚠️ Ingresá un monto o cantidad de Pass libres'); return; }
+    if (monto <= 0 && libres <= 0) { showToast('⚠️ Ingresá un monto o cantidad de PAX libres'); return; }
 
     const piloto = selectedPiloto;
     const pagosNuevos = [];
@@ -2179,7 +2598,7 @@ async function confirmarCarga() {
 
         if (pagoDeuda > 0) {
             // la parte que canceló deuda queda registrada en Pagos
-            pagosNuevos.push({ fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre, monto: pagoDeuda, metodoPago: metodoPagoCarga });
+            pagosNuevos.push({ fecha: fechaHoraDeCarga(fechaCarga), socio: piloto.numero, nombre: piloto.nombre, monto: pagoDeuda, metodoPago: metodoPagoCarga });
         }
 
         if (remanente > 0) {
@@ -2190,7 +2609,7 @@ async function confirmarCarga() {
                 monto: remanente,
                 descuento: descuento,
                 saldo: remanente,
-                fecha: fechaSoloLocal(),
+                fecha: fechaCarga || fechaSoloLocal(),
                 metodoPago: metodoPagoCarga,
                 _orden: proximoOrdenLote()
             };
@@ -2201,7 +2620,7 @@ async function confirmarCarga() {
                 : `lote nuevo de ${plata(remanente)} (${descuento}% dto)`;
         } else {
             const resto = piloto.deuda || 0;
-            const cantidadResto = resto > 0 ? textoPassDeuda(piloto) : '';
+            const cantidadResto = resto > 0 ? textoPaxDeuda(piloto) : '';
             detalle = `${plata(pagoDeuda)} aplicados a la deuda` + (resto > 0
                 ? ` — le quedan ${plata(resto)}${cantidadResto ? ` (${cantidadResto})` : ''}`
                 : ' — deuda saldada');
@@ -2209,7 +2628,7 @@ async function confirmarCarga() {
     }
     if (libres > 0) {
         piloto.viajesLibres = (piloto.viajesLibres || 0) + libres;
-        detalle += (detalle ? ' · ' : '') + `+${libres} Pass libre(s) 🎁`;
+        detalle += (detalle ? ' · ' : '') + `+${libres} PAX libre(s) 🎁`;
     }
 
     pagosNuevos.forEach(p => pagos.push(p));
@@ -2259,7 +2678,7 @@ async function guardarEdicionPiloto() {
     let mensajeExtra = '';
     if (nuevaCategoria === 'alumno' && categoriaAnterior !== 'alumno') {
         selectedPiloto.viajesLibres = (selectedPiloto.viajesLibres || 0) + 10;
-        mensajeExtra = ' — se le asignaron 10 Pass libres 🎁';
+        mensajeExtra = ' — se le asignaron 10 PAX libres 🎁';
     }
     selectedPiloto.categoria = nuevaCategoria;
 
@@ -2298,7 +2717,7 @@ function cerrarModalPago() {
 function actualizarPreviewPago() {
     if (!selectedPiloto) return;
     const deuda = selectedPiloto.deuda || 0;
-    const cantidad = textoPassDeuda(selectedPiloto);
+    const cantidad = textoPaxDeuda(selectedPiloto);
     const puesto = Number(document.getElementById('pagoMontoInput').value) || 0;
     const monto = Math.max(0, Math.min(puesto, deuda));
     const resto = Math.max(0, deuda - monto);
@@ -2360,7 +2779,7 @@ function abrirModalDeudores() {
     } else {
         cont.innerHTML = deudores.map(p => {
             asegurarFracciones(p);
-            const desglose = textoPassDeuda(p);
+            const desglose = textoPaxDeuda(p);
             return `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:2px dashed var(--borde-suave);">
                 <span>${esc(p.numero)} - ${esc(p.nombre)}${p.alias ? ` "${esc(p.alias)}"` : ''}</span>
@@ -2604,7 +3023,7 @@ function precioEnFecha(tipo, fecha) {
 }
 
 /**
- * Deuda pendiente al cierre de una fecha. Se reconstruye en CANTIDAD de Pass
+ * Deuda pendiente al cierre de una fecha. Se reconstruye en CANTIDAD de PAX
  * (que es lo que no cambia con el precio) y recién al final se pasa a pesos con
  * el precio que valía esa fecha:
  *   cantidad de hoy − lo que se generó después + lo que se cobró después.
@@ -2698,25 +3117,25 @@ function renderEstadisticas() {
     }
     caja += `<div class="est-nota">Efectivo es lo que entró. El efectivo neto es lo que te queda después de los gastos pagados en efectivo.</div>`;
 
-    let act = filaEst('Pass', m.subidas);
+    let act = filaEst('PAX', m.subidas);
     act += filaEst('Desde Escuela', m.escuela, 'sub');
     act += filaEst('Desde Pista', m.pista, 'sub');
     act += filaEst('Cobradas', m.cobradas);
-    act += filaEst('Pass libres usados', m.gratis);
+    act += filaEst('PAX libres usados', m.gratis);
     act += filaEst('Facturado', plata(m.facturado));
-    act += filaEst('Precio promedio por Pass', plata(m.precioPromedio));
+    act += filaEst('Precio promedio por PAX', plata(m.precioPromedio));
     act += filaEst('Descuento otorgado', `${plata(m.descuentoOtorgado)} (${m.descuentoPct}%)`);
     act += filaEst('Pilotos que subieron', m.pilotos);
     if (m.gratis > 0) {
-        act += `<div class="est-nota">Los ${m.gratis} Pass libres equivalen a ${plata(m.valorListaGratis)} de precio de lista.</div>`;
+        act += `<div class="est-nota">Los ${m.gratis} PAX libres equivalen a ${plata(m.valorListaGratis)} de precio de lista.</div>`;
     }
 
     const esElFinal = r.hasta >= fechaSoloLocal();
     let car = filaEst('Deuda generada', plata(m.deudaGenerada));
     car += filaEst(esElFinal ? 'Deuda pendiente' : 'Deuda pendiente al cierre', plata(deudaPendienteAlCierre(r.hasta)));
     car += filaEst('Crédito sin consumir', plata(saldoTotalPilotos()));
-    car += filaEst('Pass libres pendientes', libresTotalesPilotos());
-    car += `<div class="est-nota">El crédito y los Pass libres son el estado de ahora, no del período elegido.</div>`;
+    car += filaEst('PAX libres pendientes', libresTotalesPilotos());
+    car += `<div class="est-nota">El crédito y los PAX libres son el estado de ahora, no del período elegido.</div>`;
 
     // Gastos del período, con el resultado al final
     let gas = filaEst('Total de gastos', plata(m.gastos));
@@ -2737,7 +3156,7 @@ function renderEstadisticas() {
                 <h3>${ico('calendario')} DÍAS</h3>
                 ${filaEst('Días trabajados', m.diasTrabajados)}
                 ${filaEst('Facturado por día', plata(m.diasTrabajados ? Math.round(m.facturado / m.diasTrabajados) : 0))}
-                ${filaEst('Pass por día', m.diasTrabajados ? (m.subidas / m.diasTrabajados).toFixed(1) : '0')}
+                ${filaEst('PAX por día', m.diasTrabajados ? (m.subidas / m.diasTrabajados).toFixed(1) : '0')}
                 ${m.mejorDia ? filaEst('Mejor día', `${formatoFechaLinda(m.mejorDia)} · ${plata(m.mejorDiaMonto)}`) : ''}
                 ${filaEst('Pilotos nuevos', m.nuevos)}
                 ${filaEst('Pilotos de siempre', m.recurrentes, 'sub')}
@@ -2754,10 +3173,10 @@ function renderEstadisticas() {
             <h3>${ico('tendencia')} CONTRA ${etiquetaAnterior(estPeriodo).toUpperCase()}</h3>
             <div class="est-fila ${dFac.clase}"><span>Facturado</span><b>${dFac.txt}</b></div>
             <div class="est-fila ${dGan.clase}"><span>Ganancia</span><b>${dGan.txt}</b></div>
-            <div class="est-fila ${dSub.clase}"><span>Pass</span><b>${dSub.txt}</b></div>
+            <div class="est-fila ${dSub.clase}"><span>PAX</span><b>${dSub.txt}</b></div>
             <div class="est-fila ${dPre.clase}"><span>Precio promedio</span><b>${dPre.txt}</b></div>
             <div class="est-fila ${dIng.clase}"><span>Ingresado</span><b>${dIng.txt}</b></div>
-            <div class="est-nota">Si el facturado sube pero los Pass bajan, el aumento vino del precio y no de más trabajo.</div>
+            <div class="est-nota">Si el facturado sube pero los PAX bajan, el aumento vino del precio y no de más trabajo.</div>
         </div>`;
 
     cont.innerHTML = `
@@ -2783,7 +3202,7 @@ function actualizarLineaHoy() {
     if (m.subidas === 0 && m.ingresado === 0) {
         el.textContent = 'Hoy: sin movimientos todavía — tocá para ver el cierre';
     } else {
-        el.textContent = `Hoy: ${m.subidas} Pass · ${plata(m.facturado)} facturado · ${plata(m.efectivo)} en efectivo`;
+        el.textContent = `Hoy: ${m.subidas} PAX · ${plata(m.facturado)} facturado · ${plata(m.efectivo)} en efectivo`;
     }
 }
 
@@ -2820,11 +3239,17 @@ function renderGastos() {
         cont.innerHTML = `<div style="text-align:center;padding:18px;color:var(--ink-soft);font-size:calc(13px * var(--esc));">Todavía no cargaste ningún gasto</div>`;
         return;
     }
-    cont.innerHTML = ultimos.map(g => `
-        <div class="historial-item">
+    cont.innerHTML = ultimos.map((g, i) => `
+        <div class="historial-item" style="align-items:center;gap:10px;">
             <span>${esc(formatoFechaLinda(g.fecha))} · ${esc(g.concepto || g.categoria)}</span>
-            <span>${plata(g.monto)}${g.metodoPago === 'efectivo' ? '' : ' · transf.'}</span>
+            <span style="display:flex;align-items:center;gap:10px;">
+                <span>${plata(g.monto)}${g.metodoPago === 'efectivo' ? '' : ' · transf.'}</span>
+                <button type="button" class="btn-chip" data-borrar-gasto="${i}" title="Borrar este gasto" aria-label="Borrar este gasto">${ico('x')}</button>
+            </span>
         </div>`).join('');
+    cont.querySelectorAll('[data-borrar-gasto]').forEach(b => {
+        b.addEventListener('click', () => abrirModalBorrarGasto(ultimos[Number(b.dataset.borrarGasto)]));
+    });
 }
 
 function abrirModalGastos() {
@@ -2883,7 +3308,10 @@ function guardarGasto() {
     cerrarModalNuevoGasto();
     renderGastos();
     vibrar(35);
-    mutar({ gastos: [gastoParaServidor(gasto)] });
+    // La operación lleva el número con el que se va a guardar la fila: así este
+    // gasto se puede borrar desde la app si lo cargaste mal.
+    const op = mutar({ gastos: [gastoParaServidor(gasto)] });
+    gasto.opId = op.opId;
     showToast(`💸 Gasto de ${plata(monto)} cargado`);
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
@@ -3035,7 +3463,7 @@ function crearPiloto() {
 
     mutar({ piloto: pilotoParaServidor(nuevo, true), pilotoNuevo: true });
 
-    showToast(`➕ ${nombre} agregado${categoria === 'alumno' ? ' con 10 Pass libres 🎁' : ''}`);
+    showToast(`➕ ${nombre} agregado${categoria === 'alumno' ? ' con 10 PAX libres 🎁' : ''}`);
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
@@ -3054,7 +3482,15 @@ function showToast(msg) {
 // EVENTOS E INICIO
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('searchInput').addEventListener('input', e => renderPilotos(e.target.value));
+    document.getElementById('searchInput').addEventListener('input', e => {
+        if (e.target.value.trim()) renderPilotos(e.target.value);
+        else mostrarRecientes();
+    });
+    // Al tocar el buscador con el campo vacío aparecen los últimos que cargaste:
+    // en un día de 50 pilotos son los mismos nombres una y otra vez.
+    document.getElementById('searchInput').addEventListener('focus', e => {
+        if (!e.target.value.trim()) mostrarRecientes();
+    });
     document.getElementById('btnEscuela').addEventListener('click', () => setTipoViaje('escuela'));
     document.getElementById('btnPista').addEventListener('click', () => setTipoViaje('pista'));
     document.getElementById('btnRestar').addEventListener('click', () => cambiarCantidad(-1));
@@ -3062,12 +3498,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnConfirmar').addEventListener('click', pedirConfirmacionViaje);
     document.getElementById('btnConfirmarSi').addEventListener('click', confirmarViaje);
     document.getElementById('btnConfirmarNo').addEventListener('click', cerrarModalConfirmarViaje);
+    document.getElementById('fechaSubidasInput').addEventListener('input', e => cambiarFechaSubidas(e.target.value));
+    document.getElementById('btnFechaHoy').addEventListener('click', () => cambiarFechaSubidas(fechaSoloLocal()));
+    document.getElementById('fechaCargaInput').addEventListener('input', e => cambiarFechaCarga(e.target.value));
+    document.getElementById('btnFechaCargaHoy').addEventListener('click', () => cambiarFechaCarga(fechaSoloLocal()));
     document.getElementById('btnAnular').addEventListener('click', anularUltimoViaje);
     document.getElementById('btnCarga').addEventListener('click', abrirModalCarga);
     document.getElementById('btnAplicarCarga').addEventListener('click', confirmarCarga);
     document.getElementById('btnCancelarCarga').addEventListener('click', cerrarModal);
     document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicionPiloto);
     document.getElementById('btnCancelarEdicion').addEventListener('click', cerrarModalEditar);
+    document.getElementById('btnAnularSubida').addEventListener('click', abrirModalAnularSubida);
+    document.getElementById('btnAjustarDeuda').addEventListener('click', abrirModalAjustarDeuda);
+    document.getElementById('btnCerrarAnularSubida').addEventListener('click', cerrarModalAnularSubida);
+    document.getElementById('btnGuardarAjuste').addEventListener('click', guardarAjusteDeuda);
+    document.getElementById('btnCancelarAjuste').addEventListener('click', cerrarModalAjustarDeuda);
+    document.getElementById('btnBorrarGastoSi').addEventListener('click', borrarGastoConfirmado);
+    document.getElementById('btnBorrarGastoNo').addEventListener('click', cerrarModalBorrarGasto);
     document.getElementById('btnPago').addEventListener('click', abrirModalPago);
     document.getElementById('btnPagoSi').addEventListener('click', confirmarPagoInmediato);
     document.getElementById('btnPagoNo').addEventListener('click', cerrarModalPago);
