@@ -13,10 +13,11 @@
     <style>
         /* Mismo skin que la app: NEGRO = estructura, NARANJA = lo que se toca.
            Tipografía del sistema, sin depender de internet. */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --fondo: #f2ede1;
             --pista: #f2ede1;
+            --panel: #ffffff;
             --borde: #111111;
             --borde-suave: #d1d5db;
             --ink: #111111;
@@ -24,6 +25,7 @@
             --accion: #e8590c;
             --accion-borde: #111111;
             --accion-texto: #b8410b;
+            --sobre-accion: #111111;
             --ok: #146c33;
             --alerta-texto: #7f1d1d;
             --radio: 10px;
@@ -31,17 +33,49 @@
             --grosor: 3px;
             --fuente: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
+
+        /* ============================================================
+           MODO NOCHE — igual que en la app: solo se cambian variables,
+           ninguna regla distinta. La elección se guarda en el teléfono.
+           ============================================================ */
+        body.noche {
+            --fondo: #101214;
+            --pista: #101214;
+            --panel: #1e2126;
+            --borde: #66727f;
+            --borde-suave: #3a424b;
+            --ink: #f2f2f2;
+            --ink-soft: #a8b0b8;
+            --accion-texto: #e8590c;   /* sobre fondo oscuro el naranja ya llega */
+            --sobre-accion: #111111;   /* el naranja se toca: el texto va negro, como en la app */
+            --ok: #4ade80;
+            --alerta-texto: #ff8a8a;
+        }
+
+        /* El fondo cubre toda la ventana y color-scheme evita que el celular en
+           modo oscuro "oscurezca" la página por su cuenta. */
+        html { background: var(--fondo); color-scheme: light; color-scheme: only light; }
+        html.noche { background: #101214; color-scheme: dark; }
         body {
             font-family: var(--fuente); font-weight: 500;
             background: var(--fondo); color: var(--ink);
             padding: 20px; max-width: 440px; margin: 0 auto; min-height: 100vh;
         }
-        .header { text-align: center; margin-bottom: 18px; }
+        .header { text-align: center; margin-bottom: 18px; position: relative; }
         .header img { width: 84px; height: auto; }
         .header h1 { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: 0.06em; margin-top: 8px; }
         .header p { font-size: 14px; color: var(--ink-soft); margin-top: 2px; }
+        .boton-noche {
+            position: absolute; top: 0; right: 0; z-index: 10;
+            width: 42px; height: 42px; min-width: 0; margin: 0; padding: 0;
+            border-radius: 50%; background: var(--panel); color: var(--ink);
+            border: var(--grosor) solid var(--borde);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .boton-noche:active { transform: translateY(2px); }
+        .boton-noche svg { width: 21px; height: 21px; display: block; }
         .panel {
-            background: #ffffff;
+            background: var(--panel);
             border: var(--grosor) solid var(--borde);
             border-radius: var(--radio);
             padding: 16px; margin-bottom: 14px;
@@ -50,12 +84,12 @@
         input {
             width: 100%; padding: 13px 16px; border: var(--grosor) solid var(--borde); border-radius: var(--radio);
             font-family: var(--fuente); font-weight: 700; font-size: 16px;
-            background: #ffffff; color: var(--ink);
+            background: var(--panel); color: var(--ink);
         }
         button {
             width: 100%; margin-top: 18px; padding: 17px; border: var(--grosor) solid var(--accion-borde);
             border-radius: var(--radio);
-            background: var(--accion); color: #ffffff; font-family: var(--fuente);
+            background: var(--accion); color: var(--sobre-accion); font-family: var(--fuente);
             font-size: 17px; font-weight: 700; cursor: pointer;
         }
         button:active { transform: translateY(2px); }
@@ -77,11 +111,33 @@
         .historial-titulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin: 16px 0 6px; }
         .historial-item { font-size: 13px; padding: 7px 2px; border-bottom: 1px solid var(--borde-suave); display: flex; justify-content: space-between; gap: 10px; }
         .historial-item:last-child { border-bottom: none; }
+
+        /* ===== DATOS PARA TRANSFERIR =====
+           Es lo único que se le agrega a la página. Los datos salen de la hoja
+           Configuracion (filas Alias_Cobro, CVU_Cobro y Titular_Cobro): si están
+           vacías, este bloque no se muestra. */
+        .transferir { margin-top: 14px; border-top: var(--grosor) solid var(--borde); padding-top: 12px; }
+        .transferir .titulo { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accion-texto); margin-bottom: 6px; }
+        .fila-copiar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--borde-suave); }
+        .fila-copiar:last-child { border-bottom: none; }
+        .fila-copiar .rotulo { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); display: block; }
+        .fila-copiar .valor { font-size: 15px; font-weight: 700; word-break: break-all; }
+        .fila-copiar .valor.largo { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; letter-spacing: 0.01em; }
+        .btn-copiar {
+            flex: 0 0 auto; width: auto; margin: 0; padding: 9px 12px; border-radius: var(--radio-chico);
+            border: var(--grosor) solid var(--borde); background: var(--accion); color: var(--sobre-accion);
+            font-family: var(--fuente); font-size: 12px; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-copiar:active { transform: translateY(2px); }
+        .btn-copiar.hecho { background: var(--panel); color: var(--ok); border-color: var(--ok); }
+        .btn-copiar svg { width: 14px; height: 14px; display: block; }
         .msg { text-align: center; padding: 14px; color: var(--alerta-texto); font-weight: 700; display: none; }
     </style>
 </head>
 <body>
     <div class="header">
+        <button class="boton-noche" id="btnNoche" type="button" aria-label="Pasar al modo noche" title="Modo noche"></button>
         <img src="rescates-logo.png" alt="Rescate">
         <h1>RESCATES RAMBLA</h1>
         <p>Consultá tu cuenta</p>
@@ -91,7 +147,7 @@
         <label>Tu número de piloto</label>
         <input type="text" id="numeroInput" inputmode="numeric" autocomplete="off" placeholder="Ej: 12">
         <label>Tu nombre completo</label>
-        <input type="text" id="nombreInput" autocomplete="name" placeholder="Como figura registrado">
+        <input type="text" id="nombreInput" autocomplete="name" autocapitalize="words" placeholder="Como figura registrado">
         <div class="hint">Escribí tu nombre y apellido tal como está anotado en la escuela (o tu alias, si tenés uno).</div>
         <button id="btnConsultar"><i class="ico" data-ico="lupa"></i> Buscar mi cuenta</button>
     </div>
@@ -107,6 +163,25 @@
         <div class="dato" id="filaDeuda" style="display:none;margin-top:12px;"><span><i class="ico" data-ico="alerta"></i> Debe</span><b id="rDebe"></b></div>
         <div class="hint" id="pistaDeuda" style="display:none;">Debés subidas, no pesos: si cambia el precio de la subida, el monto se actualiza solo y la cantidad que debés sigue siendo la misma.</div>
         <div class="dato"><span><i class="ico" data-ico="regalo"></i> Subidas libres</span><b id="rLibres"></b></div>
+
+        <!-- ===== DATOS PARA TRANSFERIR =====
+             Aparecen siempre que el piloto consulte su cuenta. Los carga Mario en
+             la hoja Configuracion: si están vacíos, el bloque no se muestra. -->
+        <div class="transferir" id="bloqueTransferir" style="display:none;">
+            <div class="titulo">Datos para transferir</div>
+            <div class="fila-copiar" id="filaAlias" style="display:none;">
+                <span><span class="rotulo">Alias</span><span class="valor" id="valorAlias"></span></span>
+                <button class="btn-copiar" type="button" id="btnCopiarAlias" data-copiar=""></button>
+            </div>
+            <div class="fila-copiar" id="filaCvu" style="display:none;">
+                <span><span class="rotulo">CVU</span><span class="valor largo" id="valorCvu"></span></span>
+                <button class="btn-copiar" type="button" id="btnCopiarCvu" data-copiar=""></button>
+            </div>
+            <div class="fila-copiar" id="filaTitular" style="display:none;">
+                <span><span class="rotulo">Titular</span><span class="valor" id="valorTitular"></span></span>
+            </div>
+        </div>
+
         <div class="historial-titulo"><i class="ico" data-ico="lista"></i> Últimas subidas</div>
         <div id="rHistorial"></div>
     </div>
@@ -155,7 +230,10 @@ const ICONOS = {
     regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M3 12h18M12 8v12M12 8C10 8 8 7 8 5.5A2.5 2.5 0 0 1 12 4a2.5 2.5 0 0 1 4 1.5C16 7 14 8 12 8Z"/></svg>',
     alerta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21.5 20H2.5L12 3.5Z"/><path d="M12 10v4M12 17h.01"/></svg>',
     reloj: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
-    lupa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></svg>'
+    lupa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></svg>',
+    luna: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>',
+    sol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"/></svg>',
+    copiar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>'
 };
 const EMOJI_A_ICONO = { '🎁': 'regalo', '📋': 'lista', '⚠': 'alerta', '⏳': 'reloj', '🔍': 'lupa' };
 
@@ -197,6 +275,106 @@ function fechaCorta(valor) {
     if (!y || !m || !dia) return d;
     return `${dia}/${m}${hora ? ' ' + hora : ''}`;
 }
+
+// El piloto escribe como quiere: acá la primera letra de cada palabra queda en
+// mayúscula, para que se vea prolijo. Para BUSCAR no cambia nada: el backend
+// compara sin mayúsculas y sin acentos, así que "juan perez" ya encontraba la
+// cuenta antes de esto.
+function capitalizarPalabras(texto) {
+    return String(texto).replace(/(^|[\s'’.-])([a-záéíóúüñ])/g, (todo, sep, letra) => sep + letra.toUpperCase());
+}
+
+function capitalizarAlEscribir(el) {
+    el.addEventListener('input', () => {
+        const nuevo = capitalizarPalabras(el.value);
+        if (nuevo === el.value) return;
+        const desde = el.selectionStart;
+        const hasta = el.selectionEnd;
+        el.value = nuevo;                    // el texto no cambia de largo: el cursor no se mueve
+        el.setSelectionRange(desde, hasta);
+    });
+}
+
+// ============================================================
+// MODO NOCHE — igual que en la app: se cambian solo variables de CSS y la
+// elección queda guardada en el teléfono para la próxima vez.
+// ============================================================
+function aplicarModoNoche(oscuro) {
+    document.body.classList.toggle('noche', oscuro);
+    document.documentElement.classList.toggle('noche', oscuro);
+    const b = document.getElementById('btnNoche');
+    if (b) {
+        // de día se muestra la luna (para pasar a la noche) y al revés
+        b.innerHTML = ICONOS[oscuro ? 'sol' : 'luna'];
+        b.title = oscuro ? 'Volver al modo día' : 'Pasar al modo noche';
+        b.setAttribute('aria-label', b.title);
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', oscuro ? '#101214' : '#f2ede1');
+    try { localStorage.setItem('modo_noche', oscuro ? '1' : '0'); } catch (e) {}
+}
+
+// ============================================================
+// DATOS PARA TRANSFERIR — los carga Mario en la hoja Configuracion y vienen en
+// la respuesta de la consulta. Si están vacíos, el bloque no se muestra.
+// ============================================================
+function pintarFilaDeCopia(idFila, idValor, idBoton, texto) {
+    const fila = document.getElementById(idFila);
+    if (!texto) { fila.style.display = 'none'; return; }
+    document.getElementById(idValor).textContent = texto;
+    const b = document.getElementById(idBoton);
+    b.dataset.copiar = texto;
+    b.innerHTML = ico('copiar') + ' Copiar';
+    fila.style.display = 'flex';
+}
+
+function mostrarDatosDeTransferir(cobro) {
+    const c = cobro || {};
+    const bloque = document.getElementById('bloqueTransferir');
+    // Sin alias ni CVU no hay a dónde transferir: mejor no mostrar nada.
+    if (!c.alias && !c.cvu) { bloque.style.display = 'none'; return; }
+    pintarFilaDeCopia('filaAlias', 'valorAlias', 'btnCopiarAlias', c.alias || '');
+    pintarFilaDeCopia('filaCvu', 'valorCvu', 'btnCopiarCvu', c.cvu || '');
+    const filaTitular = document.getElementById('filaTitular');
+    document.getElementById('valorTitular').textContent = c.titular || '';
+    filaTitular.style.display = c.titular ? 'flex' : 'none';
+    bloque.style.display = 'block';
+}
+
+/** Copia el dato y avisa. Si el navegador no deja usar el portapapeles nuevo,
+ *  se copia con el método viejo (pasa al abrir la página desde un archivo). */
+async function copiarAlPortapapeles(texto) {
+    try {
+        await navigator.clipboard.writeText(texto);
+        return true;
+    } catch (e) {
+        try {
+            const t = document.createElement('textarea');
+            t.value = texto;
+            t.style.position = 'fixed';
+            t.style.opacity = '0';
+            document.body.appendChild(t);
+            t.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(t);
+            return ok;
+        } catch (e2) { return false; }
+    }
+}
+
+document.querySelectorAll('.btn-copiar').forEach(b => {
+    b.addEventListener('click', async () => {
+        const ok = await copiarAlPortapapeles(b.dataset.copiar || '');
+        const original = b.innerHTML;
+        b.classList.toggle('hecho', ok);
+        b.innerHTML = ok ? '¡Copiado!' : 'No se pudo copiar';
+        setTimeout(() => { b.innerHTML = original; b.classList.remove('hecho'); }, 1400);
+    });
+});
+
+document.getElementById('btnNoche').addEventListener('click', () => {
+    aplicarModoNoche(!document.body.classList.contains('noche'));
+});
 
 const btn = document.getElementById('btnConsultar');
 
@@ -255,6 +433,9 @@ async function consultar() {
 
         document.getElementById('rLibres').textContent = Number(data.viajesLibres) || 0;
 
+        // Los datos de la cuenta donde puede transferir (los carga Mario en la planilla)
+        mostrarDatosDeTransferir(data.cobro);
+
         const hist = document.getElementById('rHistorial');
         if (!data.ultimosViajes || data.ultimosViajes.length === 0) {
             hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin subidas registradas</div>';
@@ -275,6 +456,8 @@ async function consultar() {
 }
 
 pintarIconos();
+aplicarModoNoche(localStorage.getItem('modo_noche') === '1');
+capitalizarAlEscribir(document.getElementById('nombreInput'));
 btn.addEventListener('click', consultar);
 document.getElementById('nombreInput').addEventListener('keydown', e => { if (e.key === 'Enter') consultar(); });
 </script>

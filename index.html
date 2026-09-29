@@ -732,6 +732,7 @@
             <button class="btn-chip" id="btnAbrirDeudores" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="lista"></i> Deudores</button>
             <button class="btn-chip" id="btnAbrirApartadas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="alerta"></i> Cambios apartados (<span id="contApartadas">0</span>)</button>
             <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="etiqueta"></i> Precios</button>
+            <button class="btn-chip" id="btnAbrirCobro" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="banco"></i> Datos para transferir</button>
             <button class="btn-chip" id="btnAbrirGastos" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="gasto"></i> Gastos</button>
             <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="grafico"></i> Estadísticas</button>
             <div style="border-top:1px solid var(--borde-suave);margin:2px 0;"></div>
@@ -763,6 +764,24 @@
         <div style="margin-top:18px;">
             <div class="historial-titulo"><i class="ico" data-ico="tendencia"></i> Historial de precios</div>
             <div id="listaHistorialPrecios" style="max-height:30vh;overflow-y:auto;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalCobro">
+    <div class="modal">
+        <h2><i class="ico" data-ico="banco"></i> Datos para transferir</h2>
+        <div class="modal-hint">Son los datos que ve el piloto en la página donde consulta su cuenta, para poder transferirte. Se guardan en la hoja <b>Configuracion</b>, así que también podés cambiarlos ahí, en la planilla.</div>
+        <label><i class="ico" data-ico="etiqueta"></i> Alias</label>
+        <input type="text" id="cobroAlias" placeholder="Ej: rescates.rambla" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <label style="margin-top:12px;"><i class="ico" data-ico="banco"></i> CVU (22 dígitos)</label>
+        <input type="text" id="cobroCvu" inputmode="numeric" placeholder="00000031000..." autocomplete="off" spellcheck="false">
+        <label style="margin-top:12px;"><i class="ico" data-ico="ficha"></i> Titular (opcional)</label>
+        <input type="text" id="cobroTitular" placeholder="Nombre del titular de la cuenta" autocomplete="off">
+        <div class="modal-hint" id="cobroAviso"></div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarCobro"><i class="ico" data-ico="check"></i> Guardar</button>
+            <button class="btn-modal-cancel" id="btnCancelarCobro"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
@@ -857,7 +876,12 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 5;
+const VERSION_BACKEND = 6;
+
+// Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
+// donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
+// convertiría en 3,1E+21 y perdería los ceros del principio.
+const PARAMETROS_TEXTO = ['Alias_Cobro', 'CVU_Cobro', 'Titular_Cobro'];
 
 const TRAMOS_POR_DEFECTO = [
     { minimo: 25000, porcentaje: 5 }, { minimo: 50000, porcentaje: 10 },
@@ -1358,7 +1382,9 @@ function aplicarDatosDelServidor(data, desdeServidor) {
 
     config = {};
     (data.config || []).forEach(row => {
-        config[row.Parametro] = isNaN(Number(row.Valor)) ? row.Valor : Number(row.Valor);
+        config[row.Parametro] = PARAMETROS_TEXTO.indexOf(row.Parametro) >= 0
+            ? String(row.Valor === null || row.Valor === undefined ? '' : row.Valor)
+            : (isNaN(Number(row.Valor)) ? row.Valor : Number(row.Valor));
     });
     if (!config.PrecioEscuela) config.PrecioEscuela = 11000;
     if (!config.PrecioPista) config.PrecioPista = 6500;
@@ -2870,6 +2896,52 @@ async function guardarPrecios() {
 }
 
 // ============================================================
+// DATOS PARA TRANSFERIR (los que ve el piloto en su página)
+// ============================================================
+// Viven en la hoja Configuracion y se pueden cambiar desde acá o directamente
+// en la planilla. El CVU va como texto: son 22 dígitos y, si se guardara como
+// número, la planilla le comería los ceros del principio.
+function abrirModalCobro() {
+    document.getElementById('cobroAlias').value = config.Alias_Cobro || '';
+    document.getElementById('cobroCvu').value = config.CVU_Cobro || '';
+    document.getElementById('cobroTitular').value = config.Titular_Cobro || '';
+    document.getElementById('cobroAviso').textContent = '';
+    document.getElementById('modalCobro').classList.add('show');
+    setTimeout(() => { try { document.getElementById('cobroAlias').focus(); } catch (e) {} }, 120);
+}
+function cerrarModalCobro() {
+    document.getElementById('modalCobro').classList.remove('show');
+}
+function guardarDatosDeCobro() {
+    const alias = String(document.getElementById('cobroAlias').value || '').trim();
+    const cvu = String(document.getElementById('cobroCvu').value || '').replace(/\D/g, '');
+    const titular = String(document.getElementById('cobroTitular').value || '').trim();
+    const aviso = document.getElementById('cobroAviso');
+
+    if (!alias && !cvu) {
+        aviso.textContent = '⚠️ Cargá el alias o el CVU: sin ninguno de los dos, el piloto no ve nada en su página.';
+        return;
+    }
+    if (alias && /[\s@]/.test(alias)) {
+        aviso.textContent = '⚠️ El alias no lleva espacios ni arroba (fijate cómo lo escribe Mercado Pago).';
+        return;
+    }
+    if (cvu && cvu.length !== 22) {
+        aviso.textContent = '⚠️ El CVU tiene 22 dígitos y este tiene ' + cvu.length + '.';
+        return;
+    }
+
+    config.Alias_Cobro = alias;
+    config.CVU_Cobro = cvu;
+    config.Titular_Cobro = titular;
+
+    cerrarModalCobro();
+    mutar({ config: { Alias_Cobro: alias, CVU_Cobro: cvu, Titular_Cobro: titular } });
+    showToast('💳 Datos para transferir guardados');
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
+}
+
+// ============================================================
 // RESUMEN DIARIO
 // ============================================================
 function fechaSolo(str) {
@@ -3534,6 +3606,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnAbrirApartadas').addEventListener('click', () => { cerrarModalDatos(); abrirModalApartadas(); });
     document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirEstadisticas('dia'); });
     document.getElementById('btnAbrirPrecios').addEventListener('click', () => { cerrarModalDatos(); abrirModalPrecios(); });
+    document.getElementById('btnAbrirCobro').addEventListener('click', () => { cerrarModalDatos(); abrirModalCobro(); });
     document.getElementById('btnAbrirGastos').addEventListener('click', () => { cerrarModalDatos(); abrirModalGastos(); });
 
     // Gastos
@@ -3554,6 +3627,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     document.getElementById('btnGuardarPrecios').addEventListener('click', guardarPrecios);
     document.getElementById('btnCancelarPrecios').addEventListener('click', cerrarModalPrecios);
+    document.getElementById('btnGuardarCobro').addEventListener('click', guardarDatosDeCobro);
+    document.getElementById('btnCancelarCobro').addEventListener('click', cerrarModalCobro);
 
     // Estadísticas: una sola pantalla, con pestañas Día / Semana / Mes
     document.getElementById('btnCerrarEstadisticas').addEventListener('click', cerrarEstadisticas);
