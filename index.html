@@ -541,7 +541,11 @@
         <h2><i class="ico" data-ico="ficha"></i> Ficha del piloto</h2>
         <div id="modalEditarInfo" style="background:var(--pista);padding:10px 14px;border-radius:14px;margin-bottom:12px;font-size: calc(14px * var(--esc));font-weight:700;color:var(--ink);"></div>
 
-        <label>Alias / apodo</label>
+        <label><i class="ico" data-ico="ficha"></i> Nombre completo</label>
+        <input type="text" id="nombrePilotoInput" placeholder="Nombre y apellido, como figura en la planilla">
+        <div class="modal-hint">Si lo corregís (por ejemplo, un apellido mal escrito), se corrige también en sus subidas, pagos, ajustes y contactos viejos.</div>
+
+        <label style="margin-top:16px;">Alias / apodo</label>
         <input type="text" id="aliasInput" placeholder="Ej: 'El Colo', 'Petiso'...">
 
         <label style="margin-top:16px;"><i class="ico" data-ico="birrete"></i> Categoría</label>
@@ -566,9 +570,28 @@
             <button type="button" class="btn-chip" id="btnAjustarDeuda" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="objetivo"></i> Ajustar deuda</button>
         </div>
 
+        <label style="margin-top:16px;"><i class="ico" data-ico="etiqueta"></i> Número del piloto</label>
+        <div class="modal-hint">Algunos piden un número especial. Si lo cambiás, sus subidas, su crédito, sus pagos, su contacto y sus ajustes se van con él.</div>
+        <button type="button" class="btn-chip" id="btnCambiarNumero" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="etiqueta"></i> Cambiar el número</button>
+
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnGuardarEdicion"><i class="ico" data-ico="check"></i> Guardar</button>
             <button class="btn-modal-cancel" id="btnCancelarEdicion"><i class="ico" data-ico="x"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalNumero">
+    <div class="modal">
+        <h2><i class="ico" data-ico="etiqueta"></i> Cambiar el número</h2>
+        <div id="numeroPilotoInfo" style="background:var(--pista);padding:12px 14px;border-radius:14px;margin-bottom:12px;font-size: calc(13px * var(--esc));line-height:1.7;color:var(--ink);"></div>
+        <label>Número nuevo</label>
+        <input type="number" id="numeroNuevoInput" min="1" step="1" inputmode="numeric" placeholder="Ej: 113">
+        <div class="modal-hint">El número es la identidad del piloto en todo el sistema: no puede ser el de otro piloto, y la deuda y el saldo viajan con él (son datos de su ficha).</div>
+        <div class="modal-hint" id="numeroAviso"></div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarNumero"><i class="ico" data-ico="check"></i> Cambiar</button>
+            <button class="btn-modal-cancel" id="btnCancelarNumero"><i class="ico" data-ico="x"></i> Cancelar</button>
         </div>
     </div>
 </div>
@@ -876,7 +899,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 6;
+const VERSION_BACKEND = 7;
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -2681,6 +2704,7 @@ async function confirmarCarga() {
 function abrirModalEditar() {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
     document.getElementById('modalEditarInfo').textContent = `${selectedPiloto.numero} - ${selectedPiloto.nombre}`;
+    document.getElementById('nombrePilotoInput').value = selectedPiloto.nombre || '';
     document.getElementById('aliasInput').value = selectedPiloto.alias || '';
     document.getElementById('fechaAltaInput').value = selectedPiloto.fechaAlta || '';
     document.getElementById('descuentoManualInput').value =
@@ -2694,6 +2718,10 @@ function cerrarModalEditar() {
 }
 async function guardarEdicionPiloto() {
     if (!selectedPiloto) return;
+    const nombreNuevo = document.getElementById('nombrePilotoInput').value.trim();
+    if (!nombreNuevo) { showToast('⚠️ El nombre no puede quedar vacío'); return; }
+    const nombreAntes = selectedPiloto.nombre;
+    selectedPiloto.nombre = nombreNuevo;
     selectedPiloto.alias = document.getElementById('aliasInput').value.trim();
     selectedPiloto.fechaAlta = document.getElementById('fechaAltaInput').value || selectedPiloto.fechaAlta || '';
     const valorManual = document.getElementById('descuentoManualInput').value;
@@ -2715,7 +2743,92 @@ async function guardarEdicionPiloto() {
 
     mutar({ piloto: pilotoParaServidor(selectedPiloto, true) });
 
-    showToast(`🥽 Ficha actualizada — ${selectedPiloto.nombre}${mensajeExtra}`);
+    // El nombre quedó copiado en las subidas, los pagos y los ajustes: si lo
+    // corrigió, se corrige también el historial (lo hace el backend). Acá se
+    // actualiza lo que la app ya tiene en memoria, para que se vea al instante.
+    if (nombreAntes !== nombreNuevo) {
+        const numero = String(selectedPiloto.numero);
+        viajes.forEach(v => { if (v.socio === numero) v.nombre = nombreNuevo; });
+        pagos.forEach(p => { if (p.socio === numero) p.nombre = nombreNuevo; });
+        actualizarLineaHoy();
+        mostrarRecientes();
+    }
+
+    showToast(nombreAntes !== nombreNuevo
+        ? `🥽 Ficha actualizada — el nombre corregido también en el historial${mensajeExtra}`
+        : `🥽 Ficha actualizada — ${selectedPiloto.nombre}${mensajeExtra}`);
+}
+
+// ============================================================
+// CAMBIAR EL NÚMERO DE UN PILOTO
+// ============================================================
+// El número es la identidad del piloto en todo el sistema: lo usan las subidas,
+// el crédito, los pagos, los contactos y los ajustes. Por eso lo cambia el
+// backend, que arrastra todas las hojas de una sola vez (la app no tiene en
+// memoria Contactos ni Ajustes). Acá se valida y se muestra qué se va a mover.
+function filasDelPilotoEnLaApp(numero) {
+    const n = String(numero);
+    return {
+        viajes: viajes.filter(v => v.socio === n).length,
+        lotes: lotes.filter(l => l.socio === n).length,
+        pagos: pagos.filter(p => p.socio === n).length
+    };
+}
+
+function abrirModalCambiarNumero() {
+    if (!selectedPiloto) { showToast('⚠️ Buscá un piloto primero'); return; }
+    const c = filasDelPilotoEnLaApp(selectedPiloto.numero);
+    document.getElementById('numeroPilotoInfo').innerHTML =
+        `<b>${esc(selectedPiloto.numero)} - ${esc(selectedPiloto.nombre)}</b><br>` +
+        `Se van a mover: <b>${c.viajes}</b> subida${c.viajes === 1 ? '' : 's'}, ` +
+        `<b>${c.lotes}</b> carga${c.lotes === 1 ? '' : 's'} de crédito y ` +
+        `<b>${c.pagos}</b> pago${c.pagos === 1 ? '' : 's'},` +
+        `<br>más su contacto y sus ajustes. Su deuda y su saldo no cambian.`;
+    document.getElementById('numeroNuevoInput').value = '';
+    document.getElementById('numeroAviso').textContent = 'Ojo: necesita señal, porque toca toda la planilla.';
+    document.getElementById('modalNumero').classList.add('show');
+    setTimeout(() => { try { document.getElementById('numeroNuevoInput').focus(); } catch (e) {} }, 120);
+}
+
+function cerrarModalCambiarNumero() {
+    document.getElementById('modalNumero').classList.remove('show');
+}
+
+function cambiarNumeroDePiloto() {
+    if (!selectedPiloto) return;
+    const aviso = document.getElementById('numeroAviso');
+    const nuevo = String(document.getElementById('numeroNuevoInput').value || '').trim();
+    const viejo = String(selectedPiloto.numero);
+
+    if (!correccionesDisponibles()) return;   // backend viejo: avisa y no sigue
+    if (origenDatos === 'local') {
+        aviso.textContent = '📱 Sin señal no se puede cambiar el número: probá cuando vuelvas a tener.';
+        return;
+    }
+    if (!/^\d+$/.test(nuevo)) { aviso.textContent = '⚠️ El número tiene que ser un número entero.'; return; }
+    if (nuevo === viejo) { aviso.textContent = '⚠️ Es el mismo número que ya tiene.'; return; }
+    if (pilotos.some(p => String(p.numero) === nuevo)) {
+        aviso.textContent = '⚠️ Ya hay un piloto con el número ' + nuevo + '. No se pueden fusionar dos pilotos.';
+        return;
+    }
+
+    mutar({ renumerar: { de: viejo, a: nuevo } });
+
+    // Estado local: el piloto y todas sus filas
+    pilotos.forEach(p => { if (String(p.numero) === viejo) p.numero = nuevo; });
+    viajes.forEach(v => { if (v.socio === viejo) v.socio = nuevo; });
+    lotes.forEach(l => { if (l.socio === viejo) l.socio = nuevo; });
+    pagos.forEach(p => { if (p.socio === viejo) p.socio = nuevo; });
+    selectedPiloto.numero = nuevo;
+
+    cerrarModalCambiarNumero();
+    invalidarDeshacer();
+    updateSelectedInfo();
+    renderPilotos('');
+    mostrarRecientes();
+    actualizarLineaHoy();
+    showToast(`🔢 Ahora es el N° ${nuevo} — se movieron todas sus filas`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
 // ============================================================
@@ -3579,6 +3692,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnAplicarCarga').addEventListener('click', confirmarCarga);
     document.getElementById('btnCancelarCarga').addEventListener('click', cerrarModal);
     document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicionPiloto);
+    document.getElementById('btnCambiarNumero').addEventListener('click', () => { cerrarModalEditar(); abrirModalCambiarNumero(); });
+    document.getElementById('btnGuardarNumero').addEventListener('click', cambiarNumeroDePiloto);
+    document.getElementById('btnCancelarNumero').addEventListener('click', cerrarModalCambiarNumero);
     document.getElementById('btnCancelarEdicion').addEventListener('click', cerrarModalEditar);
     document.getElementById('btnAnularSubida').addEventListener('click', abrirModalAnularSubida);
     document.getElementById('btnAjustarDeuda').addEventListener('click', abrirModalAjustarDeuda);
