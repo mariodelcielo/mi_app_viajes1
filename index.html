@@ -1391,8 +1391,11 @@ async function loadAllData(reintentando) {
 function aplicarDatosDelServidor(data, desdeServidor) {
     pilotos = (data.pilotos || []).map(p => ({
         numero: String(p.Numero ?? ''),
-        nombre: p.Nombre || '',
-        alias: p.Alias || '',
+        // SIEMPRE texto: si en la planilla un nombre quedó guardado como número
+        // (una celda numérica), el buscador se rompía entero y no encontraba a
+        // nadie. Pasó el 02/10/2026 con un piloto que tenía el nombre "1090".
+        nombre: String(p.Nombre ?? '').trim(),
+        alias: String(p.Alias ?? '').trim(),
         categoria: p.Categoria || 'piloto',
         viajesLibres: Number(p.ViajesLibres) || 0,
         deuda: Number(p.Deuda) || 0,
@@ -1694,8 +1697,11 @@ function renderPilotos(filter = '') {
     if (!search) { list.classList.remove('show'); list.innerHTML = ''; return; }
     list.classList.add('show');
 
+    // Todo se compara como texto: si un dato viene raro (un nombre guardado como
+    // número), el buscador no se puede quedar mudo.
+    const comoTexto = v => String(v === null || v === undefined ? '' : v).toLowerCase();
     const filtered = pilotos.filter(p =>
-        p.nombre.toLowerCase().includes(search) || p.numero.includes(search) || (p.alias || '').toLowerCase().includes(search)
+        comoTexto(p.nombre).includes(search) || comoTexto(p.numero).includes(search) || comoTexto(p.alias).includes(search)
     );
 
     if (filtered.length === 0) {
@@ -2720,6 +2726,10 @@ async function guardarEdicionPiloto() {
     if (!selectedPiloto) return;
     const nombreNuevo = document.getElementById('nombrePilotoInput').value.trim();
     if (!nombreNuevo) { showToast('⚠️ El nombre no puede quedar vacío'); return; }
+    if (nombreSinLetras(nombreNuevo)) {
+        showToast('⚠️ El nombre no puede ser solo números: revisá si lo pusiste en el casillero del nombre');
+        return;
+    }
     const nombreAntes = selectedPiloto.nombre;
     selectedPiloto.nombre = nombreNuevo;
     selectedPiloto.alias = document.getElementById('aliasInput').value.trim();
@@ -3624,6 +3634,11 @@ function abrirModalNuevoPiloto() {
 function cerrarModalNuevoPiloto() {
     document.getElementById('modalNuevoPiloto').classList.remove('show');
 }
+/** Un nombre tiene que tener al menos una letra: si no, es un número o un símbolo. */
+function nombreSinLetras(nombre) {
+    return !/[a-záéíóúüñ]/i.test(String(nombre || ''));
+}
+
 function crearPiloto() {
     const numero = document.getElementById('npNumero').value.trim();
     const nombre = document.getElementById('npNombre').value.trim();
@@ -3632,6 +3647,10 @@ function crearPiloto() {
     const categoria = document.querySelector('.np-categoria.metodo-activo')?.dataset.categoria || 'piloto';
 
     if (!numero || !nombre) { showToast('⚠️ Completá el número y el nombre'); return; }
+    if (nombreSinLetras(nombre)) {
+        showToast('⚠️ El nombre no puede ser solo números: revisá si lo pusiste en el casillero del nombre');
+        return;
+    }
     if (pilotos.some(p => p.numero === numero)) { showToast('⚠️ Ya existe un piloto con el número ' + numero); return; }
 
     const nuevo = {
