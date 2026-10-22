@@ -47,6 +47,10 @@
             --accion-texto: #b8410b;   /* naranja oscurecido para texto: 5,5:1 */
             --sobre-accion: #111111;   /* lo que va encima del naranja: 5,3:1 */
 
+            /* Segundo color de acción: el botón que además cobra (verde claro) */
+            --verde: #a9d873;
+            --sobre-verde: #111111;
+
             /* Semánticos */
             --ok: #146c33;
             --alerta: #b91c1c;
@@ -86,6 +90,8 @@
 
             --accion-texto: #e8590c;   /* sobre fondo oscuro el naranja ya llega */
             --sobre-accion: #111111;
+            --verde: #7cc24d;          /* un poco más profundo que de día: alumbra sin encandilar */
+            --sobre-verde: #111111;
 
             --ok: #4ade80;
             --alerta: #ff8a8a;
@@ -247,8 +253,36 @@
         /* ===== FICHA DEL PILOTO SELECCIONADO =====
            Antes era un medidor con aguja que ocupaba media pantalla.
            Ahora: saldo y deuda como dos números grandes y una barra fina. */
-        .selected-info { text-align: center; }
+        .selected-info { text-align: center; cursor: pointer; }
         .selected-info .placa-nombre { font-size: calc(19px * var(--esc)); font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+        /* La pista de que el cuadro se puede tocar para ver el historial */
+        .selected-info .ver-hist {
+            display: block; margin-top: 10px; font-size: calc(11px * var(--esc)); font-weight: 700;
+            letter-spacing: 0.04em; color: var(--accion-texto);
+        }
+
+        /* ===== HISTORIAL DEL PILOTO (subidas y pagos, en orden) ===== */
+        .cuentas-hist {
+            display: flex; justify-content: space-between; gap: 8px; background: var(--pista);
+            border-radius: var(--radio-chico); padding: 10px; margin-bottom: 10px; text-align: center;
+            font-weight: 700; font-size: calc(13px * var(--esc)); color: var(--ink);
+        }
+        .cuentas-hist span small {
+            display: block; font-size: calc(9px * var(--esc)); letter-spacing: 0.06em; text-transform: uppercase;
+            color: var(--ink-soft); font-weight: 700;
+        }
+        .lista-hist { max-height: 46vh; overflow-y: auto; margin: 4px 0 2px; }
+        .fila-hist {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+            padding: 9px 2px; border-bottom: 1px solid var(--borde-suave);
+            font-size: calc(13px * var(--esc)); color: var(--ink);
+        }
+        .fila-hist:last-child { border-bottom: none; }
+        .fila-hist .cuando { display: block; color: var(--ink-soft); font-size: calc(11px * var(--esc)); font-weight: 700; }
+        .fila-hist .que { font-weight: 700; }
+        .fila-hist .nota { display: block; font-size: calc(11px * var(--esc)); font-weight: 500; color: var(--ink-soft); }
+        .fila-hist .cuanto { font-weight: 700; white-space: nowrap; }
+        .fila-hist.pago .que { color: var(--ok); }
         .saldo-unico { text-align: center; }
         .saldo-unico .etq {
             display: block; font-size: calc(10px * var(--esc)); font-weight: 700; letter-spacing: 0.08em;
@@ -327,6 +361,21 @@
             margin-bottom: 11px;
         }
         .btn-despegar small { font-size: calc(13px * var(--esc)); font-weight: 500; letter-spacing: 0; opacity: 0.95; }
+
+        /* ===== LOS DOS BOTONES GRANDES =====
+           El de siempre (subir) y el que además cobra. Comparten el espacio: dos
+           columnas iguales. El verde es el segundo color de acción del sistema:
+           relleno verde claro, borde negro y texto negro (igual que el naranja). */
+        .btn-par { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 11px; }
+        .btn-par .btn-accion {
+            width: 100%; flex-direction: column; gap: 2px;
+            padding: 16px 8px; margin-bottom: 0;
+            font-size: calc(16px * var(--esc)); letter-spacing: 0.02em;
+        }
+        .btn-par .btn-accion small {
+            font-size: calc(11px * var(--esc)); font-weight: 600; letter-spacing: 0; opacity: 0.9;
+        }
+        .btn-cobrar { background: var(--verde); color: var(--sobre-verde); border-color: var(--borde); }
         .btn-deshacer { color: var(--alerta); }
         .full-width { grid-column: 1 / -1; }
 
@@ -473,7 +522,10 @@
         <button class="perilla" id="btnSumar" aria-label="Una persona más">+</button>
     </div>
 
-    <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar los PAX" title="Registrar los PAX"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
+    <div class="btn-par">
+        <button class="btn-accion btn-despegar" id="btnConfirmar" aria-label="Registrar los PAX" title="Registrar los PAX"><span id="textoConfirmar">Subir</span><small id="detalleConfirmar">Elegí un piloto</small></button>
+        <button class="btn-accion btn-cobrar" id="btnConfirmarCobrar" aria-label="Registrar los PAX y cobrarlos en el mismo paso" title="Subir y cobrar"><span id="textoCobrar">Subir y cobrar</span><small id="detalleCobrar">Elegí un piloto</small></button>
+    </div>
 
     <div class="accion-group">
         <button class="btn-accion btn-deshacer" id="btnAnular" aria-label="Deshacer la última confirmación" title="Deshacer la última confirmación"><i class="ico" data-ico="deshacer"></i> Deshacer</button>
@@ -636,7 +688,7 @@
 
 <div class="modal-overlay" id="modalConfirmarViaje">
     <div class="modal">
-        <h2><i class="ico" data-ico="check"></i> Confirmar operación</h2>
+        <h2><i class="ico" data-ico="check"></i> <span id="tituloConfirmar">Confirmar operación</span></h2>
         <div id="modalConfirmarInfo" style="background:var(--pista);padding:14px;border-radius:14px;margin-bottom:6px;font-size: calc(15px * var(--esc));line-height:1.7;color:var(--ink);"></div>
         <label style="margin-top:14px;"><i class="ico" data-ico="calendario"></i> Subidas del</label>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -644,9 +696,32 @@
             <button type="button" class="btn-chip" id="btnFechaHoy" style="margin:0;white-space:nowrap;">Hoy</button>
         </div>
         <div class="modal-hint" id="fechaSubidasHint"></div>
+
+        <!-- Solo aparece cuando se entra por "Subir y cobrar" -->
+        <div id="bloqueCobro" style="display:none;">
+            <label style="margin-top:14px;"><i class="ico" data-ico="tarjeta"></i> ¿Cómo te pagó?</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <button type="button" class="btn-chip metodo-cobro metodo-activo" data-metodo-cobro="efectivo" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="dinero"></i> Efectivo</button>
+                <button type="button" class="btn-chip metodo-cobro" data-metodo-cobro="transferencia" style="width:100%;text-align:center;margin:0;"><i class="ico" data-ico="banco"></i> Transferencia</button>
+            </div>
+            <div class="modal-hint" id="cobroHint"></div>
+        </div>
+
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnConfirmarSi"><i class="ico" data-ico="check"></i> Confirmar</button>
             <button class="btn-modal-cancel" id="btnConfirmarNo"><i class="ico" data-ico="x"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalHistorialPiloto">
+    <div class="modal">
+        <h2><i class="ico" data-ico="lista"></i> Historial</h2>
+        <div id="historialQuien" style="background:var(--pista);padding:10px 14px;border-radius:14px;margin-bottom:10px;font-size: calc(14px * var(--esc));font-weight:700;color:var(--ink);"></div>
+        <div class="cuentas-hist" id="historialCuentas"></div>
+        <div class="lista-hist" id="historialLista"></div>
+        <div class="btn-group-modal" style="grid-template-columns:1fr;">
+            <button class="btn-modal-cancel" id="btnCerrarHistorial"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
@@ -899,7 +974,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 7;
+const VERSION_BACKEND = 8;
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -937,6 +1012,7 @@ let lastBatchDeudaAntes = null; // {escuela, pista}: la deuda antes de esa confi
 let avisoMigracionDeuda = null; // resumen de la migración a PAX, para avisar una vez
 let lastBatchLibresAntes = 0;
 let lastBatchOpId = '';       // operación que creó esas subidas (permite borrarlas)
+let lastBatchPago = null;     // pago cobrado en la misma operación (subir y cobrar)
 let colaPendiente = [];       // cambios ya aplicados en el celular, sin subir
 let opsApartadas = [];        // cambios que el servidor rechazó y quedan a revisar
 let enviandoCola = false;
@@ -948,6 +1024,8 @@ let pin = localStorage.getItem('pin_app') || '';
 let pinResolver = null;
 let metodoPagoCarga = 'efectivo';
 let metodoPagoRapido = 'efectivo';
+let cobrarAlConfirmar = false;   // true cuando se entró por "Subir y cobrar"
+let metodoCobro = 'efectivo';    // forma de pago del cobro en el mismo paso
 
 // ============================================================
 // FECHAS: siempre TEXTO en la hora local del celular.
@@ -1349,6 +1427,7 @@ function invalidarDeshacer() {
     lastBatchLotesAntes = [];
     lastBatchDeudaAntes = null;
     lastBatchOpId = '';
+    lastBatchPago = null;
 }
 
 // ============================================================
@@ -1759,17 +1838,28 @@ function getSaldo(numero) {
 // El medidor con aguja se retiró: ahora saldo y deuda son dos números grandes
 // y una barra fina (ver .piloto-numeros y .barra-credito).
 
-/** Texto del botón principal: cuántas personas y cuánto sale. */
+/** Texto de los DOS botones grandes: el de subir y el que además cobra. */
 function actualizarBotonConfirmar() {
     const t = document.getElementById('textoConfirmar');
     const d = document.getElementById('detalleConfirmar');
+    const tc = document.getElementById('textoCobrar');
+    const dc = document.getElementById('detalleCobrar');
     if (!t || !d) return;
 
     const n = cantidadSubidas;
     t.textContent = `Subir ${n} PAX`;
+    if (tc) tc.textContent = 'Subir y cobrar';
 
-    if (!selectedPiloto) { d.textContent = 'Elegí un piloto'; return; }
-    if (!tipoViaje) { d.textContent = 'Elegí Escuela o Pista'; return; }
+    if (!selectedPiloto) {
+        d.textContent = 'Elegí un piloto';
+        if (dc) dc.textContent = 'Elegí un piloto';
+        return;
+    }
+    if (!tipoViaje) {
+        d.textContent = 'Elegí Escuela o Pista';
+        if (dc) dc.textContent = 'Elegí Escuela o Pista';
+        return;
+    }
 
     const precio = getPrecioLista(tipoViaje);
     const descuento = getDescuentoVigente(selectedPiloto.numero);
@@ -1782,8 +1872,10 @@ function actualizarBotonConfirmar() {
     const origen = tipoViaje === 'escuela' ? 'Escuela' : 'Pista';
     if (aCobrar === 0) {
         d.textContent = `${origen} · con PAX libres 🎁`;
+        if (dc) dc.textContent = `${origen} · con PAX libres 🎁`;
     } else {
         d.textContent = `${origen} · ${plata(aCobrar)}${descuento > 0 ? ` (${descuento}% dto)` : ''}`;
+        if (dc) dc.textContent = `cobra ${plata(aCobrar)}`;
     }
 }
 
@@ -1837,6 +1929,7 @@ function updateSelectedInfo() {
         <div class="barra-credito"><i style="width:${pct}%;background:${colorTanque(pct)};"></i></div>
         <div class="mini-nota">${esc(nota)}</div>
         ${cantidadDeuda ? `<div class="mini-nota" style="color:var(--alerta-texto);">Debe ${esc(cantidadDeuda)} · ${plata(deuda)}</div>` : ''}
+        <span class="ver-hist">Tocá para ver el historial →</span>
     `;
     actualizarBotonConfirmar();
 }
@@ -1857,6 +1950,114 @@ function updateHistorial() {
             </div>
         `).join('')}
     `;
+}
+
+// ============================================================
+// HISTORIAL DEL PILOTO (subidas y pagos, en orden)
+// ============================================================
+/**
+ * Todos los movimientos de un piloto, del más nuevo al más viejo.
+ * Las subidas de una misma tanda (los 2 PAX de un viaje) van juntas en una línea,
+ * porque en la planilla son una fila por persona pero para Mario es una sola subida.
+ */
+function movimientosDelPiloto(numero) {
+    const n = String(numero);
+    const movs = [];
+
+    const grupos = new Map();
+    viajes.filter(v => String(v.socio) === n).forEach(v => {
+        // Cada subida de una tanda lleva `${base}-1`, `${base}-2`…: la base es la operación.
+        const base = String(v.opId || '').replace(/-\d+$/, '');
+        const clave = base || `${v.fecha}|${v.tipo}`;
+        if (!grupos.has(clave)) {
+            grupos.set(clave, { fecha: String(v.fecha || ''), tipo: v.tipo, pax: 0, monto: 0, deuda: 0, gratis: 0 });
+        }
+        const g = grupos.get(clave);
+        g.pax += 1;
+        g.monto += Number(v.total) || 0;
+        g.deuda += Number(v.deuda) || 0;
+        if (v.gratis) g.gratis += 1;
+    });
+
+    grupos.forEach(g => {
+        const nota = [];
+        if (g.gratis > 0) nota.push(g.gratis === g.pax ? 'PAX libre 🎁' : `${g.gratis} PAX libres 🎁`);
+        if (g.deuda > 0) nota.push(`quedó a deber ${plata(g.deuda)}`);
+        if (nota.length === 0) nota.push('pagada con crédito');
+        movs.push({
+            fecha: g.fecha,
+            clase: 'subida',
+            que: `${g.tipo === 'escuela' ? 'Escuela' : 'Pista'} · ${g.pax} PAX`,
+            nota: nota.join(' · '),
+            monto: g.monto,
+            pax: g.pax
+        });
+    });
+
+    pagos.filter(p => String(p.socio) === n).forEach(p => {
+        movs.push({
+            fecha: String(p.fecha || ''),
+            clase: 'pago',
+            que: p.metodoPago === 'transferencia' ? 'Pago por transferencia' : 'Pago en efectivo',
+            nota: '',
+            monto: Number(p.monto) || 0,
+            pax: 0
+        });
+    });
+
+    // Del más nuevo al más viejo. Las fechas son 'AAAA-MM-DD HH:mm:ss', así que
+    // compararlas como texto alcanza (y no hay líos de zona horaria).
+    movs.sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+    return movs;
+}
+
+/** '2026-09-28 09:41:00' → '28/09 · 09:41' */
+function fechaHoraCorta(valor) {
+    const t = String(valor || '').trim();
+    if (!t) return '';
+    const partes = t.split(' ');
+    const d = (partes[0] || '').split('-');
+    const h = (partes[1] || '').slice(0, 5);
+    if (d.length === 3) return `${d[2]}/${d[1]}${h ? ' · ' + h : ''}`;
+    return t;
+}
+
+function abrirHistorialPiloto() {
+    if (!selectedPiloto) return;
+    recalcularDeuda(selectedPiloto);
+
+    const movs = movimientosDelPiloto(selectedPiloto.numero);
+    const pax = movs.reduce((a, m) => a + (m.pax || 0), 0);
+    const pagado = movs.filter(m => m.clase === 'pago').reduce((a, m) => a + m.monto, 0);
+    const debe = Number(selectedPiloto.deuda) || 0;
+
+    document.getElementById('historialQuien').textContent =
+        `${selectedPiloto.numero} - ${selectedPiloto.nombre}${selectedPiloto.alias ? ` "${selectedPiloto.alias}"` : ''}`;
+    document.getElementById('historialCuentas').innerHTML =
+        `<span><small>PAX subidos</small>${pax}</span>` +
+        `<span><small>Pagó</small>${plata(pagado)}</span>` +
+        `<span><small>Debe hoy</small>${plata(debe)}</span>`;
+
+    const lista = document.getElementById('historialLista');
+    if (movs.length === 0) {
+        lista.innerHTML = `<div class="empty-state">Todavía no tiene subidas ni pagos</div>`;
+    } else {
+        lista.innerHTML = movs.map(m => `
+            <div class="fila-hist${m.clase === 'pago' ? ' pago' : ''}">
+                <span>
+                    <span class="cuando">${esc(fechaHoraCorta(m.fecha))}</span>
+                    <span class="que">${esc(m.que)}</span>
+                    ${m.nota ? `<span class="nota">${esc(m.nota)}</span>` : ''}
+                </span>
+                <span class="cuanto">${m.monto > 0 ? plata(m.monto) : '—'}</span>
+            </div>
+        `).join('');
+    }
+    document.getElementById('modalHistorialPiloto').classList.add('show');
+}
+
+function cerrarHistorialPiloto() {
+    document.getElementById('modalHistorialPiloto').classList.remove('show');
 }
 
 // ============================================================
@@ -2227,9 +2428,22 @@ function cobrarUnaSubida(piloto, tipo, fecha) {
     return viaje;
 }
 
-function pedirConfirmacionViaje() {
+/**
+ * Abre la ventana de confirmación de la subida.
+ * `conCobro` = true cuando se entró por "Subir y cobrar": además de las subidas se
+ * cobra lo que quede a deber de ellas, en el mismo paso.
+ */
+function abrirModalDeSubida(conCobro) {
     if (!selectedPiloto) { showToast('⚠️ Buscá un piloto'); return; }
     if (!tipoViaje) { showToast('⚠️ Elegí Escuela o Pista'); return; }
+
+    cobrarAlConfirmar = !!conCobro;
+    if (cobrarAlConfirmar) metodoCobro = 'efectivo';
+    document.getElementById('bloqueCobro').style.display = cobrarAlConfirmar ? 'block' : 'none';
+    document.querySelectorAll('.metodo-cobro').forEach(b =>
+        b.classList.toggle('metodo-activo', b.dataset.metodoCobro === 'efectivo'));
+    const titulo = document.getElementById('tituloConfirmar');
+    if (titulo) titulo.textContent = cobrarAlConfirmar ? 'Subir y cobrar' : 'Confirmar operación';
 
     // Siempre arranca en hoy: el día solo se toca cuando hace falta.
     fechaSubidas = fechaSoloLocal();
@@ -2240,6 +2454,10 @@ function pedirConfirmacionViaje() {
     actualizarInfoConfirmacion();
     document.getElementById('modalConfirmarViaje').classList.add('show');
 }
+
+function pedirConfirmacionViaje() { abrirModalDeSubida(false); }
+
+function pedirConfirmacionCobro() { abrirModalDeSubida(true); }
 
 /** Se rehace cada vez que cambia la cantidad, el origen o el DÍA de las subidas. */
 function actualizarInfoConfirmacion() {
@@ -2275,6 +2493,24 @@ function actualizarInfoConfirmacion() {
         ? 'Es de hoy: se guarda con la fecha de hoy.'
         : `Estas ${cantidadSubidas} PAX van a quedar con fecha ${formatoFechaLinda(fechaSubidas)}, ` +
           `al precio de ese día (hoy la ${tipoTexto} está ${plata(getPrecioLista(tipoViaje))}).`;
+
+    // Cuando se entra por "Subir y cobrar", se explica acá qué va a pasar con la plata.
+    if (cobrarAlConfirmar) {
+        const deudaPrevia = Number(selectedPiloto.deuda) || 0;
+        let texto;
+        if (totalEstimado > 0) {
+            texto = `Se registran las subidas y se cobran ${plata(totalEstimado)} ` +
+                `en ${metodoCobro === 'transferencia' ? 'transferencia' : 'efectivo'}, en un solo paso.`;
+            if (deudaPrevia > 0) {
+                texto += ' La deuda que ya tenía queda como está (para eso está el Pago rápido).';
+            }
+        } else if (gratisUsados > 0) {
+            texto = 'No hay nada que cobrar: se paga con los PAX libres. Solo se registran las subidas.';
+        } else {
+            texto = 'No hay nada que cobrar: ya lo paga con el crédito que tiene. Solo se registran las subidas.';
+        }
+        document.getElementById('cobroHint').textContent = texto;
+    }
 }
 
 function cambiarFechaSubidas(dia) {
@@ -2293,10 +2529,16 @@ async function confirmarViaje() {
     cerrarModalConfirmarViaje();
     const piloto = selectedPiloto;
     const dia = fechaSubidas || fechaSoloLocal();
+    const conCobro = cobrarAlConfirmar;
+    const metodo = metodoCobro;
+    cobrarAlConfirmar = false;
+
     lastBatch = [];
+    lastBatchPago = null;
     lastBatchLotesAntes = lotes.filter(l => l.socio === piloto.numero).map(l => ({ loteId: l.loteId, saldo: l.saldo }));
     lastBatchDeudaAntes = { escuela: Number(piloto.debeEscuela) || 0, pista: Number(piloto.debePista) || 0 };
     lastBatchLibresAntes = piloto.viajesLibres || 0;
+    const deudaAntes = Number(piloto.deuda) || 0;
 
     const lotesTocados = new Set();
     const baseId = nuevoOpId(); // cada subida de la tanda lleva su propio número
@@ -2307,25 +2549,46 @@ async function confirmarViaje() {
         (viaje._lotesUsados || []).forEach(u => lotesTocados.add(u.loteId));
     }
 
+    // "Subir y cobrar": además de las subidas, se cobra lo que quedó a deber de
+    // ESTAS subidas (la deuda vieja, si había, no se toca: para eso está el Pago rápido).
+    if (conCobro) {
+        const generada = Math.max(0, Math.round((Number(piloto.deuda) || 0) - deudaAntes));
+        if (generada > 0) {
+            const aplicado = aplicarPago(piloto, generada);
+            if (aplicado > 0) {
+                lastBatchPago = {
+                    fecha: fechaHoraLocal(), socio: piloto.numero, nombre: piloto.nombre,
+                    monto: aplicado, metodoPago: metodo
+                };
+                pagos.push(lastBatchPago);
+            }
+        }
+    }
+
     updateSelectedInfo();
     renderPilotos('');
     updateHistorial();
 
-    const op = mutar({
+    const cambios = {
         viajes: lastBatch.map(viajeParaServidor),
         piloto: pilotoParaServidor(piloto, true),
         lotesSaldo: [...lotesTocados].map(id => {
             const l = lotes.find(x => x.socio === piloto.numero && x.loteId === id);
             return { Lote_ID: id, Saldo_Disponible: l ? l.saldo : 0 };
         })
-    });
+    };
+    if (lastBatchPago) cambios.pagos = [pagoParaServidor(lastBatchPago)];
+    const op = mutar(cambios);
     lastBatchOpId = op.opId;
 
     vibrar(35);
     const esHoy = dia === fechaSoloLocal();
-    showToast(esHoy
-        ? `🛫 ${cantidadSubidas} PAX registrados para ${piloto.nombre}`
-        : `🛫 ${cantidadSubidas} PAX del ${formatoFechaLinda(dia)} registrados para ${piloto.nombre}`);
+    const cuando = esHoy ? '' : ` del ${formatoFechaLinda(dia)}`;
+    if (lastBatchPago) {
+        showToast(`🛫 ${cantidadSubidas} PAX${cuando} + 💵 ${plata(lastBatchPago.monto)} cobrados — ${piloto.nombre}`);
+    } else {
+        showToast(`🛫 ${cantidadSubidas} PAX${cuando} registrados para ${piloto.nombre}`);
+    }
     // El encabezado ya muestra si quedaron cambios sin subir. Este aviso aparece
     // recién cuando el dato llegó de verdad a la planilla (nunca antes).
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
@@ -2335,10 +2598,11 @@ async function confirmarViaje() {
 // DESHACER ÚLTIMA CONFIRMACIÓN (restaura lotes y deuda exactos)
 // ============================================================
 async function anularUltimoViaje() {
-    if (lastBatch.length === 0) { showToast('⚠️ No hay nada reciente para deshacer'); return; }
+    if (lastBatch.length === 0 && !lastBatchPago) { showToast('⚠️ No hay nada reciente para deshacer'); return; }
 
-    const piloto = pilotos.find(p => p.numero === lastBatch[0].socio);
-    if (!piloto) { lastBatch = []; lastBatchLotesAntes = []; lastBatchOpId = ''; return; }
+    const numero = lastBatch.length ? lastBatch[0].socio : (lastBatchPago ? lastBatchPago.socio : '');
+    const piloto = pilotos.find(p => p.numero === numero);
+    if (!piloto) { lastBatch = []; lastBatchLotesAntes = []; lastBatchOpId = ''; lastBatchPago = null; return; }
 
     // Se vuelve EXACTAMENTE al estado anterior a esa confirmación.
     piloto.viajesLibres = lastBatchLibresAntes;
@@ -2363,9 +2627,21 @@ async function anularUltimoViaje() {
     // (las viejas, anteriores a la v2, no tienen número: se usa el de la operación).
     const ids = lastBatch.map(v => v.opId).filter(Boolean);
     const opIdAnulado = lastBatchOpId;
+
+    // Si la operación incluyó un cobro ("Subir y cobrar"), también se deshace:
+    // se saca el pago de la lista y se borra su fila de la hoja Pagos.
+    const pagoAnulado = lastBatchPago;
+    let pagosBorrarFila = null;
+    if (pagoAnulado) {
+        const i = pagos.indexOf(pagoAnulado);
+        if (i !== -1) pagos.splice(i, 1);
+        pagosBorrarFila = [{ Fecha: pagoAnulado.fecha, Numero: pagoAnulado.socio, Monto: pagoAnulado.monto }];
+    }
+
     lastBatch = [];
     lastBatchLotesAntes = [];
     lastBatchOpId = '';
+    lastBatchPago = null;
 
     updateSelectedInfo();
     renderPilotos('');
@@ -2373,13 +2649,17 @@ async function anularUltimoViaje() {
 
     // En la planilla las subidas se borran por su _Op_ID (nunca se reescribe la
     // hoja entera), y el piloto y sus lotes vuelven a los valores de antes.
-    mutar({
+    const reversa = {
         viajesBorrar: ids.length ? ids : (opIdAnulado ? [opIdAnulado] : []),
         piloto: pilotoParaServidor(piloto, true),
         lotesSaldo: saldos
-    });
+    };
+    if (pagosBorrarFila) reversa.pagosBorrarFila = pagosBorrarFila;
+    mutar(reversa);
 
-    showToast(`↩️ Se deshicieron ${anulados} PAX`);
+    showToast(pagoAnulado
+        ? `↩️ Se deshicieron ${anulados} PAX y el cobro de ${plata(pagoAnulado.monto)}`
+        : `↩️ Se deshicieron ${anulados} PAX`);
 }
 
 // ============================================================
@@ -3683,6 +3963,58 @@ function showToast(msg) {
 }
 
 // ============================================================
+// EL BOTÓN ATRÁS DEL CELULAR
+// ============================================================
+// En Android, la app instalada desde el ícono no tenía idea del botón atrás: al
+// tocarlo, el teléfono se iba de la app a una página en blanco y quedaba la
+// pantalla en negro (había que cerrar y volver a abrir). Ahora la app lo escucha:
+// primero cierra lo que esté abierto y, si no hay nada abierto, se queda en la app
+// y avisa cómo salir. El PIN no se cierra así: si lo está pidiendo, se contesta.
+const MODALES_ATRAS = [
+    'modalCarga', 'modalEditar', 'modalNumero',
+    'modalNuevoPiloto', 'modalConfirmarViaje', 'modalHistorialPiloto', 'modalPago',
+    'modalDeudores', 'modalApartadas', 'modalMigracion', 'modalAnularSubida',
+    'modalAjustarDeuda', 'modalBorrarGasto', 'modalDatos', 'modalPrecios',
+    'modalCobro', 'modalGastos', 'modalNuevoGasto', 'modalEstadisticas', 'modalElegirPeriodo'
+];
+let avisoSalidaMostrado = false;
+
+/** Qué hay abierto ahora: el id de la ventana de más arriba, o ''. */
+function algoAbierto() {
+    // Se recorre al revés: con el mismo z-index, la que está más abajo en el HTML
+    // es la que se dibuja encima.
+    for (let i = MODALES_ATRAS.length - 1; i >= 0; i--) {
+        const el = document.getElementById(MODALES_ATRAS[i]);
+        if (el && el.classList && el.classList.contains('show')) return MODALES_ATRAS[i];
+    }
+    const lista = document.getElementById('pilotosList');
+    if (lista && lista.classList && lista.classList.contains('show')) return 'pilotosList';
+    return '';
+}
+
+/** Cierra lo que esté abierto. Devuelve true si cerró algo. */
+function manejarAtras() {
+    const id = algoAbierto();
+    if (!id) return false;
+    const el = document.getElementById(id);
+    if (el && el.classList) el.classList.remove('show');
+    return true;
+}
+
+/** Engancha el botón atrás. Se llama una sola vez, al arrancar. */
+function armarBotonAtras() {
+    try { history.pushState({ app: 1 }, ''); } catch (e) { return; }
+    window.addEventListener('popstate', () => {
+        const cerro = manejarAtras();
+        try { history.pushState({ app: 1 }, ''); } catch (e) {}
+        if (!cerro && !avisoSalidaMostrado) {
+            avisoSalidaMostrado = true;
+            showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
+        }
+    });
+}
+
+// ============================================================
 // EVENTOS E INICIO
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -3700,8 +4032,23 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnRestar').addEventListener('click', () => cambiarCantidad(-1));
     document.getElementById('btnSumar').addEventListener('click', () => cambiarCantidad(1));
     document.getElementById('btnConfirmar').addEventListener('click', pedirConfirmacionViaje);
+    document.getElementById('btnConfirmarCobrar').addEventListener('click', pedirConfirmacionCobro);
     document.getElementById('btnConfirmarSi').addEventListener('click', confirmarViaje);
     document.getElementById('btnConfirmarNo').addEventListener('click', cerrarModalConfirmarViaje);
+    // El cuadro del piloto se toca para ver su historial
+    document.getElementById('selectedInfo').addEventListener('click', () => {
+        if (selectedPiloto) abrirHistorialPiloto();
+    });
+    document.getElementById('btnCerrarHistorial').addEventListener('click', cerrarHistorialPiloto);
+    // Forma de pago del cobro en el mismo paso
+    document.querySelectorAll('.metodo-cobro').forEach(b => {
+        b.addEventListener('click', () => {
+            metodoCobro = b.dataset.metodoCobro || 'efectivo';
+            document.querySelectorAll('.metodo-cobro').forEach(x => x.classList.toggle('metodo-activo', x === b));
+            actualizarInfoConfirmacion();
+        });
+    });
+    armarBotonAtras();
     document.getElementById('fechaSubidasInput').addEventListener('input', e => cambiarFechaSubidas(e.target.value));
     document.getElementById('btnFechaHoy').addEventListener('click', () => cambiarFechaSubidas(fechaSoloLocal()));
     document.getElementById('fechaCargaInput').addEventListener('input', e => cambiarFechaCarga(e.target.value));
