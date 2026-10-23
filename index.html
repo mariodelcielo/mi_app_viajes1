@@ -4001,16 +4001,45 @@ function manejarAtras() {
     return true;
 }
 
-/** Engancha el botón atrás. Se llama una sola vez, al arrancar. */
+const ESTADO_APP = 'rescates-rambla';
+
+/** Deja una entrada propia en el historial. Si falla, devuelve false. */
+function empujarEstadoApp() {
+    try { history.pushState({ app: ESTADO_APP }, ''); return true; }
+    catch (e) { return false; }
+}
+
+/**
+ * Engancha el botón atrás. Se llama al arrancar y cada vez que la app vuelve a
+ * primer plano, porque en Android el WebView puede restaurar la página y perder
+ * el estado propio (eso hacía que "al principio anduviera y después no").
+ */
 function armarBotonAtras() {
-    try { history.pushState({ app: 1 }, ''); } catch (e) { return; }
+    try { history.replaceState({ app: ESTADO_APP }, ''); } catch (e) {}
+    empujarEstadoApp();
+
     window.addEventListener('popstate', () => {
+        // PRIMERO se repone el guardián: si algo falla al cerrar una ventana, la
+        // app igual no se va a la pantalla negra.
+        empujarEstadoApp();
         const cerro = manejarAtras();
-        try { history.pushState({ app: 1 }, ''); } catch (e) {}
         if (!cerro && !avisoSalidaMostrado) {
             avisoSalidaMostrado = true;
             showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
         }
+    });
+
+    // Al volver del segundo plano, si el estado se perdió, se vuelve a armar.
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') return;
+        const estado = (function () { try { return history.state; } catch (e) { return null; } })();
+        if (!estado || estado.app !== ESTADO_APP) armarBotonAtras();
+    });
+    // Y si el navegador restaura la página desde el caché (sin recargarla).
+    window.addEventListener('pageshow', (e) => {
+        if (!e || !e.persisted) return;
+        const estado = (function () { try { return history.state; } catch (e) { return null; } })();
+        if (!estado || estado.app !== ESTADO_APP) armarBotonAtras();
     });
 }
 
@@ -4048,7 +4077,6 @@ document.addEventListener('DOMContentLoaded', () => {
             actualizarInfoConfirmacion();
         });
     });
-    armarBotonAtras();
     document.getElementById('fechaSubidasInput').addEventListener('input', e => cambiarFechaSubidas(e.target.value));
     document.getElementById('btnFechaHoy').addEventListener('click', () => cambiarFechaSubidas(fechaSoloLocal()));
     document.getElementById('fechaCargaInput').addEventListener('input', e => cambiarFechaCarga(e.target.value));
@@ -4180,6 +4208,11 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 });
+
+// El guardián del botón atrás se arma acá, fuera del arranque: así no depende de
+// que todo lo demás se haya inicializado bien (el script está al final del body,
+// así que el HTML ya existe cuando llega hasta acá).
+armarBotonAtras();
 </script>
 </body>
 </html>
