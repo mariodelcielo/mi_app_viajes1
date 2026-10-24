@@ -841,6 +841,7 @@
                 <button type="button" class="btn-chip letra-btn" data-letra="1.25" style="width:100%;text-align:center;margin:0;">Muy grande</button>
             </div>
         </div>
+        <div class="modal-hint" id="versionApp" style="text-align:center;margin-top:12px;"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-cancel" id="btnCerrarDatos"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
@@ -975,6 +976,9 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
 const VERSION_BACKEND = 8;
+// Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
+// para poder saber sin dudas qué archivo está corriendo el celular.
+const VERSION_APP = '2026-10-24 11:25';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -4205,6 +4209,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Preferencias guardadas en este celular
     pintarIconos();
+    const selloVersion = document.getElementById('versionApp');
+    if (selloVersion) selloVersion.textContent = `Versión de la app: ${VERSION_APP}`;
     aplicarLetra(localStorage.getItem('letra') || 1);
     aplicarModoNoche(localStorage.getItem('modo_noche') === '1');
     document.getElementById('btnNoche').addEventListener('click', () => {

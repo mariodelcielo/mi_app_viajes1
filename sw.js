@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gestion-viajes-v2';
+const CACHE_NAME = 'gestion-viajes-v3';
 const ARCHIVOS = [
     './', './index.html', './manifest.json', './rescates-logo.png', './consulta.html',
     './favicon.png', './favicon.ico', './apple-touch-icon.png', './icon-192.png', './icon-512.png'
@@ -8,6 +8,33 @@ const ARCHIVOS = [
 // usar los datos del celular; si el service worker devolviera una respuesta
 // vieja, la app creería que está enlazada y podría pisar cambios locales.
 const SIN_CACHE = ['script.google.com', 'script.googleusercontent.com', 'googleusercontent.com'];
+
+// Tope para la red: con poca señal, una descarga puede quedarse colgada sin
+// fallar nunca. Sin este tope, el teléfono se queda en negro esperando.
+const TOPE_RED = 4000;
+
+/** Corta una promesa que tarda más de `ms` (red colgada = como si no hubiera). */
+function conTope(promesa, ms) {
+    return new Promise((resolver, rechazar) => {
+        let listo = false;
+        const reloj = setTimeout(() => {
+            if (listo) return;
+            listo = true;
+            rechazar(new Error('la red no contestó'));
+        }, ms);
+        promesa.then(valor => {
+            if (listo) return;
+            listo = true;
+            clearTimeout(reloj);
+            resolver(valor);
+        }).catch(err => {
+            if (listo) return;
+            listo = true;
+            clearTimeout(reloj);
+            rechazar(err);
+        });
+    });
+}
 
 self.addEventListener('install', event => {
     event.waitUntil(
@@ -26,7 +53,9 @@ self.addEventListener('activate', event => {
     );
 });
 
-// Estrategia: red primero (datos frescos) y caché solo si no hay señal.
+// Estrategia: primero lo guardado (abre al instante, aunque no haya señal) y en
+// paralelo se pide por red para actualizar la copia para la próxima vez.
+// Antes era "red primero": con la red colgada la app quedaba en negro esperando.
 self.addEventListener('fetch', event => {
     const req = event.request;
 
@@ -42,15 +71,26 @@ self.addEventListener('fetch', event => {
     // 2) Solo manejamos archivos propios; el resto lo resuelve el navegador.
     if (url.origin !== self.location.origin) return;
 
-    event.respondWith(
-        fetch(req)
-            .then(resp => {
-                if (resp && resp.ok) {
-                    const copia = resp.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(req, copia)).catch(() => {});
-                }
-                return resp;
-            })
-            .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
-    );
+    event.respondWith(desdeCacheYActualizar(req));
 });
+
+/** Devuelve la copia guardada (si está) y, por atrás, la actualiza desde la red. */
+function desdeCacheYActualizar(req) {
+    const refresco = conTope(fetch(req), TOPE_RED)
+        .then(resp => {
+            if (resp && resp.ok) {
+                const copia = resp.clone();
+                caches.open(CACHE_NAME).then(c => c.put(req, copia)).catch(() => {});
+            }
+            return resp;
+        })
+        .catch(() => null);
+
+    return caches.match(req).then(guardada => {
+        if (guardada) {
+            refresco.catch(() => {});
+            return guardada;
+        }
+        return refresco.then(resp => resp || caches.match('./index.html'));
+    });
+}
