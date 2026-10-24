@@ -979,7 +979,7 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 const VERSION_BACKEND = 8;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-10-24 11:55';
+const VERSION_APP = '2026-10-24 12:10';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -4009,13 +4009,15 @@ function manejarAtras() {
 
 const ESTADO_APP = 'rescates-rambla';
 let atrasArmado = false;
+let ignorarProximoHash = false;
 
 // ============================================================
 // DIAGNÓSTICO DEL BOTÓN ATRÁS (se ve en Datos, abajo)
 // ============================================================
-// Anota en el teléfono qué pasó con el atrás, para poder mirarlo DESPUÉS de la
-// pantalla negra: si el atrás se detectó, si la página se descargó y cómo venía
-// el historial. Se puede sacar cuando el problema esté resuelto.
+// Anota en el teléfono qué pasó con el atrás. Sirvió para descubrir (24/10) que
+// en la app instalada de Firefox el historial del navegador NO funciona: ni
+// pushState ni popstate. Se deja porque es barato y muestra al instante si el
+// atrás se está detectando.
 const DIAG_CLAVE = 'diag_atras';
 
 function leerDiag() {
@@ -4035,9 +4037,10 @@ function pintarDiagnostico() {
     try {
         if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) modo = 'app instalada';
     } catch (e) {}
-    const entradas = d.entradas === undefined ? '?' : d.entradas;
-    el.textContent = `Diag · carga ${d.tipoCarga || '?'} · historial ${entradas} · estado ${d.estado || '?'}` +
-        ` · cargas ${d.cargas || 0} · atrás ${d.atras || 0} · salidas ${d.salidas || 0} · ${modo}`;
+    let hash = 'no';
+    try { hash = location.hash || 'no'; } catch (e) {}
+    el.textContent = `Diag · ${modo} · hash ${hash} · carga ${d.tipoCarga || '?'}` +
+        ` · cargas ${d.cargas || 0} · atrás ${d.atras || 0} · salidas ${d.salidas || 0}`;
 }
 
 /** Cómo llegó esta carga de la página: 'navigate', 'reload' o 'back_forward'. */
@@ -4048,66 +4051,78 @@ function tipoDeCarga() {
     } catch (e) { return '?'; }
 }
 
-/** Deja una entrada propia en el historial. Si falla, devuelve false. */
-function empujarEstadoApp() {
-    try { history.pushState({ app: ESTADO_APP }, ''); return true; }
-    catch (e) { return false; }
-}
+// ============================================================
+// EL BOTÓN ATRÁS DEL CELULAR (por el "#" de la dirección)
+// ============================================================
+// Historia completa, porque ya nos costó cuatro intentos:
+// en la app instalada del celular de Mario (Firefox para Android) el historial
+// del navegador NO funciona: `history.pushState` no agrega nada, `history.state`
+// queda vacío y el toque de atrás NO dispara `popstate`. Por eso todo lo que se
+// apoyaba en eso terminó en pantalla negra: el teléfono descargaba la página.
+//
+// Lo que SÍ funciona ahí es el "#" de la dirección: cambiar el hash es una
+// navegación dentro de la MISMA página (no la descarga), queda en el historial y
+// el atrás la deshace disparando `hashchange`. Con eso:
+//   1. se deja puesto un "#app" propio, así el atrás nunca sale de la página;
+//   2. cada atrás cierra UNA capa (la ventana de más arriba);
+//   3. y se vuelve a poner el "#app" para el próximo toque.
+const HASH_APP = '#app';
 
-/** ¿La entrada actual del historial es la nuestra? */
-function estadoAppEsNuestro() {
-    try { return !!(history.state && history.state.app === ESTADO_APP); }
-    catch (e) { return false; }
+/** Deja puesto el "#app" (marca propia en la dirección). */
+function ponerHashApp() {
+    try {
+        if (location.hash !== HASH_APP) location.hash = HASH_APP;
+    } catch (e) {}
 }
 
 /**
- * Repone la entrada propia SOLO si se perdió (por ejemplo, si el WebView restauró
- * la página o la app volvió del segundo plano). No agrega vigilantes: si se
- * agregaran de nuevo, cada toque de "atrás" empujaría varios estados y el botón
- * quedaría en bucle (pasó el 24/10).
+ * El teléfono deshizo el "#": se cierra la capa de arriba y se repone la marca.
+ * `ignorarProximoHash` evita que el cambio de hash que hacemos nosotros mismos
+ * cuente como otro atrás (si no, cada toque cerraría dos capas).
  */
-function rearmarAtrasSiHaceFalta() {
-    if (estadoAppEsNuestro()) return;
-    try { history.replaceState({ app: ESTADO_APP }, ''); } catch (e) {}
-    empujarEstadoApp();
-}
-
-/**
- * El teléfono quiere volver atrás: se cierra UNA capa (la de más arriba) y se
- * queda una entrada propia para el próximo toque. Así el atrás va cerrando de a
- * una: ventana, ventana, lista, y al final la pantalla principal.
- */
-function alIntentarVolverAtras() {
-    anotarDiag('atras');                       // 0) queda anotado para el diagnóstico
-    anotarDiag('entradasAtras', (history && history.length) || 0);
-    empujarEstadoApp();                        // 1) primero se repone el guardián
-    const cerro = manejarAtras();              // 2) después se cierra la capa de arriba
+function alVolverAtras() {
+    if (ignorarProximoHash) { ignorarProximoHash = false; return; }
+    anotarDiag('atras');
+    const cerro = manejarAtras();
     if (!cerro && !avisoSalidaMostrado) {
         avisoSalidaMostrado = true;
         showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
     }
+    let hash = '';
+    try { hash = location.hash; } catch (e) {}
+    if (hash !== HASH_APP) {
+        ignorarProximoHash = true;
+        ponerHashApp();
+    }
 }
 
 /**
- * Engancha el botón atrás. Se puede llamar más de una vez sin riesgo: los
- * vigilantes se enganchan UNA sola vez y el estado se repone solo si hace falta.
+ * Pone el "#app" sin que cuente como un atrás (solo si de verdad falta).
+ * Si ya estaba puesto, no toca la bandera: si no, se comería el próximo atrás.
+ */
+function asegurarHashApp() {
+    let hash = '';
+    try { hash = location.hash; } catch (e) {}
+    if (hash === HASH_APP) return;
+    ignorarProximoHash = true;
+    ponerHashApp();
+}
+
+/**
+ * Engancha el botón atrás. Se puede llamar más de una vez sin riesgo: el
+ * vigilante se engancha UNA sola vez (si se duplicara, un toque cerraría varias
+ * capas y la app quedaría en bucle, como pasó el 24/10).
  */
 function armarBotonAtras() {
     if (!atrasArmado) {
         atrasArmado = true;
-        window.addEventListener('popstate', alIntentarVolverAtras);
-        window.addEventListener('pageshow', rearmarAtrasSiHaceFalta);
-        // Si el teléfono descarga la página (pantalla negra), queda anotado.
+        window.addEventListener('hashchange', alVolverAtras);
+        // Si el teléfono descarga la página, queda anotado en el diagnóstico.
         window.addEventListener('pagehide', () => anotarDiag('salidas'));
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') rearmarAtrasSiHaceFalta();
-        });
         anotarDiag('cargas');
-        anotarDiag('entradas', (history && history.length) || 0);
         anotarDiag('tipoCarga', tipoDeCarga());
     }
-    anotarDiag('estado', estadoAppEsNuestro() ? 'propio' : 'ajeno');
-    rearmarAtrasSiHaceFalta();
+    asegurarHashApp();
 }
 
 // ============================================================
