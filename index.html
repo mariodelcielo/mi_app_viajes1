@@ -4002,6 +4002,7 @@ function manejarAtras() {
 }
 
 const ESTADO_APP = 'rescates-rambla';
+let atrasArmado = false;
 
 /** Deja una entrada propia en el historial. Si falla, devuelve false. */
 function empujarEstadoApp() {
@@ -4009,38 +4010,52 @@ function empujarEstadoApp() {
     catch (e) { return false; }
 }
 
+/** ¿La entrada actual del historial es la nuestra? */
+function estadoAppEsNuestro() {
+    try { return !!(history.state && history.state.app === ESTADO_APP); }
+    catch (e) { return false; }
+}
+
 /**
- * Engancha el botón atrás. Se llama al arrancar y cada vez que la app vuelve a
- * primer plano, porque en Android el WebView puede restaurar la página y perder
- * el estado propio (eso hacía que "al principio anduviera y después no").
+ * Repone la entrada propia SOLO si se perdió (por ejemplo, si el WebView restauró
+ * la página o la app volvió del segundo plano). No agrega vigilantes: si se
+ * agregaran de nuevo, cada toque de "atrás" empujaría varios estados y el botón
+ * quedaría en bucle (pasó el 24/10).
  */
-function armarBotonAtras() {
+function rearmarAtrasSiHaceFalta() {
+    if (estadoAppEsNuestro()) return;
     try { history.replaceState({ app: ESTADO_APP }, ''); } catch (e) {}
     empujarEstadoApp();
+}
 
-    window.addEventListener('popstate', () => {
-        // PRIMERO se repone el guardián: si algo falla al cerrar una ventana, la
-        // app igual no se va a la pantalla negra.
-        empujarEstadoApp();
-        const cerro = manejarAtras();
-        if (!cerro && !avisoSalidaMostrado) {
-            avisoSalidaMostrado = true;
-            showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
-        }
-    });
+/**
+ * El teléfono quiere volver atrás: se cierra UNA capa (la de más arriba) y se
+ * queda una entrada propia para el próximo toque. Así el atrás va cerrando de a
+ * una: ventana, ventana, lista, y al final la pantalla principal.
+ */
+function alIntentarVolverAtras() {
+    empujarEstadoApp();            // 1) primero se repone el guardián
+    const cerro = manejarAtras();  // 2) después se cierra la capa de arriba
+    if (!cerro && !avisoSalidaMostrado) {
+        avisoSalidaMostrado = true;
+        showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
+    }
+}
 
-    // Al volver del segundo plano, si el estado se perdió, se vuelve a armar.
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState !== 'visible') return;
-        const estado = (function () { try { return history.state; } catch (e) { return null; } })();
-        if (!estado || estado.app !== ESTADO_APP) armarBotonAtras();
-    });
-    // Y si el navegador restaura la página desde el caché (sin recargarla).
-    window.addEventListener('pageshow', (e) => {
-        if (!e || !e.persisted) return;
-        const estado = (function () { try { return history.state; } catch (e) { return null; } })();
-        if (!estado || estado.app !== ESTADO_APP) armarBotonAtras();
-    });
+/**
+ * Engancha el botón atrás. Se puede llamar más de una vez sin riesgo: los
+ * vigilantes se enganchan UNA sola vez y el estado se repone solo si hace falta.
+ */
+function armarBotonAtras() {
+    if (!atrasArmado) {
+        atrasArmado = true;
+        window.addEventListener('popstate', alIntentarVolverAtras);
+        window.addEventListener('pageshow', rearmarAtrasSiHaceFalta);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') rearmarAtrasSiHaceFalta();
+        });
+    }
+    rearmarAtrasSiHaceFalta();
 }
 
 // ============================================================
