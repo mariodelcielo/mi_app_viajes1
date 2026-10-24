@@ -1,6 +1,6 @@
-const CACHE_NAME = 'gestion-viajes-v4';
+const CACHE_NAME = 'gestion-viajes-v5';
 const ARCHIVOS = [
-    './', './index.html', './manifest.json', './manifest.json?v=2', './rescates-logo.png', './consulta.html',
+    './', './index.html', './rescates-logo.png', './consulta.html',
     './favicon.png', './favicon.ico', './apple-touch-icon.png', './icon-192.png', './icon-512.png'
 ];
 
@@ -8,6 +8,11 @@ const ARCHIVOS = [
 // usar los datos del celular; si el service worker devolviera una respuesta
 // vieja, la app creería que está enlazada y podría pisar cambios locales.
 const SIN_CACHE = ['script.google.com', 'script.googleusercontent.com', 'googleusercontent.com'];
+
+// El manifiesto tampoco se guarda: es el que decide CÓMO se abre la app (si el
+// teléfono lo tiene viejo, sigue abriendo como ventana de app y el botón atrás
+// cierra todo). Siempre se pide a la red, y si no hay seña, se usa el del caché.
+const NUNCA_CACHE = ['manifest.json'];
 
 // Tope para la red: con poca señal, una descarga puede quedarse colgada sin
 // fallar nunca. Sin este tope, el teléfono se queda en negro esperando.
@@ -71,6 +76,14 @@ self.addEventListener('fetch', event => {
     // 2) Solo manejamos archivos propios; el resto lo resuelve el navegador.
     if (url.origin !== self.location.origin) return;
 
+    // 3) El manifiesto se pide siempre a la red (de él depende cómo se abre la app).
+    if (NUNCA_CACHE.some(n => url.pathname.endsWith('/' + n) || url.pathname === '/' + n)) {
+        event.respondWith(
+            conTope(fetch(req), TOPE_RED).catch(() => caches.match(req))
+        );
+        return;
+    }
+
     event.respondWith(desdeCacheYActualizar(req));
 });
 
@@ -91,6 +104,5 @@ function desdeCacheYActualizar(req) {
             refresco.catch(() => {});
             return guardada;
         }
-        return refresco.then(resp => resp || caches.match('./index.html'));
-    });
+        return refresco.then(resp => resp || caches.match('./index.html'));    });
 }

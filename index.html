@@ -979,7 +979,7 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 const VERSION_BACKEND = 8;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-10-24 12:55';
+const VERSION_APP = '2026-10-24 13:32';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -4065,30 +4065,39 @@ function tipoDeCarga() {
 // el atrás la deshace disparando `hashchange`. Con eso:
 //   1. se deja puesto un "#app" propio, así el atrás nunca sale de la página;
 //   2. cada atrás cierra UNA capa (la ventana de más arriba);
-//   3. y se vuelve a poner el "#app" para el próximo toque.
+//   3. y se vuelve a poner la marca para el próximo toque.
+//
+// La marca se ALTERNA entre "#app" y "#app2" (24/10): Firefox recuerda la última
+// dirección, así que la app puede abrirse ya con "#app" puesto; en ese caso
+// volver a poner el mismo "#app" no agrega ninguna entrada y el primer atrás se
+// iba de la app. Alternando, siempre hay una entrada nueva.
+const HASHS_APP = ['#app', '#app2'];
 const HASH_APP = '#app';
-let ultimoAtras = 0;   // para no contar dos veces el mismo toque
+let ultimoAtras = 0;   // (se conserva por compatibilidad; ya no se usa para filtrar)
 
-/** Deja puesto el "#app" (marca propia en la dirección). */
+/** Deja puesta la marca de la dirección, alternando para que cuente como entrada nueva. */
 function ponerHashApp() {
-    try {
-        if (location.hash !== HASH_APP) location.hash = HASH_APP;
-    } catch (e) {}
+    let actual = '';
+    try { actual = location.hash; } catch (e) {}
+    const nueva = (actual === HASHS_APP[0]) ? HASHS_APP[1] : HASHS_APP[0];
+    try { location.hash = nueva; } catch (e) {}
+}
+
+/** ¿La dirección tiene puesta alguna de nuestras marcas? */
+function tieneHashApp() {
+    try { return HASHS_APP.indexOf(location.hash) !== -1; } catch (e) { return false; }
 }
 
 /**
  * El teléfono deshizo el "#": se cierra la capa de arriba y se repone la marca.
  *
- * Se escuchan los DOS avisos posibles (`hashchange` y `popstate`) porque no todos
- * los navegadores avisan por los dos: el mismo toque puede llegar dos veces, así
- * que se descarta el segundo dentro de los 150 ms (`ultimoAtras`). Sin eso, un
- * toque cerraría dos capas.
+ * Vuelta atrás deliberada (24/10, diagnóstico en reversa): entre la versión que
+ * funcionaba en la pestaña de Firefox (12:10) y la que empezó a "salirse de la
+ * app" (13:20) el único cambio en el atrás fue agregar el vigilante `popstate` y
+ * el filtro de 150 ms. Se sacaron los dos y quedó como la que andaba.
  */
 function alVolverAtras() {
-    const ahora = Date.now();
-    if (ignorarProximoHash) { ignorarProximoHash = false; ultimoAtras = ahora; return; }
-    if (ahora - ultimoAtras < 150) return;   // el mismo toque avisando por la otra vía
-    ultimoAtras = ahora;
+    if (ignorarProximoHash) { ignorarProximoHash = false; return; }
 
     anotarDiag('atras');
     const cerro = manejarAtras();
@@ -4096,15 +4105,11 @@ function alVolverAtras() {
         avisoSalidaMostrado = true;
         showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
     }
-    let hash = '';
-    try { hash = location.hash; } catch (e) {}
-    if (hash !== HASH_APP) {
-        ignorarProximoHash = true;
-        ponerHashApp();
-        // Red de seguridad: si el navegador no avisa de nuestro propio cambio,
-        // la bandera no puede quedar trabada comiéndose el próximo atrás.
-        try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
-    }
+    ignorarProximoHash = true;
+    ponerHashApp();
+    // Red de seguridad: si el navegador no avisa de nuestro propio cambio,
+    // la bandera no puede quedar trabada comiéndose el próximo atrás.
+    try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
 }
 
 /**
@@ -4116,21 +4121,18 @@ function armarBotonAtras() {
     if (!atrasArmado) {
         atrasArmado = true;
         window.addEventListener('hashchange', alVolverAtras);
-        window.addEventListener('popstate', alVolverAtras);
         // Si el teléfono descarga la página, queda anotado en el diagnóstico.
         window.addEventListener('pagehide', () => anotarDiag('salidas'));
         anotarDiag('cargas');
         anotarDiag('tipoCarga', tipoDeCarga());
     }
-    // El "#app" que se pone al arrancar no es un atrás.
-    let hash = '';
-    try { hash = location.hash; } catch (e) {}
-    if (hash !== HASH_APP) {
-        ignorarProximoHash = true;
-        ponerHashApp();
-        ultimoAtras = Date.now();
-        try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
-    }
+    // La marca que se pone al arrancar no es un atrás. Se pone SIEMPRE (aunque ya
+    // hubiera una): si no, al abrirse con "#app" en la dirección no habría ninguna
+    // entrada nueva para deshacer y el primer atrás se iría de la app.
+    ignorarProximoHash = true;
+    ponerHashApp();
+    ultimoAtras = Date.now();
+    try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
 }
 
 // ============================================================
