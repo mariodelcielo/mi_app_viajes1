@@ -842,7 +842,6 @@
             </div>
         </div>
         <div class="modal-hint" id="versionApp" style="text-align:center;margin-top:12px;"></div>
-        <div class="modal-hint" id="diagnostico" style="text-align:center;margin-top:4px;font-size:calc(10px * var(--esc));opacity:.75;"></div>
         <div class="btn-group-modal" style="grid-template-columns:1fr;">
             <button class="btn-modal-cancel" id="btnCerrarDatos"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
@@ -979,7 +978,7 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 const VERSION_BACKEND = 8;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-10-24 13:32';
+const VERSION_APP = '2026-10-24 13:45';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -3236,7 +3235,6 @@ function cerrarModalDeudores() {
 // ============================================================
 function abrirModalDatos() {
     document.getElementById('modalDatos').classList.add('show');
-    pintarDiagnostico();
 }
 function cerrarModalDatos() {
     document.getElementById('modalDatos').classList.remove('show');
@@ -3968,172 +3966,13 @@ function showToast(msg) {
     toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-// ============================================================
-// EL BOTÓN ATRÁS DEL CELULAR
-// ============================================================
-// En Android, la app instalada desde el ícono no tenía idea del botón atrás: al
-// tocarlo, el teléfono se iba de la app a una página en blanco y quedaba la
-// pantalla en negro (había que cerrar y volver a abrir). Ahora la app lo escucha:
-// primero cierra lo que esté abierto y, si no hay nada abierto, se queda en la app
-// y avisa cómo salir. El PIN no se cierra así: si lo está pidiendo, se contesta.
-const MODALES_ATRAS = [
-    'modalCarga', 'modalEditar', 'modalNumero',
-    'modalNuevoPiloto', 'modalConfirmarViaje', 'modalHistorialPiloto', 'modalPago',
-    'modalDeudores', 'modalApartadas', 'modalMigracion', 'modalAnularSubida',
-    'modalAjustarDeuda', 'modalBorrarGasto', 'modalDatos', 'modalPrecios',
-    'modalCobro', 'modalGastos', 'modalNuevoGasto', 'modalEstadisticas', 'modalElegirPeriodo'
-];
-let avisoSalidaMostrado = false;
-
-/** Qué hay abierto ahora: el id de la ventana de más arriba, o ''. */
-function algoAbierto() {
-    // Se recorre al revés: con el mismo z-index, la que está más abajo en el HTML
-    // es la que se dibuja encima.
-    for (let i = MODALES_ATRAS.length - 1; i >= 0; i--) {
-        const el = document.getElementById(MODALES_ATRAS[i]);
-        if (el && el.classList && el.classList.contains('show')) return MODALES_ATRAS[i];
-    }
-    const lista = document.getElementById('pilotosList');
-    if (lista && lista.classList && lista.classList.contains('show')) return 'pilotosList';
-    return '';
-}
-
-/** Cierra lo que esté abierto. Devuelve true si cerró algo. */
-function manejarAtras() {
-    const id = algoAbierto();
-    if (!id) return false;
-    const el = document.getElementById(id);
-    if (el && el.classList) el.classList.remove('show');
-    return true;
-}
-
-const ESTADO_APP = 'rescates-rambla';
-let atrasArmado = false;
-let ignorarProximoHash = false;
-
-// ============================================================
-// DIAGNÓSTICO DEL BOTÓN ATRÁS (se ve en Datos, abajo)
-// ============================================================
-// Anota en el teléfono qué pasó con el atrás. Sirvió para descubrir (24/10) que
-// en la app instalada de Firefox el historial del navegador NO funciona: ni
-// pushState ni popstate. Se deja porque es barato y muestra al instante si el
-// atrás se está detectando.
-const DIAG_CLAVE = 'diag_atras';
-
-function leerDiag() {
-    try { return JSON.parse(localStorage.getItem(DIAG_CLAVE)) || {}; } catch (e) { return {}; }
-}
-function anotarDiag(campo, valor) {
-    const d = leerDiag();
-    d[campo] = (valor === undefined) ? (Number(d[campo]) || 0) + 1 : valor;
-    try { localStorage.setItem(DIAG_CLAVE, JSON.stringify(d)); } catch (e) {}
-    return d;
-}
-function pintarDiagnostico() {
-    const el = document.getElementById('diagnostico');
-    if (!el) return;
-    const d = leerDiag();
-    let modo = 'navegador';
-    try {
-        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) modo = 'app instalada';
-    } catch (e) {}
-    let hash = 'no';
-    try { hash = location.hash || 'no'; } catch (e) {}
-    el.textContent = `Diag · ${modo} · hash ${hash} · carga ${d.tipoCarga || '?'}` +
-        ` · cargas ${d.cargas || 0} · atrás ${d.atras || 0} · salidas ${d.salidas || 0}`;
-}
-
-/** Cómo llegó esta carga de la página: 'navigate', 'reload' o 'back_forward'. */
-function tipoDeCarga() {
-    try {
-        const n = performance.getEntriesByType('navigation')[0];
-        return n ? n.type : '?';
-    } catch (e) { return '?'; }
-}
-
-// ============================================================
-// EL BOTÓN ATRÁS DEL CELULAR (por el "#" de la dirección)
-// ============================================================
-// Historia completa, porque ya nos costó cuatro intentos:
-// en la app instalada del celular de Mario (Firefox para Android) el historial
-// del navegador NO funciona: `history.pushState` no agrega nada, `history.state`
-// queda vacío y el toque de atrás NO dispara `popstate`. Por eso todo lo que se
-// apoyaba en eso terminó en pantalla negra: el teléfono descargaba la página.
-//
-// Lo que SÍ funciona ahí es el "#" de la dirección: cambiar el hash es una
-// navegación dentro de la MISMA página (no la descarga), queda en el historial y
-// el atrás la deshace disparando `hashchange`. Con eso:
-//   1. se deja puesto un "#app" propio, así el atrás nunca sale de la página;
-//   2. cada atrás cierra UNA capa (la ventana de más arriba);
-//   3. y se vuelve a poner la marca para el próximo toque.
-//
-// La marca se ALTERNA entre "#app" y "#app2" (24/10): Firefox recuerda la última
-// dirección, así que la app puede abrirse ya con "#app" puesto; en ese caso
-// volver a poner el mismo "#app" no agrega ninguna entrada y el primer atrás se
-// iba de la app. Alternando, siempre hay una entrada nueva.
-const HASHS_APP = ['#app', '#app2'];
-const HASH_APP = '#app';
-let ultimoAtras = 0;   // (se conserva por compatibilidad; ya no se usa para filtrar)
-
-/** Deja puesta la marca de la dirección, alternando para que cuente como entrada nueva. */
-function ponerHashApp() {
-    let actual = '';
-    try { actual = location.hash; } catch (e) {}
-    const nueva = (actual === HASHS_APP[0]) ? HASHS_APP[1] : HASHS_APP[0];
-    try { location.hash = nueva; } catch (e) {}
-}
-
-/** ¿La dirección tiene puesta alguna de nuestras marcas? */
-function tieneHashApp() {
-    try { return HASHS_APP.indexOf(location.hash) !== -1; } catch (e) { return false; }
-}
-
-/**
- * El teléfono deshizo el "#": se cierra la capa de arriba y se repone la marca.
- *
- * Vuelta atrás deliberada (24/10, diagnóstico en reversa): entre la versión que
- * funcionaba en la pestaña de Firefox (12:10) y la que empezó a "salirse de la
- * app" (13:20) el único cambio en el atrás fue agregar el vigilante `popstate` y
- * el filtro de 150 ms. Se sacaron los dos y quedó como la que andaba.
- */
-function alVolverAtras() {
-    if (ignorarProximoHash) { ignorarProximoHash = false; return; }
-
-    anotarDiag('atras');
-    const cerro = manejarAtras();
-    if (!cerro && !avisoSalidaMostrado) {
-        avisoSalidaMostrado = true;
-        showToast('🏠 Estás en la pantalla principal. Para salir, usá el botón de inicio.');
-    }
-    ignorarProximoHash = true;
-    ponerHashApp();
-    // Red de seguridad: si el navegador no avisa de nuestro propio cambio,
-    // la bandera no puede quedar trabada comiéndose el próximo atrás.
-    try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
-}
-
-/**
- * Engancha el botón atrás. Se puede llamar más de una vez sin riesgo: los
- * vigilantes se enganchan UNA sola vez (si se duplicaran, un toque cerraría
- * varias capas y la app quedaría en bucle, como pasó el 24/10).
- */
-function armarBotonAtras() {
-    if (!atrasArmado) {
-        atrasArmado = true;
-        window.addEventListener('hashchange', alVolverAtras);
-        // Si el teléfono descarga la página, queda anotado en el diagnóstico.
-        window.addEventListener('pagehide', () => anotarDiag('salidas'));
-        anotarDiag('cargas');
-        anotarDiag('tipoCarga', tipoDeCarga());
-    }
-    // La marca que se pone al arrancar no es un atrás. Se pone SIEMPRE (aunque ya
-    // hubiera una): si no, al abrirse con "#app" en la dirección no habría ninguna
-    // entrada nueva para deshacer y el primer atrás se iría de la app.
-    ignorarProximoHash = true;
-    ponerHashApp();
-    ultimoAtras = Date.now();
-    try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
-}
+// NOTA (24/10/2026): acá vivía el "guardián del botón atrás" (cerrar ventanas en
+// capas con el atrás del teléfono). Se sacó entero, a pedido de Mario, después de
+// comprobar que en la app instalada de Firefox para Android el atrás **cierra la
+// ventana sin avisarle a la página**: no llega ningún evento, así que ningún
+// código de acá adentro puede interceptarlo. En una pestaña normal el atrás es el
+// del navegador (vuelve a la página anterior). Todo el detalle está en
+// `CAMBIOS.md` (pasadas 16 a 23) y en `ACLARACIONES.md`.
 
 // ============================================================
 // EVENTOS E INICIO
@@ -4302,11 +4141,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 });
-
-// El guardián del botón atrás se arma acá, fuera del arranque: así no depende de
-// que todo lo demás se haya inicializado bien (el script está al final del body,
-// así que el HTML ya existe cuando llega hasta acá).
-armarBotonAtras();
 </script>
 </body>
 </html>
