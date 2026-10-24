@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>RESCATES RAMBLA</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=2">
     <link rel="icon" href="favicon.ico?v=2" sizes="any">
     <link rel="icon" type="image/png" sizes="64x64" href="favicon.png?v=2">
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
@@ -979,7 +979,7 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 const VERSION_BACKEND = 8;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-10-24 12:10';
+const VERSION_APP = '2026-10-24 12:55';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -4067,6 +4067,7 @@ function tipoDeCarga() {
 //   2. cada atrás cierra UNA capa (la ventana de más arriba);
 //   3. y se vuelve a poner el "#app" para el próximo toque.
 const HASH_APP = '#app';
+let ultimoAtras = 0;   // para no contar dos veces el mismo toque
 
 /** Deja puesto el "#app" (marca propia en la dirección). */
 function ponerHashApp() {
@@ -4077,11 +4078,18 @@ function ponerHashApp() {
 
 /**
  * El teléfono deshizo el "#": se cierra la capa de arriba y se repone la marca.
- * `ignorarProximoHash` evita que el cambio de hash que hacemos nosotros mismos
- * cuente como otro atrás (si no, cada toque cerraría dos capas).
+ *
+ * Se escuchan los DOS avisos posibles (`hashchange` y `popstate`) porque no todos
+ * los navegadores avisan por los dos: el mismo toque puede llegar dos veces, así
+ * que se descarta el segundo dentro de los 150 ms (`ultimoAtras`). Sin eso, un
+ * toque cerraría dos capas.
  */
 function alVolverAtras() {
-    if (ignorarProximoHash) { ignorarProximoHash = false; return; }
+    const ahora = Date.now();
+    if (ignorarProximoHash) { ignorarProximoHash = false; ultimoAtras = ahora; return; }
+    if (ahora - ultimoAtras < 150) return;   // el mismo toque avisando por la otra vía
+    ultimoAtras = ahora;
+
     anotarDiag('atras');
     const cerro = manejarAtras();
     if (!cerro && !avisoSalidaMostrado) {
@@ -4093,36 +4101,36 @@ function alVolverAtras() {
     if (hash !== HASH_APP) {
         ignorarProximoHash = true;
         ponerHashApp();
+        // Red de seguridad: si el navegador no avisa de nuestro propio cambio,
+        // la bandera no puede quedar trabada comiéndose el próximo atrás.
+        try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
     }
 }
 
 /**
- * Pone el "#app" sin que cuente como un atrás (solo si de verdad falta).
- * Si ya estaba puesto, no toca la bandera: si no, se comería el próximo atrás.
- */
-function asegurarHashApp() {
-    let hash = '';
-    try { hash = location.hash; } catch (e) {}
-    if (hash === HASH_APP) return;
-    ignorarProximoHash = true;
-    ponerHashApp();
-}
-
-/**
- * Engancha el botón atrás. Se puede llamar más de una vez sin riesgo: el
- * vigilante se engancha UNA sola vez (si se duplicara, un toque cerraría varias
- * capas y la app quedaría en bucle, como pasó el 24/10).
+ * Engancha el botón atrás. Se puede llamar más de una vez sin riesgo: los
+ * vigilantes se enganchan UNA sola vez (si se duplicaran, un toque cerraría
+ * varias capas y la app quedaría en bucle, como pasó el 24/10).
  */
 function armarBotonAtras() {
     if (!atrasArmado) {
         atrasArmado = true;
         window.addEventListener('hashchange', alVolverAtras);
+        window.addEventListener('popstate', alVolverAtras);
         // Si el teléfono descarga la página, queda anotado en el diagnóstico.
         window.addEventListener('pagehide', () => anotarDiag('salidas'));
         anotarDiag('cargas');
         anotarDiag('tipoCarga', tipoDeCarga());
     }
-    asegurarHashApp();
+    // El "#app" que se pone al arrancar no es un atrás.
+    let hash = '';
+    try { hash = location.hash; } catch (e) {}
+    if (hash !== HASH_APP) {
+        ignorarProximoHash = true;
+        ponerHashApp();
+        ultimoAtras = Date.now();
+        try { setTimeout(() => { ignorarProximoHash = false; }, 300); } catch (e) {}
+    }
 }
 
 // ============================================================

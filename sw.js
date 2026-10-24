@@ -1,6 +1,6 @@
-const CACHE_NAME = 'gestion-viajes-v3';
+const CACHE_NAME = 'gestion-viajes-v4';
 const ARCHIVOS = [
-    './', './index.html', './manifest.json', './rescates-logo.png', './consulta.html',
+    './', './index.html', './manifest.json', './manifest.json?v=2', './rescates-logo.png', './consulta.html',
     './favicon.png', './favicon.ico', './apple-touch-icon.png', './icon-192.png', './icon-512.png'
 ];
 
