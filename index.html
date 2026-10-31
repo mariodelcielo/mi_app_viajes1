@@ -975,10 +975,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 8;
+const VERSION_BACKEND = 9;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-10-24 13:45';
+const VERSION_APP = '2026-10-31 11:15';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -1505,7 +1505,10 @@ function aplicarDatosDelServidor(data, desdeServidor) {
 
     lotes = (data.lotes || []).map((l, i) => ({
         socio: String(l.Numero ?? ''),
-        loteId: l.Lote_ID || '',
+        // El ID SIEMPRE como texto y sin espacios: si la planilla lo guardó como
+        // número, compararlo con el texto de "Lote_Usado" fallaba y la anulación
+        // de una subida no devolvía la plata (pasó el 31/10/2026).
+        loteId: String(l.Lote_ID ?? '').trim(),
         monto: Number(l.Monto_Cargado) || 0,
         descuento: Number(l.Porcentaje_Descuento) || 0,
         saldo: Number(l.Saldo_Disponible) || 0,
@@ -2577,7 +2580,7 @@ async function confirmarViaje() {
         viajes: lastBatch.map(viajeParaServidor),
         piloto: pilotoParaServidor(piloto, true),
         lotesSaldo: [...lotesTocados].map(id => {
-            const l = lotes.find(x => x.socio === piloto.numero && x.loteId === id);
+            const l = buscarLote(piloto.numero, id);
             return { Lote_ID: id, Saldo_Disponible: l ? l.saldo : 0 };
         })
     };
@@ -2616,7 +2619,7 @@ async function anularUltimoViaje() {
         recalcularDeuda(piloto);
     }
     lastBatchLotesAntes.forEach(snap => {
-        const lote = lotes.find(l => l.socio === piloto.numero && l.loteId === snap.loteId);
+        const lote = buscarLote(piloto.numero, snap.loteId);
         if (lote) lote.saldo = snap.saldo;
     });
 
@@ -2684,7 +2687,7 @@ function correccionesDisponibles() {
 
 /** Los lotes que pagaron una subida, para devolverles la plata. */
 function lotesQuePagaron(viaje) {
-    const texto = String(viaje.lote || '');
+    const texto = String(viaje.lote || '').trim();
     if (!texto || texto === 'GRATIS' || texto === 'SIN LOTE') return [];
     return texto.split(',').map(parte => {
         const trozos = String(parte).trim().split(':');
@@ -2692,6 +2695,12 @@ function lotesQuePagaron(viaje) {
         const monto = Number(String(trozos[1] || '').replace('$', '').trim()) || 0;
         return { loteId: loteId, monto: monto };
     }).filter(x => x.loteId && x.monto > 0);
+}
+
+/** Busca un lote del piloto comparando el ID como texto (nunca por tipo). */
+function buscarLote(socio, loteId) {
+    const buscado = String(loteId ?? '').trim();
+    return lotes.find(l => String(l.socio) === String(socio) && String(l.loteId).trim() === buscado) || null;
 }
 
 /** Cómo se identifica una subida en la planilla: por su número de operación o, si es vieja, por sus datos. */
@@ -2752,17 +2761,24 @@ async function anularSubida(viaje) {
 
     // 1) La plata vuelve a los lotes que la pagaron
     const saldos = [];
+    const faltantes = [];
+    const devuelto = [];
+    let totalDevuelto = 0;
     lotesQuePagaron(viaje).forEach(x => {
-        const lote = lotes.find(l => l.socio === piloto.numero && l.loteId === x.loteId);
-        if (!lote) return;
+        const lote = buscarLote(piloto.numero, x.loteId);
+        if (!lote) { faltantes.push(x.loteId); return; }
         lote.saldo = (Number(lote.saldo) || 0) + x.monto;
+        totalDevuelto += x.monto;
+        devuelto.push(`${lote.loteId}: ${plata(x.monto)}`);
         saldos.push({ Lote_ID: lote.loteId, Saldo_Disponible: lote.saldo });
     });
 
     // 2) La cantidad de PAX que había quedado como deuda vuelve atrás
-    if (Number(viaje.deuda) > 0 && Number(viaje.precioLista) > 0) {
+    const paxDevueltos = Number(viaje.deuda) > 0 && Number(viaje.precioLista) > 0
+        ? viaje.deuda / viaje.precioLista : 0;
+    if (paxDevueltos > 0) {
         const campo = viaje.tipo === 'pista' ? 'debePista' : 'debeEscuela';
-        piloto[campo] = Math.max(0, (Number(piloto[campo]) || 0) - viaje.deuda / viaje.precioLista);
+        piloto[campo] = Math.max(0, (Number(piloto[campo]) || 0) - paxDevueltos);
         redondearFracciones(piloto);
         recalcularDeuda(piloto);
     }
@@ -2777,18 +2793,34 @@ async function anularSubida(viaje) {
     renderPilotos('');
     updateHistorial();
 
+    // El motivo del ajuste cuenta qué se devolvió (o qué no se pudo devolver):
+    // así queda rastro en la planilla y no hay que adivinar después.
+    let motivo = `${viaje.tipo} del ${formatoFechaLinda(fechaSolo(viaje.fecha))} por ${plata(viaje.total)}`;
+    if (devuelto.length) motivo += ` · devuelto al crédito (${devuelto.join('; ')})`;
+    if (paxDevueltos > 0) motivo += ` · ${cantidadPax(paxDevueltos)} PAX menos de deuda`;
+    if (faltantes.length) {
+        motivo += ` · ⚠️ NO se pudo devolver el crédito: no encontré el lote ${faltantes.join(', ')}`;
+    }
+
     const ref = referenciaDeViaje(viaje);
     const op = {
         piloto: pilotoParaServidor(piloto, true),
-        ajustes: [ajusteParaServidor(piloto, 'Anuló una subida',
-            `${viaje.tipo} del ${formatoFechaLinda(fechaSolo(viaje.fecha))} por ${plata(viaje.total)}`)]
+        ajustes: [ajusteParaServidor(piloto, 'Anuló una subida', motivo)]
     };
     if (ref.por === 'opId') op.viajesBorrar = [ref.valor];
     else op.viajesBorrarFila = [ref.valor];
     if (saldos.length) op.lotesSaldo = saldos;
     mutar(op);
 
-    showToast(`↩️ Subida anulada — ${piloto.nombre}`);
+    if (faltantes.length) {
+        showToast(`↩️ Subida anulada, pero NO se devolvió el crédito (no encontré el lote ${faltantes.join(', ')})`);
+    } else if (totalDevuelto > 0) {
+        showToast(`↩️ Subida anulada — volvieron ${plata(totalDevuelto)} al crédito de ${piloto.nombre}`);
+    } else if (paxDevueltos > 0) {
+        showToast(`↩️ Subida anulada — ${cantidadPax(paxDevueltos)} PAX menos de deuda`);
+    } else {
+        showToast(`↩️ Subida anulada — ${piloto.nombre} (no había usado crédito ni deuda)`);
+    }
     flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
 }
 
