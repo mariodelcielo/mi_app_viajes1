@@ -665,8 +665,11 @@
 <div class="modal-overlay" id="modalNuevoPiloto">
     <div class="modal">
         <h2><i class="ico" data-ico="mas"></i> Nuevo piloto</h2>
-        <label>Número</label>
-        <input type="text" id="npNumero" inputmode="numeric" placeholder="Ej: 27">
+        <label><i class="ico" data-ico="mapa"></i> Zona <span style="font-weight:400;color:var(--ink-soft);font-size:calc(11px * var(--esc));">(de dónde es o dónde vuela)</span></label>
+        <select id="npZona" style="width:100%;padding:12px;font-family:var(--fuente);font-size:calc(15px * var(--esc));font-weight:600;background:var(--panel);color:var(--ink);border:var(--grosor) solid var(--borde);border-radius:var(--radio);"></select>
+        <label style="margin-top:12px;">Número asignado</label>
+        <input type="text" id="npNumero" inputmode="numeric" placeholder="Se asigna solo">
+        <div class="modal-hint" id="npZonaHint"></div>
         <label style="margin-top:12px;">Nombre y apellido</label>
         <input type="text" id="npNombre" placeholder="Como quiere figurar">
         <label style="margin-top:12px;">Alias / apodo (opcional)</label>
@@ -975,10 +978,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 9;
+const VERSION_BACKEND = 10;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-10-31 11:15';
+const VERSION_APP = '2026-11-22 11:10';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -1004,6 +1007,7 @@ let pagos = [];
 let gastos = [];
 let config = {};
 let tramos = []; // [{minimo, porcentaje}], ordenado ascendente por minimo
+let zonas = []; // [{codigo:'01', nombre:'Local'}] — la zona va en el número del piloto
 let historialPrecios = []; // [{fecha, precioEscuela, precioPista}]
 let selectedPiloto = null;
 let tipoViaje = null;
@@ -1502,6 +1506,13 @@ function aplicarDatosDelServidor(data, desdeServidor) {
         .map(t => ({ minimo: Number(t.Monto_Minimo) || 0, porcentaje: Number(t.Porcentaje_Descuento) || 0 }))
         .sort((a, b) => a.minimo - b.minimo);
     if (tramos.length === 0) tramos = TRAMOS_POR_DEFECTO.slice();
+
+    // Las zonas para el número del piloto (hoja `Zonas`). Si todavía no existe o
+    // está vacía, se usan las tres de fábrica para no bloquear el alta.
+    zonas = (data.zonas || [])
+        .map(z => ({ codigo: String(z.Zona ?? '').trim().padStart(2, '0'), nombre: String(z.Nombre ?? '').trim() }))
+        .filter(z => z.codigo && z.nombre);
+    if (zonas.length === 0) zonas = ZONAS_POR_DEFECTO_APP.slice();
 
     lotes = (data.lotes || []).map((l, i) => ({
         socio: String(l.Numero ?? ''),
@@ -3938,14 +3949,80 @@ function formatoMesLindo(mesStr) {
 // ============================================================
 // ALTA DE PILOTO NUEVO (antes había que agregarlo a mano en la planilla)
 // ============================================================
+// El número lleva la ZONA adelante: 2 dígitos de zona + 3 de secuencia (01001 =
+// zona 01, piloto 1). Se asigna solo el próximo libre de esa zona, y NUNCA se
+// reutiliza un número que ya fue de alguien (se toma el más alto y se suma 1).
+const ZONAS_POR_DEFECTO_APP = [
+    { codigo: '01', nombre: 'Local' },
+    { codigo: '02', nombre: 'Pedernera' },
+    { codigo: '03', nombre: 'Cuchi' }
+];
+
+/** Las zonas que se pueden elegir (las de la planilla, o las de fábrica). */
+function zonasDisponibles() {
+    return (zonas && zonas.length) ? zonas : ZONAS_POR_DEFECTO_APP;
+}
+
+/** Busca la zona por su código ('01') o la devuelve vacía. */
+function zonaPorCodigo(codigo) {
+    const buscado = String(codigo || '').trim();
+    return zonasDisponibles().find(z => String(z.codigo) === buscado) || null;
+}
+
+/**
+ * El próximo número libre de una zona: toma el más alto de esa zona y le suma 1.
+ * Si la zona está vacía arranca en 001. Salta cualquier número que ya exista en
+ * otra zona (por las dudas) y avisa si la zona llegó al tope de 999.
+ */
+function proximoNumeroDeZona(codigo) {
+    const prefijo = String(codigo || '').padStart(2, '0');
+    const tres = n => String(n).padStart(3, '0');
+    let mayor = 0;
+    pilotos.forEach(p => {
+        const n = String(p.numero || '');
+        if (n.length === 5 && n.slice(0, 2) === prefijo) {
+            const seq = Number(n.slice(2));
+            if (seq >= 1 && seq <= 999 && seq > mayor) mayor = seq;
+        }
+    });
+    let seq = mayor + 1;
+    while (seq <= 999 && pilotos.some(p => String(p.numero || '') === prefijo + tres(seq))) seq++;
+    if (seq > 999) return '';
+    return prefijo + tres(seq);
+}
+
+/** Pinta el selector de zonas y propone el número. */
+function actualizarZonaDelNuevoPiloto() {
+    const sel = document.getElementById('npZona');
+    const num = document.getElementById('npNumero');
+    const hint = document.getElementById('npZonaHint');
+    if (!sel) return;
+    const lista = zonasDisponibles();
+    if (!sel.options.length || sel.dataset.zonas !== String(lista.length)) {
+        sel.innerHTML = lista.map(z =>
+            `<option value="${esc(z.codigo)}">${esc(z.codigo)} · ${esc(z.nombre)}</option>`).join('');
+        sel.dataset.zonas = String(lista.length);
+    }
+    if (num) {
+        const propuesto = proximoNumeroDeZona(sel.value);
+        num.value = propuesto;
+        if (hint) {
+            hint.textContent = propuesto
+                ? 'Se asigna solo: el próximo libre de la zona.'
+                : '⚠️ Esta zona llegó al máximo (999). Poné un número a mano o creá otra zona.';
+        }
+    }
+}
+
 function abrirModalNuevoPiloto() {
     document.getElementById('npNumero').value = '';
     document.getElementById('npNombre').value = '';
     document.getElementById('npAlias').value = '';
     document.getElementById('npFechaAlta').value = fechaSoloLocal();
     document.querySelectorAll('.np-categoria').forEach(b => b.classList.toggle('metodo-activo', b.dataset.categoria === 'piloto'));
+    actualizarZonaDelNuevoPiloto();
     document.getElementById('modalNuevoPiloto').classList.add('show');
-    setTimeout(() => { try { document.getElementById('npNumero').focus(); } catch (e) {} }, 120);
+    setTimeout(() => { try { document.getElementById('npNombre').focus(); } catch (e) {} }, 120);
 }
 function cerrarModalNuevoPiloto() {
     document.getElementById('modalNuevoPiloto').classList.remove('show');
@@ -3956,7 +4033,10 @@ function nombreSinLetras(nombre) {
 }
 
 function crearPiloto() {
-    const numero = document.getElementById('npNumero').value.trim();
+    const zona = document.getElementById('npZona') ? document.getElementById('npZona').value : '';
+    // Si dejó el número vacío, se usa el que propone la zona (el próximo libre).
+    let numero = document.getElementById('npNumero').value.trim();
+    if (!numero && zona) numero = proximoNumeroDeZona(zona);
     const nombre = document.getElementById('npNombre').value.trim();
     const alias = document.getElementById('npAlias').value.trim();
     const fechaAlta = document.getElementById('npFechaAlta').value || fechaSoloLocal();
@@ -4123,6 +4203,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') cerrarPinModal(document.getElementById('pinInput').value.trim());
     });
     document.getElementById('btnCrearPiloto').addEventListener('click', crearPiloto);
+    // Al cambiar la zona se propone el próximo número libre de esa zona
+    document.getElementById('npZona').addEventListener('change', actualizarZonaDelNuevoPiloto);
     document.getElementById('btnCancelarNuevoPiloto').addEventListener('click', cerrarModalNuevoPiloto);
     document.querySelectorAll('.np-categoria').forEach(b => b.addEventListener('click', () => {
         document.querySelectorAll('.np-categoria').forEach(x => x.classList.toggle('metodo-activo', x === b));
