@@ -112,6 +112,19 @@
         .historial-item { font-size: 13px; padding: 7px 2px; border-bottom: 1px solid var(--borde-suave); display: flex; justify-content: space-between; gap: 10px; }
         .historial-item:last-child { border-bottom: none; }
 
+        /* Historial completo (subidas, pagos y cargas) */
+        .lista-hist { max-height: 58vh; overflow-y: auto; margin-top: 4px; -webkit-overflow-scrolling: touch; }
+        .mov { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; font-size: 13px; padding: 8px 2px; border-bottom: 1px solid var(--borde-suave); }
+        .mov:last-child { border-bottom: none; }
+        .mov .cuando { display: block; font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+        .mov .que { font-weight: 700; }
+        .mov .nota { display: block; font-size: 11px; font-weight: 500; color: var(--ink-soft); }
+        .mov .cuanto { font-weight: 700; white-space: nowrap; }
+        .mov.pago .que { color: var(--ok); }
+        .mov.carga .que { color: var(--accion-texto); }
+        .hist-vacio { color: var(--ink-soft); font-size: 13px; }
+        .hist-nota { font-size: 11px; color: var(--ink-soft); margin-top: 8px; line-height: 1.5; }
+
         /* ===== DATOS PARA TRANSFERIR =====
            Es lo único que se le agrega a la página. Los datos salen de la hoja
            Configuracion (filas Alias_Cobro, CVU_Cobro y Titular_Cobro): si están
@@ -182,8 +195,9 @@
             </div>
         </div>
 
-        <div class="historial-titulo"><i class="ico" data-ico="lista"></i> Últimas subidas</div>
-        <div id="rHistorial"></div>
+        <div class="historial-titulo"><i class="ico" data-ico="lista"></i> Historial completo</div>
+        <div id="rHistorial" class="lista-hist"></div>
+        <div id="rHistorialNota" class="hist-nota"></div>
     </div>
 
 <script>
@@ -222,6 +236,77 @@ function textoSubidas(escuela, pista) {
     agrega(escuela, 'escuela');
     agrega(pista, 'pista');
     return partes.join(' y ');
+}
+
+// ============================================================
+// HISTORIAL COMPLETO — subidas, pagos y cargas de crédito
+// ============================================================
+/**
+ * Las subidas de una misma tanda (las que se cargaron juntas) van en una sola
+ * línea: en la planilla son una fila por persona, pero para el piloto es un
+ * viaje. Se reconocen por el número de operación (`op-123-1`, `op-123-2`).
+ */
+function agruparMovimientos(movs) {
+    const salida = [];
+    (movs || []).forEach(m => {
+        const tipo = String(m.tipo || 'subida');
+        if (tipo !== 'subida') { salida.push(Object.assign({}, m, { tipo: tipo })); return; }
+
+        const gratis = (m.gratis === true || String(m.gratis).toUpperCase() === 'TRUE') ? 1 : 0;
+        const base = String(m.op || '').replace(/-\d+$/, '');
+        const ultimo = salida[salida.length - 1];
+        if (base && ultimo && ultimo.tipo === 'subida' && ultimo._base === base &&
+            ultimo.origen === m.origen && ultimo.fecha === m.fecha) {
+            ultimo.pax += 1;
+            ultimo.total += Number(m.total) || 0;
+            ultimo.deuda += Number(m.deuda) || 0;
+            ultimo.gratis += gratis;
+            return;
+        }
+        salida.push({
+            tipo: 'subida', fecha: m.fecha, origen: m.origen, pax: 1,
+            total: Number(m.total) || 0, deuda: Number(m.deuda) || 0,
+            gratis: gratis, lote: String(m.lote || ''), _base: base
+        });
+    });
+    return salida;
+}
+
+/** Qué pasó con una subida: PAX libre, quedó a deber o la pagó con crédito. */
+function notaDeSubida(m) {
+    if (m.gratis >= m.pax) return 'PAX libre';
+    if (m.gratis > 0) return `${m.gratis} PAX libre y el resto cobrado`;
+    if (m.deuda > 0) return 'quedó a deber ' + plata(m.deuda);
+    const lote = String(m.lote || '');
+    if (lote && lote !== 'SIN LOTE' && lote !== 'GRATIS') return 'pagada con crédito';
+    return '';
+}
+
+/** Una línea del historial (subida, pago o carga de crédito). */
+function filaDeMovimiento(m) {
+    const tipo = m.tipo || 'subida';
+    if (tipo === 'pago') {
+        const metodo = String(m.metodo || 'efectivo') === 'transferencia'
+            ? 'Pago por transferencia' : 'Pago en efectivo';
+        return '<div class="mov pago"><span>' +
+            '<span class="cuando">' + esc(fechaCorta(m.fecha)) + '</span>' +
+            '<span class="que">' + esc(metodo) + '</span></span>' +
+            '<span class="cuanto">' + plata(m.monto) + '</span></div>';
+    }
+    if (tipo === 'carga') {
+        const dto = Number(m.descuento) || 0;
+        return '<div class="mov carga"><span>' +
+            '<span class="cuando">' + esc(fechaCorta(m.fecha)) + '</span>' +
+            '<span class="que">Carga de crédito</span>' +
+            (dto > 0 ? '<span class="nota">' + esc(dto) + '% de descuento</span>' : '') +
+            '</span><span class="cuanto">' + plata(m.monto) + '</span></div>';
+    }
+    const nota = notaDeSubida(m);
+    return '<div class="mov"><span>' +
+        '<span class="cuando">' + esc(fechaCorta(m.fecha)) + '</span>' +
+        '<span class="que">' + esc(m.origen || '') + ' · ' + esc(m.pax) + ' PAX</span>' +
+        (nota ? '<span class="nota">' + esc(nota) + '</span>' : '') +
+        '</span><span class="cuanto">' + (m.total > 0 ? plata(m.total) : '—') + '</span></div>';
 }
 
 // Íconos dibujados, los mismos que usa la app (así no cambian según el celular)
@@ -437,13 +522,23 @@ async function consultar() {
         mostrarDatosDeTransferir(data.cobro);
 
         const hist = document.getElementById('rHistorial');
-        if (!data.ultimosViajes || data.ultimosViajes.length === 0) {
-            hist.innerHTML = '<div style="color:var(--ink-soft);font-size:13px;">Sin subidas registradas</div>';
+        const notaHist = document.getElementById('rHistorialNota');
+        const movs = Array.isArray(data.movimientos) && data.movimientos.length
+            ? agruparMovimientos(data.movimientos)
+            : (Array.isArray(data.ultimosViajes) ? data.ultimosViajes.map(v => ({
+                tipo: 'subida', fecha: v.fecha, origen: v.origen, pax: 1,
+                total: Number(v.total) || 0, deuda: 0,
+                gratis: (v.gratis === true || v.gratis === 'TRUE') ? 1 : 0, lote: ''
+            })) : []);
+
+        if (movs.length === 0) {
+            hist.innerHTML = '<div class="hist-vacio">Todavía no hay movimientos registrados.</div>';
         } else {
-            hist.innerHTML = data.ultimosViajes.map(v => `
-                <div class="historial-item"><span>${esc(fechaCorta(v.fecha))}</span><span>${esc(v.origen)} ${plata(v.total)} ${v.gratis === true || v.gratis === 'TRUE' ? ico('regalo') : ''}</span></div>
-            `).join('');
+            hist.innerHTML = movs.map(m => filaDeMovimiento(m)).join('');
         }
+        notaHist.textContent = data.truncado
+            ? `Mostrando los ${movs.length} movimientos más nuevos de ${Number(data.totalMovimientos) || movs.length}.`
+            : '';
 
         resultado.style.display = 'block';
     } catch (e) {
