@@ -845,6 +845,7 @@
             <button class="btn-chip" id="btnAbrirApartadas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="alerta"></i> Cambios apartados (<span id="contApartadas">0</span>)</button>
             <button class="btn-chip" id="btnAbrirPrecios" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="etiqueta"></i> Precios</button>
             <button class="btn-chip" id="btnAbrirCobro" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="banco"></i> Datos para transferir</button>
+            <button class="btn-chip" id="btnAbrirZonas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="mapa"></i> Zonas</button>
             <button class="btn-chip" id="btnAbrirGastos" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="gasto"></i> Gastos</button>
             <button class="btn-chip" id="btnAbrirEstadisticas" style="padding:14px;text-align:left;width:100%;"><i class="ico" data-ico="grafico"></i> Estadísticas</button>
             <div style="border-top:1px solid var(--borde-suave);margin:2px 0;"></div>
@@ -895,6 +896,28 @@
         <div class="btn-group-modal">
             <button class="btn-modal-confirm" id="btnGuardarCobro"><i class="ico" data-ico="check"></i> Guardar</button>
             <button class="btn-modal-cancel" id="btnCancelarCobro"><i class="ico" data-ico="x"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalZonas">
+    <div class="modal">
+        <h2><i class="ico" data-ico="mapa"></i> Zonas</h2>
+        <div class="modal-hint">La zona va adelante del número de cada piloto (01 = <b>01001</b>, 02 = <b>02001</b>…). Agregá o cambiá el nombre de las que uses: el número de zona es de <b>1 a 99</b> y cada una admite 999 pilotos.</div>
+        <div id="listaZonas" style="max-height:32vh;overflow-y:auto;margin-bottom:12px;"></div>
+        <label id="tituloFormZona"><i class="ico" data-ico="mas"></i> Nueva zona</label>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:end;">
+            <div>
+                <input type="text" id="zonaNumero" inputmode="numeric" maxlength="2" placeholder="04" autocomplete="off">
+            </div>
+            <div>
+                <input type="text" id="zonaNombre" placeholder="Nombre del lugar" autocomplete="off">
+            </div>
+        </div>
+        <div class="modal-hint" id="zonaAviso"></div>
+        <div class="btn-group-modal">
+            <button class="btn-modal-confirm" id="btnGuardarZona"><i class="ico" data-ico="check"></i> Agregar</button>
+            <button class="btn-modal-cancel" id="btnCerrarZonas"><i class="ico" data-ico="x"></i> Cerrar</button>
         </div>
     </div>
 </div>
@@ -989,10 +1012,10 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1or2T0Bpzy5rw
 const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0wITVyk4TAxeO58zBCzWUBifc5cxs/edit?gid=1546007567#gid=1546007567';
 // Tiene que coincidir con VERSION_BACKEND de Code.gs: si no coincide, la app
 // avisa que hay que volver a pegar el backend en Apps Script.
-const VERSION_BACKEND = 10;
+const VERSION_BACKEND = 13;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-11-23 22:35';
+const VERSION_APP = '2026-11-23 23:35';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -3378,6 +3401,88 @@ async function guardarPrecios() {
 // Viven en la hoja Configuracion y se pueden cambiar desde acá o directamente
 // en la planilla. El CVU va como texto: son 22 dígitos y, si se guardara como
 // número, la planilla le comería los ceros del principio.
+// ---------- ZONAS (la que va adelante del número del piloto) ----------
+let zonaEnEdicion = '';   // código de la zona que se está renombrando
+
+function abrirModalZonas() {
+    zonaEnEdicion = '';
+    document.getElementById('zonaNumero').value = '';
+    document.getElementById('zonaNumero').disabled = false;
+    document.getElementById('zonaNombre').value = '';
+    document.getElementById('zonaAviso').textContent = '';
+    document.getElementById('tituloFormZona').innerHTML = ico('mas') + ' Nueva zona';
+    document.getElementById('btnGuardarZona').innerHTML = ico('check') + ' Agregar';
+    renderListaZonas();
+    document.getElementById('modalZonas').classList.add('show');
+}
+
+function cerrarModalZonas() {
+    document.getElementById('modalZonas').classList.remove('show');
+}
+
+function renderListaZonas() {
+    const cont = document.getElementById('listaZonas');
+    const lista = zonasDisponibles().slice().sort((a, b) => String(a.codigo).localeCompare(String(b.codigo)));
+    if (lista.length === 0) {
+        cont.innerHTML = `<div class="empty-state">Todavía no hay zonas cargadas</div>`;
+        return;
+    }
+    cont.innerHTML = lista.map(z => `
+        <div class="historial-item" style="align-items:center;gap:10px;">
+            <span><b>${esc(z.codigo)}</b> · ${esc(z.nombre)}</span>
+            <button type="button" class="btn-chip" data-zona-editar="${esc(z.codigo)}">Cambiar nombre</button>
+        </div>`).join('');
+    cont.querySelectorAll('[data-zona-editar]').forEach(b => {
+        b.addEventListener('click', () => empezarEdicionDeZona(b.dataset.zonaEditar));
+    });
+}
+
+function empezarEdicionDeZona(codigo) {
+    const zona = zonaPorCodigo(codigo);
+    if (!zona) return;
+    zonaEnEdicion = zona.codigo;
+    document.getElementById('zonaNumero').value = zona.codigo;
+    document.getElementById('zonaNumero').disabled = true;
+    document.getElementById('zonaNombre').value = zona.nombre;
+    document.getElementById('zonaAviso').textContent = `Cambiando el nombre de la zona ${zona.codigo}.`;
+    document.getElementById('tituloFormZona').innerHTML = ico('ficha') + ' Cambiar el nombre';
+    document.getElementById('btnGuardarZona').innerHTML = ico('check') + ' Guardar';
+    try { document.getElementById('zonaNombre').focus(); } catch (e) {}
+}
+
+function guardarZonaDesdeFormulario() {
+    const aviso = document.getElementById('zonaAviso');
+    const crudo = String(document.getElementById('zonaNumero').value || '').trim();
+    const nombre = String(document.getElementById('zonaNombre').value || '').trim();
+
+    if (!/^\d{1,2}$/.test(crudo)) { aviso.textContent = '⚠️ El número de zona tiene que ser de 1 a 99.'; return; }
+    const codigo = crudo.padStart(2, '0');
+    if (!nombre) { aviso.textContent = '⚠️ Poné el nombre de la zona.'; return; }
+    if (!zonaEnEdicion && zonasDisponibles().some(z => String(z.codigo) === codigo)) {
+        aviso.textContent = `⚠️ La zona ${codigo} ya existe. Tocá "Cambiar nombre" en la lista.`;
+        return;
+    }
+
+    const i = zonas.findIndex(z => String(z.codigo) === codigo);
+    if (i >= 0) zonas[i] = { codigo: codigo, nombre: nombre };
+    else zonas.push({ codigo: codigo, nombre: nombre });
+    zonas.sort((a, b) => String(a.codigo).localeCompare(String(b.codigo)));
+
+    mutar({ zonas: [{ Zona: codigo, Nombre: nombre }] });
+
+    zonaEnEdicion = '';
+    document.getElementById('zonaNumero').value = '';
+    document.getElementById('zonaNumero').disabled = false;
+    document.getElementById('zonaNombre').value = '';
+    document.getElementById('tituloFormZona').innerHTML = ico('mas') + ' Nueva zona';
+    document.getElementById('btnGuardarZona').innerHTML = ico('check') + ' Agregar';
+    aviso.textContent = `✅ Zona ${codigo} guardada.`;
+    renderListaZonas();
+    actualizarZonaDelNuevoPiloto();
+    showToast(`✅ Zona ${codigo} · ${nombre}`);
+    flushCola().then(ok => { if (ok) showToast('✅ Guardado en la planilla'); });
+}
+
 function abrirModalCobro() {
     document.getElementById('cobroAlias').value = config.Alias_Cobro || '';
     document.getElementById('cobroCvu').value = config.CVU_Cobro || '';
@@ -4025,7 +4130,8 @@ function actualizarZonaDelNuevoPiloto() {
     const hint = document.getElementById('npZonaHint');
     if (!sel) return;
     const lista = zonasDisponibles();
-    if (!sel.options.length || sel.dataset.zonas !== String(lista.length)) {
+    const opciones = sel.options || [];
+    if (!opciones.length || sel.dataset.zonas !== String(lista.length)) {
         sel.innerHTML = lista.map(z =>
             `<option value="${esc(z.codigo)}">${esc(z.codigo)} · ${esc(z.nombre)}</option>`).join('');
         sel.dataset.zonas = String(lista.length);
@@ -4190,6 +4296,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnAbrirEstadisticas').addEventListener('click', () => { cerrarModalDatos(); abrirEstadisticas('dia'); });
     document.getElementById('btnAbrirPrecios').addEventListener('click', () => { cerrarModalDatos(); abrirModalPrecios(); });
     document.getElementById('btnAbrirCobro').addEventListener('click', () => { cerrarModalDatos(); abrirModalCobro(); });
+    document.getElementById('btnAbrirZonas').addEventListener('click', () => { cerrarModalDatos(); abrirModalZonas(); });
+    document.getElementById('btnGuardarZona').addEventListener('click', guardarZonaDesdeFormulario);
+    document.getElementById('btnCerrarZonas').addEventListener('click', cerrarModalZonas);
     document.getElementById('btnAbrirGastos').addEventListener('click', () => { cerrarModalDatos(); abrirModalGastos(); });
 
     // Gastos
