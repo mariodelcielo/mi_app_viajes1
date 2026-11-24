@@ -261,6 +261,17 @@
             letter-spacing: 0.04em; color: var(--accion-texto);
         }
 
+        /* Las dos acciones del cuadro del piloto: Historial y Ficha */
+        .selected-info .info-acciones {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;
+        }
+        .selected-info .info-accion {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; margin: 0; padding: 10px 6px; cursor: pointer;
+            font-size: calc(12px * var(--esc)); font-weight: 700;
+        }
+        .selected-info .info-accion .ico { font-size: calc(15px * var(--esc)); }
+
         /* ===== HISTORIAL DEL PILOTO (subidas y pagos, en orden) ===== */
         .cuentas-hist {
             display: flex; justify-content: space-between; gap: 8px; background: var(--pista);
@@ -981,7 +992,7 @@ const SHEET_VIEW_URL = 'https://docs.google.com/spreadsheets/d/12AJU1OpY1Lhd2G0w
 const VERSION_BACKEND = 10;
 // Sello de la versión de la APP (el archivo index.html). Se ve en Datos, abajo,
 // para poder saber sin dudas qué archivo está corriendo el celular.
-const VERSION_APP = '2026-11-22 11:10';
+const VERSION_APP = '2026-11-23 22:35';
 
 // Parámetros de Configuracion que son TEXTO y no números: los datos de la cuenta
 // donde el piloto transfiere. Si pasaran por Number, un CVU de 22 dígitos se
@@ -1947,9 +1958,25 @@ function updateSelectedInfo() {
         <div class="barra-credito"><i style="width:${pct}%;background:${colorTanque(pct)};"></i></div>
         <div class="mini-nota">${esc(nota)}</div>
         ${cantidadDeuda ? `<div class="mini-nota" style="color:var(--alerta-texto);">Debe ${esc(cantidadDeuda)} · ${plata(deuda)}</div>` : ''}
-        <span class="ver-hist">Tocá para ver el historial →</span>
+        <div class="info-acciones">
+            <button type="button" class="btn-chip info-accion" data-historial>${ico('lista')} Historial</button>
+            <button type="button" class="btn-chip info-accion" data-ficha>${ico('ficha')} Ficha</button>
+        </div>
     `;
     actualizarBotonConfirmar();
+}
+
+/**
+ * ¿El toque fue en el botón de la Ficha? Se recorre hacia arriba porque el toque
+ * puede caer en el ícono o en el texto del botón, no en el botón mismo.
+ */
+function toquePidioFicha(destino) {
+    let n = destino;
+    for (let i = 0; n && i < 6; i++) {
+        if (n.dataset && n.dataset.ficha !== undefined) return true;
+        n = n.parentNode;
+    }
+    return false;
 }
 
 function updateHistorial() {
@@ -4107,9 +4134,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnConfirmarCobrar').addEventListener('click', pedirConfirmacionCobro);
     document.getElementById('btnConfirmarSi').addEventListener('click', confirmarViaje);
     document.getElementById('btnConfirmarNo').addEventListener('click', cerrarModalConfirmarViaje);
-    // El cuadro del piloto se toca para ver su historial
-    document.getElementById('selectedInfo').addEventListener('click', () => {
-        if (selectedPiloto) abrirHistorialPiloto();
+    // El cuadro del piloto: tocarlo abre el historial; el botón "Ficha" abre la
+    // ficha para editarlo (nombre, alias, categoría, número).
+    document.getElementById('selectedInfo').addEventListener('click', (e) => {
+        if (!selectedPiloto) return;
+        if (toquePidioFicha(e && e.target)) { abrirModalEditar(); return; }
+        abrirHistorialPiloto();
     });
     document.getElementById('btnCerrarHistorial').addEventListener('click', cerrarHistorialPiloto);
     // Forma de pago del cobro en el mismo paso
